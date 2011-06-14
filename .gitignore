@@ -1,0 +1,8 @@
+/_ReSharper.*/
+/report/
+/TestResults/
+/*.cache
+/*.suo
+/*.user
+bin/
+obj/
