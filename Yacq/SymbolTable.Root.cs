@@ -53,6 +53,7 @@ namespace XSpect.Yacq
             AddFlowOperators();
             AddSystemOperators();
             AddTypes();
+            AddLiterals();
         }
 
         private static void AddArithmeticOperators()
@@ -332,6 +333,13 @@ namespace XSpect.Yacq
                 typeof(Func<,,,,,,,,,,,,,,,>),
                 typeof(Func<,,,,,,,,,,,,,,,,>)
             ));
+        }
+
+        private static void AddLiterals()
+        {
+            Root.Add("true", Expression.Constant(true));
+            Root.Add("false", Expression.Constant(false));
+            Root.Add("null", Expression.Constant(null));
         }
     }
 }
