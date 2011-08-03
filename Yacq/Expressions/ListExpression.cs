@@ -53,7 +53,11 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
-        internal ListExpression(IList<Expression> elements)
+        internal ListExpression(
+            SymbolTable symbols,
+            IList<Expression> elements
+        )
+            : base(symbols)
         {
             this.Elements = new ReadOnlyCollection<Expression>(elements);
         }
@@ -63,54 +67,54 @@ namespace XSpect.Yacq.Expressions
             return "(" + String.Join(" ", this.Elements.Select(e => e.ToString())) + ")";
         }
 
-        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
+        protected override Expression ReduceImpl(SymbolTable symbols)
         {
-            if(!this.Elements.Any())
+            if(this[0] is IdentifierExpression)
             {
-                return expectedType != null && expectedType.IsValueType
-                    ? (Expression) Default(expectedType)
-                    : Constant(null);
+                return Dispatch(DispatchType.Method, ((IdentifierExpression) this[0]).Name, this.Elements.Skip(1).ToArray());
             }
-            dynamic value = this.Elements.First().ReduceOrResolve(symbols);
+            var value = this[0].Reduce(symbols);
             if (value is LambdaExpression || value is InvocationExpression)
             {
                 return Invoke(value, this.Elements.Skip(1).Select(e => e.Reduce(symbols)));
             }
             if (value is TypeCandidateExpression)
             {
-                return Dispatcher.DispatchMethod(
-                    null,
-                    ((TypeCandidateExpression) value).Candidates
-                        .SelectMany(t => t.GetConstructors()),
+                return Dispatch(
+                    DispatchType.Constructor,
+                    value,
                     null,
                     this.Elements.Skip(1).Select(e => e.Reduce(symbols)).ToArray()
-                ) ?? (this.Elements.Count == 2
-                    ? Convert(this[1], ((TypeCandidateExpression) value).Candidates.Single())
-                    : null
                 );
             }
             if (value is Expression)
             {
-                return (Expression) value;
+                return value;
             }
-            if (value is Transformer)
-            {
-                return ((Transformer) value)(this, symbols);
-            }
-            return this;
+            return null;
         }
     }
 
     partial class YacqExpression
     {
+        public static ListExpression List(SymbolTable symbols, params Expression[] elements)
+        {
+            return new ListExpression(symbols, elements);
+        }
+
+        public static ListExpression List(SymbolTable symbols, IEnumerable<Expression> elements)
+        {
+            return List(symbols, elements.ToArray());
+        }
+
         public static ListExpression List(params Expression[] elements)
         {
-            return new ListExpression(elements);
+            return List(null, elements);
         }
 
         public static ListExpression List(IEnumerable<Expression> elements)
         {
-            return List(elements.ToArray());
+            return List(null, elements.ToArray());
         }
     }
 }

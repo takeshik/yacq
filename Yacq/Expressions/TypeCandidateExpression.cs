@@ -44,34 +44,59 @@ namespace XSpect.Yacq.Expressions
             private set;
         }
 
-        internal TypeCandidateExpression(IList<Type> candidates)
+        public Type ElectedType
+        {
+            get
+            {
+                return this.Candidates.Count == 1
+                    ? this.Candidates.Single()
+                    : this.Candidates.Where(t => t.GetGenericArguments().Length == 0)
+                          .Let(_ => _.Count() == 1 ? _.Single() : null);
+            }
+        }
+
+        internal TypeCandidateExpression(
+            SymbolTable symbols,
+            IList<Type> candidates
+        )
+            : base(symbols)
         {
             this.Candidates = new ReadOnlyCollection<Type>(candidates);
         }
 
-        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
+        public override String ToString()
         {
-            if (this.Candidates.Count == 1)
-            {
-                return Constant(this.Candidates.Single());
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
+            return this.ElectedType != null
+                ? this.ElectedType.Name
+                : this.Candidates.First().Name + "[+" + (this.Candidates.Count - 1) + "]";
+        }
+
+        protected override Expression ReduceImpl(SymbolTable symbols)
+        {
+            return null;
         }
     }
 
     partial class YacqExpression
     {
+        public static TypeCandidateExpression TypeCandidate(SymbolTable symbols, params Type[] candidates)
+        {
+            return new TypeCandidateExpression(symbols, candidates);
+        }
+
+        public static TypeCandidateExpression TypeCandidate(SymbolTable symbols, IEnumerable<Type> candidates)
+        {
+            return TypeCandidate(symbols, candidates.ToArray());
+        }
+
         public static TypeCandidateExpression TypeCandidate(params Type[] candidates)
         {
-            return new TypeCandidateExpression(candidates);
+            return TypeCandidate(null, candidates);
         }
 
         public static TypeCandidateExpression TypeCandidate(IEnumerable<Type> candidates)
         {
-            return TypeCandidate(candidates.ToArray());
+            return TypeCandidate(null, candidates.ToArray());
         }
     }
 }

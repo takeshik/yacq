@@ -28,12 +28,18 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using XSpect.Yacq.Expressions;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Expressions
 {
-    public delegate Expression Transformer(ListExpression expr, SymbolTable symbols);
+    [Flags()]
+    public enum DispatchType
+    {
+        Unknown = 0,
+        Member = 0x1,
+        Method = 0x2,
+        Constructor = 0x4,
+        MethodGroup = 0x8,
+        TargetMask = 0xffff,
+        Literal = 0x10000,
+    }
 }

@@ -31,15 +31,79 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using XSpect.Yacq.Expressions;
+using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
 {
-    public partial class SymbolTable
-        : IDictionary<String, Object>
+    public struct SymbolEntry
+        : IEquatable<SymbolEntry>
     {
-        private readonly IDictionary<String, Object> _symbols;
+        public DispatchType DispatchType
+        {
+            get;
+            private set;
+        }
 
-        public IEnumerator<KeyValuePair<String, Object>> GetEnumerator()
+        public Type LeftType
+        {
+            get;
+            private set;
+        }
+
+        public String Name
+        {
+            get;
+            private set;
+        }
+
+        public SymbolEntry(DispatchType dispatchType, Type leftType, String name)
+            : this()
+        {
+            this.DispatchType = dispatchType;
+            this.LeftType = leftType;
+            this.Name = name;
+        }
+
+        public override Boolean Equals(Object obj)
+        {
+            return obj is SymbolEntry && this.Equals((SymbolEntry) obj);
+        }
+
+        public override Int32 GetHashCode()
+        {
+            return unchecked(
+                this.DispatchType.GetHashCode() ^
+                (this.LeftType != null ? this.LeftType.GetHashCode() : 0) ^
+                (this.Name != null ? this.Name.GetHashCode() : 0)
+            );
+        }
+
+        public override String ToString()
+        {
+            return (this.DispatchType & DispatchType.TargetMask)
+                + " " + (this.LeftType.Null(t => t.Name + ".") ?? "")
+                + this.Name;
+        }
+
+        public Boolean Equals(SymbolEntry other)
+        {
+            return
+                this.DispatchType == other.DispatchType &&
+                this.LeftType == other.LeftType &&
+                this.Name == other.Name;
+        }
+    }
+
+    public delegate Expression SymbolDefinition(DispatchExpression expression, SymbolTable symbols);
+
+    public partial class SymbolTable
+        : IDictionary<SymbolEntry, SymbolDefinition>
+    {
+        private readonly IDictionary<SymbolEntry, SymbolDefinition> _symbols;
+
+        public IEnumerator<KeyValuePair<SymbolEntry, SymbolDefinition>> GetEnumerator()
         {
             return this._symbols.GetEnumerator();
         }
@@ -49,9 +113,9 @@ namespace XSpect.Yacq
             return this.GetEnumerator();
         }
 
-        void ICollection<KeyValuePair<String, Object>>.Add(KeyValuePair<String, Object> item)
+        void ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Add(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
-            ((ICollection<KeyValuePair<String, Object>>) this._symbols).Contains(item);
+            this._symbols.Add(item);
         }
 
         public void Clear()
@@ -59,19 +123,19 @@ namespace XSpect.Yacq
             this._symbols.Clear();
         }
 
-        Boolean ICollection<KeyValuePair<String, Object>>.Contains(KeyValuePair<String, Object> item)
+        Boolean ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Contains(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
-            return ((ICollection<KeyValuePair<String, Object>>) this._symbols).Contains(item);
+            return this._symbols.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<String, Object>[] array, Int32 arrayIndex)
+        void ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.CopyTo(KeyValuePair<SymbolEntry, SymbolDefinition>[] array, Int32 arrayIndex)
         {
-            ((ICollection<KeyValuePair<String, Object>>) this._symbols).CopyTo(array, arrayIndex);
+            this._symbols.CopyTo(array, arrayIndex);
         }
 
-        public Boolean Remove(KeyValuePair<String, Object> item)
+        Boolean ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Remove(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
-            return ((ICollection<KeyValuePair<String, Object>>) this._symbols).Remove(item);
+            return this._symbols.Remove(item);
         }
 
         public Int32 Count
@@ -82,7 +146,7 @@ namespace XSpect.Yacq
             }
         }
 
-        public Boolean IsReadOnly
+        Boolean ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.IsReadOnly
         {
             get
             {
@@ -90,27 +154,27 @@ namespace XSpect.Yacq
             }
         }
 
-        public Boolean ContainsKey(String key)
+        public Boolean ContainsKey(SymbolEntry key)
         {
             return this._symbols.ContainsKey(key);
         }
 
-        public void Add(String key, Object value)
+        public void Add(SymbolEntry key, SymbolDefinition value)
         {
             this._symbols.Add(key, value);
         }
 
-        public Boolean Remove(String key)
+        public Boolean Remove(SymbolEntry key)
         {
             return this._symbols.Remove(key);
         }
 
-        public Boolean TryGetValue(String key, out Object value)
+        public Boolean TryGetValue(SymbolEntry key, out SymbolDefinition value)
         {
             return this._symbols.TryGetValue(key, out value);
         }
 
-        Object IDictionary<String, Object>.this[String key]
+        public SymbolDefinition this[SymbolEntry key]
         {
             get
             {
@@ -122,19 +186,7 @@ namespace XSpect.Yacq
             }
         }
 
-        dynamic this[String key]
-        {
-            get
-            {
-                return this._symbols[key];
-            }
-            set
-            {
-                this._symbols[key] = value;
-            }
-        }
-
-        public ICollection<String> Keys
+        public ICollection<SymbolEntry> Keys
         {
             get
             {
@@ -142,7 +194,7 @@ namespace XSpect.Yacq
             }
         }
 
-        public ICollection<Object> Values
+        public ICollection<SymbolDefinition> Values
         {
             get
             {
@@ -156,6 +208,12 @@ namespace XSpect.Yacq
             private set;
         }
 
+        public SymbolDefinition Missing
+        {
+            get;
+            set;
+        }
+
         public IEnumerable<SymbolTable> Chain
         {
             get
@@ -164,7 +222,7 @@ namespace XSpect.Yacq
             }
         }
 
-        public IEnumerable<String> AllKeys
+        public IEnumerable<SymbolEntry> AllKeys
         {
             get
             {
@@ -172,7 +230,7 @@ namespace XSpect.Yacq
             }
         }
 
-        public IEnumerable<Object> AllValues
+        public IEnumerable<SymbolDefinition> AllValues
         {
             get
             {
@@ -180,23 +238,80 @@ namespace XSpect.Yacq
             }
         }
 
-        public SymbolTable(SymbolTable parent = null, IDictionary<String, dynamic> entries = null)
+        public IDictionary<String, Expression> Literals
         {
-            this._symbols = entries ?? new Dictionary<String, Object>();
-            this.Parent = parent ?? Root;
+            get
+            {
+                return this
+                    .Where(p => p.Key.DispatchType.HasFlag(DispatchType.Literal))
+                    .ToDictionary(p => p.Key.Name, p => p.Value(null, null));
+            }
         }
 
-        public Boolean ExistsKey(String key)
+        public IDictionary<String, Expression> AllLiterals
+        {
+            get
+            {
+                return this.AllKeys
+                    .Where(k => k.DispatchType.HasFlag(DispatchType.Literal))
+                    .ToDictionary(k => k.Name, k => this.Resolve(k)(null, null));
+            }
+        }
+
+        public IDictionary<SymbolEntry, SymbolDefinition> Flatten
+        {
+            get
+            {
+                return this.AllKeys.ToDictionary(k => k, this.Resolve);
+            }
+        }
+
+        public SymbolTable(SymbolTable parent = null, IDictionary<SymbolEntry, SymbolDefinition> entries = null)
+        {
+            this.Parent = parent ?? Root;
+            this._symbols = entries != null
+                ? entries
+                      .Where(p => !(this.Parent.ExistsKey(p.Key) && this.Parent.Resolve(p.Key) == p.Value))
+                      .ToDictionary(p => p.Key, p => p.Value)
+                : new Dictionary<SymbolEntry, SymbolDefinition>();
+        }
+
+        public void Add(DispatchType dispatchType, Type leftType, String name, SymbolDefinition definition)
+        {
+            this.Add(new SymbolEntry(dispatchType, leftType, name), definition);
+        }
+
+        public void Add(DispatchType dispatchType, String name, SymbolDefinition definition)
+        {
+            this.Add(dispatchType, null, name, definition);
+        }
+
+        public void Add(String name, Expression expression)
+        {
+            this.Add(DispatchType.Member | DispatchType.Literal, name, (e, s) => expression);
+        }
+
+        public Boolean ExistsKey(SymbolEntry key)
         {
             return this.Chain.Any(_ => _.ContainsKey(key));
         }
 
-        public dynamic Resolve(String key)
+        public Boolean ExistsKey(DispatchType dispatchType, Type leftType, String name)
+        {
+            return this.ExistsKey(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        public SymbolDefinition Resolve(SymbolEntry key)
         {
             return this.Chain.First(_ => _.ContainsKey(key))[key];
         }
 
-        public Boolean TryResolve(String key, out dynamic value)
+        public SymbolDefinition Resolve(DispatchType dispatchType, Type leftType, String name)
+        {
+            return this.Resolve(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        public Boolean TryResolve(SymbolEntry key, out SymbolDefinition value)
         {
             if (this.ExistsKey(key))
             {
@@ -208,6 +323,54 @@ namespace XSpect.Yacq
                 value = null;
                 return false;
             }
+        }
+
+        public Boolean TryResolve(DispatchType dispatchType, Type leftType, String name, out SymbolDefinition value)
+        {
+            return this.TryResolve(new SymbolEntry(dispatchType, leftType, name), out value);
+        }
+
+        public SymbolDefinition Match(SymbolEntry key)
+        {
+            return this
+                .Where(p =>
+                    (p.Key.DispatchType == DispatchType.Unknown || p.Key.DispatchType.HasFlag(key.DispatchType)) &&
+                    p.Key.Name == key.Name &&
+                    ((p.Key.LeftType == key.LeftType) || p.Key.LeftType.IsAssignableFrom(key.LeftType))
+                )
+                .OrderBy(p => key.LeftType != null
+                    ? key.LeftType.GetConvertibleTypes()
+                          .TakeWhile(t => t == p.Key.LeftType)
+                          .Count()
+                    : Int32.MaxValue
+                )
+                .FirstOrDefault()
+                .Value;
+        }
+
+        public SymbolDefinition Match(DispatchType dispatchType, Type leftType, String name)
+        {
+            return this.Match(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        public SymbolDefinition Match(DispatchExpression expression)
+        {
+            return this.Match(expression.DispatchType, expression.Left.Null(e => e.Type), expression.Name);
+        }
+
+        public SymbolDefinition ResolveMatch(SymbolEntry key)
+        {
+            return this.Chain.Select(_ => _.Match(key)).FirstOrDefault(_ => _ != null);
+        }
+
+        public SymbolDefinition ResolveMatch(DispatchType dispatchType, Type leftType, String name)
+        {
+            return this.ResolveMatch(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        public SymbolDefinition ResolveMatch(DispatchExpression expression)
+        {
+            return this.ResolveMatch(expression.DispatchType, expression.Left.Null(e => e.Type), expression.Name);
         }
     }
 }

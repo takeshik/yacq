@@ -31,6 +31,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace XSpect.Yacq
 {
@@ -145,11 +147,133 @@ namespace XSpect.Yacq
             return self;
         }
 
+        internal static IEnumerable<TResult> Choose<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
+            where TSource : class
+        {
+            return source.Select(selector).Where(_ => _ != null);
+        }
+
         internal static Expression TryConvert(this Expression expr, Type type)
         {
             return type == null || expr.Type == type
                 ? expr
                 : Expression.Convert(expr, type);
+        }
+
+        internal static Boolean EqualsExact(this Expression self, Expression other)
+        {
+            return self.GetType() == other.GetType() &&
+                self.GetType().GetConvertibleTypes()
+                    .SelectMany(t => t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+                    .All(f => EqualsExact(f.GetValue(self), f.GetValue(other)));
+        }
+
+        private static Boolean EqualsExact(this Object self, Object other)
+        {
+            return self == other || (self != null && other != null &&
+                typeof(Expression).IsAssignableFrom(self.GetType())
+                    ? EqualsExact((Expression) self, (Expression) other)
+                    : typeof(IEnumerable<Object>).IsAssignableFrom(self.GetType())
+                          ? ((IEnumerable<Object>) self).Zip((IEnumerable<Object>) other, EqualsExact).All(_ => _)
+                          : self.Equals(other)
+            );
+        }
+
+        internal static IEnumerable<Type> GetConvertibleTypes(this Type type)
+        {
+            return type != null
+                ? EnumerableEx.Concat(
+                      EnumerableEx.Generate(type, t => t != null, t => t.BaseType, _ => _),
+                      type.GetInterfaces(),
+                      type.IsInterface ? EnumerableEx.Return(typeof(Object)) : Enumerable.Empty<Type>()
+                  ).If(_ => type.IsGenericType && !type.IsGenericTypeDefinition, _ =>
+                      _.Concat(type.GetGenericTypeDefinition().GetConvertibleTypes())
+                  ).Distinct()
+                : Enumerable.Empty<Type>();
+        }
+
+        internal static Boolean IsParamArrayMethod(this IEnumerable<ParameterInfo> parameters)
+        {
+            return parameters.Any() && Attribute.IsDefined(parameters.Last(), typeof(ParamArrayAttribute));
+        }
+
+        internal static Boolean HasExtensionMethods(this Type type)
+        {
+            return Attribute.IsDefined(type, typeof(ExtensionAttribute));
+        }
+
+        internal static Boolean IsExtensionMethod(this MethodInfo method)
+        {
+            return Attribute.IsDefined(method, typeof(ExtensionAttribute));
+        }
+
+        internal static IEnumerable<MethodInfo> GetExtensionMethods(this Type type)
+        {
+            return type.HasExtensionMethods()
+                ? type.GetMethods().Where(IsExtensionMethod)
+                : Enumerable.Empty<MethodInfo>();
+        }
+
+        internal static Type TryGetGenericTypeDefinition(this Type t)
+        {
+            return t.IsGenericType && !t.IsGenericTypeDefinition ? t.GetGenericTypeDefinition() : t;
+        }
+
+        internal static Type[] ToArgumentArray(this IDictionary<Type, Type> argumentMap)
+        {
+            return argumentMap
+                .OrderBy(p => p.Key.GenericParameterPosition)
+                .Select(p => p.Value)
+                .ToArray();
+        }
+
+        internal static IEnumerable<Type> GetAppearingTypes(this Type type)
+        {
+            return type != null
+                ? EnumerableEx.Return(type).Expand(t => t.GetGenericArguments())
+                : Enumerable.Empty<Type>();
+        }
+
+        internal static Type GetCorrespondingType(this Type type, Type targetType)
+        {
+            return targetType.TryGetGenericTypeDefinition()
+                .Let(d => type.GetConvertibleTypes()
+                    .FirstOrDefault(t => t.TryGetGenericTypeDefinition() == d)
+                );
+        }
+
+        internal static Boolean IsAppropriate(this Type type, Type target)
+        {
+            return (type.IsGenericParameter &&
+                !(
+                    (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint)
+                        && target.GetConstructor(Type.EmptyTypes) == null
+                    ) ||
+                    (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint)
+                        && target.IsClass
+                        || target.TryGetGenericTypeDefinition() == typeof(Nullable<>)
+                    ) ||
+                    (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint)
+                        && target.IsValueType
+                    )
+                ) &&
+                target.GetConvertibleTypes().Let(cs =>
+                    type.GetGenericParameterConstraints().All(cs.Contains)
+                )
+            ) ||
+                target.GetConvertibleTypes()
+                    .Select(t => t.TryGetGenericTypeDefinition())
+                    .Contains(type.TryGetGenericTypeDefinition());
+        }
+
+        internal static MethodInfo GetDelegateSignature(this Type type)
+        {
+            return (typeof(Delegate).IsAssignableFrom(type)
+                ? type
+                : type.TryGetGenericTypeDefinition() == typeof(Expression<>)
+                      ? type.GetGenericArguments().Single()
+                      : null
+            ).Null(t => t.GetMethod("Invoke"));
         }
     }
 }

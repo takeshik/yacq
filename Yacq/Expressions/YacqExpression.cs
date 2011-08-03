@@ -70,40 +70,48 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
-        public override Expression Reduce()
+        public SymbolTable Symbols
         {
-            return this.Reduce(new SymbolTable());
+            get;
+            private set;
         }
 
-        protected YacqExpression()
+        protected YacqExpression(SymbolTable symbols)
         {
             this._canReduce = true;
+            this.Symbols = symbols ?? SymbolTable.Root;
+        }
+
+        public override Expression Reduce()
+        {
+            return this.Reduce(null);
         }
 
         public Expression Reduce(SymbolTable symbols)
         {
-            return this.Reduce(symbols, null);
-        }
-
-        public Expression Reduce(SymbolTable symbols, Type expectedType)
-        {
-            if ((this._reducedExpression == null || this._reducedExpression.Type != expectedType) && this.CanReduce)
+            if (this._reducedExpression == null && this.CanReduce)
             {
-                this._reducedExpression = this.ReduceImpl(symbols, expectedType);
+                this._reducedExpression = this.ReduceImpl(symbols != null
+                    ? new SymbolTable(this.Symbols, symbols.Parent != null && symbols.Parent != SymbolTable.Root
+                          ? symbols.Flatten
+                          : symbols
+                      )
+                    : SymbolTable.Root
+                );
                 if (this._reducedExpression == null || this._reducedExpression == this)
                 {
                     this._reducedExpression = this;
                     this._canReduce = false;
                 }
+                else if (this._reducedExpression.CanReduce)
+                {
+                    this._reducedExpression = this._reducedExpression.Reduce(symbols)
+                        ?? this._reducedExpression;
+                }
             }
-            return this._reducedExpression.TryConvert(expectedType);
+            return this._reducedExpression;
         }
 
-        protected abstract Expression ReduceImpl(SymbolTable symbols, Type expectedType);
-
-        public virtual Boolean CanReduceAs(Type expectedType)
-        {
-            return expectedType == null || this.Type.GetConvertibleTypes().Contains(expectedType);
-        }
+        protected abstract Expression ReduceImpl(SymbolTable symbols);
     }
 }

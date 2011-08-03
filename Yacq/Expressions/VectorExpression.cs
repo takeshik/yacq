@@ -52,7 +52,11 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
-        internal VectorExpression(IList<Expression> elements)
+        internal VectorExpression(
+            SymbolTable symbols,
+            IList<Expression> elements
+        )
+            : base(symbols)
         {
             this.Elements = new ReadOnlyCollection<Expression>(elements);
         }
@@ -62,7 +66,7 @@ namespace XSpect.Yacq.Expressions
             return "[" + String.Join(" ", this.Elements.Select(e => e.ToString())) + "]";
         }
 
-        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
+        protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return this.Elements.Select(e => e.Reduce(symbols))
                 .Let(_ => NewArrayInit(_
@@ -76,14 +80,24 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        public static VectorExpression Vector(SymbolTable symbols, params Expression[] elements)
+        {
+            return new VectorExpression(symbols, elements);
+        }
+
+        public static VectorExpression Vector(SymbolTable symbols, IEnumerable<Expression> elements)
+        {
+            return Vector(symbols, elements.ToArray());
+        }
+
         public static VectorExpression Vector(params Expression[] elements)
         {
-            return new VectorExpression(elements);
+            return Vector(null, elements);
         }
 
         public static VectorExpression Vector(IEnumerable<Expression> elements)
         {
-            return Vector(elements.ToArray());
+            return Vector(null, elements.ToArray());
         }
     }
 }

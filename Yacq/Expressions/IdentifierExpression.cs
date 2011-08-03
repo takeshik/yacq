@@ -42,7 +42,11 @@ namespace XSpect.Yacq.Expressions
             private set;
         }
 
-        internal IdentifierExpression(String name)
+        internal IdentifierExpression(
+            SymbolTable symbols,
+            String name
+        )
+            : base(symbols)
         {
             this.Name = name;
         }
@@ -52,35 +56,22 @@ namespace XSpect.Yacq.Expressions
             return this.Name;
         }
 
-        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
+        protected override Expression ReduceImpl(SymbolTable symbols)
         {
-            dynamic value;
-            if (symbols.TryResolve(this.Name, out value) && value is Expression)
-            {
-                return value;
-            }
-            else
-            {
-                throw new InvalidOperationException("Unknown identifier: " + this.Name);
-            }
-        }
-
-        public dynamic Resolve(SymbolTable symbols)
-        {
-            return symbols.Resolve(this.Name);
-        }
-
-        public Boolean TryResolve(SymbolTable symbols, out dynamic value)
-        {
-            return symbols.TryResolve(this.Name, out value);
+            return Dispatch(symbols, DispatchType.Member, this.Name);
         }
     }
 
     partial class YacqExpression
     {
+        public static IdentifierExpression Identifier(SymbolTable symbols, String name)
+        {
+            return new IdentifierExpression(symbols, name);
+        }
+
         public static IdentifierExpression Identifier(String name)
         {
-            return new IdentifierExpression(name);
+            return Identifier(null, name);
         }
     }
 }

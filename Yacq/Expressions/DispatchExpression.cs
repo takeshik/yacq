@@ -1,0 +1,459 @@
+﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
+// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
+// $Id$
+/* YACQ
+ *   Yet Another Compilable Query Language, based on Expression Trees API
+ * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * All rights reserved.
+ * 
+ * This file is part of YACQ.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+
+namespace XSpect.Yacq.Expressions
+{
+    public partial class DispatchExpression
+        : YacqExpression
+    {
+        public DispatchType DispatchType
+        {
+            get;
+            private set;
+        }
+
+        public Expression Left
+        {
+            get;
+            private set;
+        }
+
+        public String Name
+        {
+            get;
+            private set;
+        }
+
+        public ReadOnlyCollection<Type> TypeArguments
+        {
+            get;
+            private set;
+        }
+
+        public ReadOnlyCollection<Expression> Arguments
+        {
+            get;
+            private set;
+        }
+
+        internal DispatchExpression(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IList<Type> typeArguments,
+            IList<Expression> arguments
+        )
+            : base(symbols)
+        {
+            this.DispatchType = dispatchType;
+            this.Left = left;
+            this.Name = name;
+            this.TypeArguments = new ReadOnlyCollection<Type>(typeArguments);
+            this.Arguments = new ReadOnlyCollection<Expression>(arguments);
+        }
+
+        public override String ToString()
+        {
+            switch (this.DispatchType & DispatchType.TargetMask)
+            {
+                case DispatchType.Member:
+                    return this.Arguments.Any()
+                        ? this.Left + "[" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + "]"
+                        : this.Left + "." + this.Name;
+                case DispatchType.Method:
+                    return this.Left + (this.TypeArguments.Any()
+                        ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">."
+                        : "."
+                    ) + this.Name + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                case DispatchType.Constructor:
+                    return this.Left + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                default:
+                    return "Dispatch(?)";
+            }
+        }
+
+        protected override Expression ReduceImpl(SymbolTable symbols)
+        {
+            return symbols.ResolveMatch(this).If(
+                d => d != null,
+                d => d(this, symbols),
+                d => this.GetMembers(symbols)
+                    .Select(m => m is MethodInfo && ((MethodInfo) m).IsExtensionMethod()
+                        ? new Candidate(null, m, this.TypeArguments, this.Arguments.StartWith(this.Left).ToArray())
+                        : new Candidate(this.Left is TypeCandidateExpression ? null : this.Left, m, this.TypeArguments, this.Arguments)
+                    )
+                    .Where(c => c.Arguments.Count == c.Parameters.Count
+                        || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1)
+                        && Enumerable.SequenceEqual(
+                               c.Parameters.Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
+                                   ? p.ParameterType.GetDelegateSignature().GetParameters().Length
+                                   : 0
+                               ),
+                               c.Arguments.Select(a => a is AmbiguousLambdaExpression
+                                   ? ((AmbiguousLambdaExpression) a).Parameters.Count
+                                   : a is LambdaExpression
+                                         ? ((LambdaExpression) a).Parameters.Count
+                                         : 0
+                               )
+                           )
+                    )
+                    .Choose(c => InferTypeArguments(c, new Dictionary<Type, Type>(), symbols))
+                    .Choose(CheckAndFixArguments)
+                    .OrderBy(c => c.Method != null && c.Method.IsExtensionMethod())
+                    .ThenByDescending(c => c.TypeArgumentMap.Count)
+                    .ThenBy(c => c.Parameters.IsParamArrayMethod())
+                    .FirstOrDefault()
+                    .Null(c =>
+                    {
+                        switch (this.DispatchType)
+                        {
+                            case DispatchType.Constructor:
+                                return New(c.Constructor, c.Arguments);
+                            case DispatchType.Member:
+                                return c.Property != null
+                                    ? c.Arguments.Any()
+                                          ? (Expression) Property(c.Instance, c.Property, c.Arguments)
+                                          : Property(c.Instance, c.Property)
+                                    : Field(c.Instance, c.Field);
+                            default: // case DispatchType.Method:
+                                return Call(c.Instance, c.Method, c.Arguments);
+                        }
+                    })
+            );
+        }
+
+        public IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
+        {
+            switch (this.DispatchType)
+            {
+                case DispatchType.Constructor:
+                    return ((TypeCandidateExpression) this.Left).ElectedType.GetConstructors(BindingFlags.Public);
+                case DispatchType.Member:
+                    return String.IsNullOrEmpty(this.Name)
+                        // Default members must be instance properties.
+                        ? this.Left.Type.GetDefaultMembers()
+                        : (this.Left is TypeCandidateExpression
+                              ? ((TypeCandidateExpression) this.Left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static)
+                              : this.Left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                          ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
+                case DispatchType.Method:
+                    return this.Left is TypeCandidateExpression
+                        ? ((TypeCandidateExpression) this.Left).ElectedType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                              .Where(m => m.Name == this.Name)
+                        : this.Left.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                              .Where(m => m.Name == this.Name)
+                              .Concat(symbols.AllLiterals.Values
+                                  .OfType<TypeCandidateExpression>()
+                                  .SelectMany(e => e.Candidates)
+                                  .Where(t => t.HasExtensionMethods())
+                                  .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                                  .Where(m => m.Name == this.Name && m.IsExtensionMethod())
+                              );
+                default:
+                    throw new NotSupportedException("Dispatcher doesn't support: " + this.DispatchType);
+            }
+        }
+
+        private Candidate InferTypeArguments(Candidate candidate, IDictionary<Type, Type> typeArgumentMap, SymbolTable symbols)
+        {
+            return this.DispatchType != DispatchType.Method
+                ? candidate
+                : new Dictionary<Type, Type>(typeArgumentMap).Let(map =>
+                  {
+                      if (map.Count == candidate.Method.GetGenericArguments().Length)
+                      {
+                          return new Candidate(
+                              candidate.Instance,
+                              candidate.Method != null && candidate.Method.IsGenericMethodDefinition
+                                  ? candidate.Method.MakeGenericMethod(typeArgumentMap.ToArgumentArray())
+                                  : candidate.Member,
+                              map,
+                              candidate.ParameterMap
+                                  .Select(_ => _.Item2 is AmbiguousLambdaExpression
+                                      ? ((AmbiguousLambdaExpression) _.Item2)
+                                            .ApplyTypeArguments(_.Item1)
+                                            .ApplyTypeArguments(map)
+                                            .Reduce(symbols)
+                                      : _.Item2
+                                  )
+                                  .ToArray()
+                          );
+                      }
+                      else
+                      {
+                          candidate.ParameterMap
+                              .Where(_ => _.Item1.GetGenericArguments().Any(t => !map.ContainsKey(t)))
+                              .ForEach(_ =>
+                              {
+                                  if (_.Item2 is AmbiguousLambdaExpression)
+                                  {
+                                      if (_.Item1.GetDelegateSignature().ReturnType.Let(r =>
+                                          r.IsGenericParameter && !map.ContainsKey(r)
+                                      ))
+                                      {
+                                          _.Item1.GetDelegateSignature().GetParameters()
+                                              .Select(p => p.ParameterType)
+                                              .Where(t => t.IsGenericParameter)
+                                              .Select(t => map.ContainsKey(t) ? map[t] : null)
+                                              .If(ts => ts.All(t => t != null), ts =>
+                                                  map[_.Item1.GetDelegateSignature().ReturnType] = ((AmbiguousLambdaExpression) _.Item2)
+                                                      .ApplyTypeArguments(ts)
+                                                      .Reduce(symbols).Type.GetDelegateSignature().ReturnType
+                                              );
+                                      }
+                                  }
+                                  else if (_.Item1.ContainsGenericParameters)
+                                  {
+                                      (_.Item1.IsGenericParameter
+                                          ? EnumerableEx.Return(Tuple.Create(_.Item1, _.Item2.Type))
+                                          : _.Item1.GetAppearingTypes()
+                                                .Zip(_.Item2.Type.GetCorrespondingType(_.Item1).GetAppearingTypes(), Tuple.Create)
+                                                .Where(t => t.Item1.IsGenericParameter)
+                                      ).ForEach(t => map[t.Item1] = t.Item2);
+                                  }
+                              });
+                          return map.Keys.All(typeArgumentMap.ContainsKey)
+                              ? null
+                              : this.InferTypeArguments(candidate, map, symbols);
+                      }
+                  });
+        }
+
+        private static Candidate CheckAndFixArguments(Candidate candidate)
+        {
+            return candidate.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
+                && candidate.ParameterMap.All(_ => _.Item1.IsAppropriate(_.Item2.Type))
+                ? new Candidate(
+                      candidate.Instance,
+                      candidate.Member,
+                      candidate.TypeArgumentMap,
+                      candidate.ParameterMap
+                          .Select(_ => _.Item1 == _.Item2.Type
+                              ? _.Item2
+                              : Convert(_.Item2, _.Item1)
+                          )
+                          .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
+                              _.Take(candidate.Parameters.Count - 1)
+                                  .Concat(EnumerableEx.Return(NewArrayInit(
+                                      candidate.Parameters.Last().ParameterType.GetElementType(),
+                                      _.Skip(candidate.Parameters.Count - 1)
+                                  )))
+                          )
+                          .ToArray()
+                  )
+                : null;
+        }
+    }
+
+    partial class YacqExpression
+    {
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IEnumerable<Type> typeArguments,
+            params Expression[] arguments
+        )
+        {
+            return new DispatchExpression(
+                symbols,
+                dispatchType,
+                left,
+                name,
+                (typeArguments ?? Enumerable.Empty<Type>()).ToArray(),
+                arguments
+            );
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, left, name, Enumerable.Empty<Type>(), arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            String name,
+            IEnumerable<Type> typeArguments,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, null, name, (typeArguments ?? Enumerable.Empty<Type>()).ToArray(), arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, null, name, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IEnumerable<Type> typeArguments,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, left, name, typeArguments, arguments.ToArray());
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, left, name, arguments.ToArray());
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            String name,
+            IEnumerable<Type> typeArguments,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, name, typeArguments, arguments.ToArray());
+        }
+
+        public static DispatchExpression Dispatch(
+            SymbolTable symbols,
+            DispatchType dispatchType,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(symbols, dispatchType, name, arguments.ToArray());
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IEnumerable<Type> typeArguments,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(null, dispatchType, left, name, typeArguments, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(null, dispatchType, left, name, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            String name,
+            IEnumerable<Type> typeArguments,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(null, dispatchType, name, typeArguments, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(null, dispatchType, name, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IEnumerable<Type> typeArguments,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(null, dispatchType, left, name, typeArguments, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            Expression left,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(null, dispatchType, left, name, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            String name,
+            IEnumerable<Type> typeArguments,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(null, dispatchType, name, typeArguments, arguments);
+        }
+
+        public static DispatchExpression Dispatch(
+            DispatchType dispatchType,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(null, dispatchType, name, arguments);
+        }
+    }
+}

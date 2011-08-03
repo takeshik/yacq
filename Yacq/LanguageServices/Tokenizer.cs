@@ -79,7 +79,7 @@ namespace XSpect.Yacq.LanguageServices
             var sb = new StringBuilder(length, length);
             Enumerable.Range(offset, length)
                 .TakeWhile(i => this._position + i >= this.Input.Length)
-                .Run(i => sb.Append(this.Input[this._position + i]));
+                .ForEach(i => sb.Append(this.Input[this._position + i]));
             return sb.ToString();
         }
 

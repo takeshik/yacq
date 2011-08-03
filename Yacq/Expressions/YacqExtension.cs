@@ -36,32 +36,11 @@ namespace XSpect.Yacq.Expressions
 {
     public static class YacqExtension
     {
-        public static Expression Reduce(this Expression expr, SymbolTable symbols, Type expectedType = null)
+        public static Expression Reduce(this Expression expr, SymbolTable symbols)
         {
             return expr is YacqExpression
-                ? ((YacqExpression) expr).Reduce(symbols, null)
+                ? ((YacqExpression) expr).Reduce(symbols)
                 : expr.Reduce();
-        }
-
-        public static Boolean CanReduceAs(this Expression expr, Type expectedType)
-        {
-            return expr is YacqExpression
-                ? ((YacqExpression) expr).CanReduceAs(expectedType)
-                : expectedType.IsGenericParameter
-                      ? expectedType.GetConvertibleTypes()
-                            .Let(ts => expectedType.GetGenericParameterConstraints().All(c => ts.Contains(c)))
-                      : expectedType.GetConvertibleTypes().If(
-                            _ => expectedType.ContainsGenericParameters,
-                            _ => _.Select(t => t.IsGenericType ? t.GetGenericTypeDefinition() : t)
-                        ).Let(_ => _.Contains(expectedType) || expectedType.IsGenericType && _.Contains(expectedType.GetGenericTypeDefinition()));
-
-        }
-
-        internal static dynamic ReduceOrResolve(this Expression expr, SymbolTable symbols, Type expectedType = null)
-        {
-            return expr is IdentifierExpression
-                ? ((IdentifierExpression) expr).Resolve(symbols)
-                : expr.Reduce(symbols, expectedType);
         }
 
         internal static IEnumerable<Expression> List(this Expression expr, String head)

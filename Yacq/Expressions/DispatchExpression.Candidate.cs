@@ -29,16 +29,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Expressions
 {
-    partial class Dispatcher
+    partial class DispatchExpression
     {
-        internal class Candidate
+        public class Candidate
         {
             public Expression Instance
             {
@@ -56,6 +56,22 @@ namespace XSpect.Yacq
             {
                 get;
                 private set;
+            }
+
+            public IList<Type> TypeArguments
+            {
+                get
+                {
+                    return this.TypeArgumentMap.ToArgumentArray();
+                }
+                private set
+                {
+                    this.TypeArgumentMap = value != null && value.Any()
+                        ? this.MethodBase.GetGenericArguments()
+                              .Zip(value, Tuple.Create)
+                              .ToDictionary(_ => _.Item1, _ => _.Item2)
+                        : new Dictionary<Type, Type>();
+                }
             }
 
             public IList<Expression> Arguments
@@ -112,11 +128,45 @@ namespace XSpect.Yacq
                 }
             }
 
+            public IList<ParameterInfo> Parameters
+            {
+                get
+                {
+                    return this.MethodBase != null
+                        ? this.MethodBase.GetParameters()
+                        : this.Property != null
+                              ? this.Property.GetIndexParameters()
+                              : new ParameterInfo[0];
+                }
+            }
+
+            public IEnumerable<Tuple<Type, Expression>> ParameterMap
+            {
+                get
+                {
+                    return this.Parameters
+                        .Select(p => p.ParameterType)
+                        .If(_ => this.Parameters.IsParamArrayMethod(), _ => _
+                            .Take(this.Parameters.Count() - 1)
+                            .Concat(EnumerableEx.Repeat(this.Parameters.Last().ParameterType.GetElementType()))
+                        )
+                        .Zip(this.Arguments, Tuple.Create);
+                }
+            }
+
             public Candidate(Expression instance, MemberInfo member, IDictionary<Type, Type> typeArgumentMap, IList<Expression> arguments)
             {
                 this.Instance = instance;
                 this.Member = member;
                 this.TypeArgumentMap = typeArgumentMap ?? new Dictionary<Type, Type>();
+                this.Arguments = arguments;
+            }
+
+            public Candidate(Expression instance, MemberInfo member, IList<Type> typeArguments, IList<Expression> arguments)
+            {
+                this.Instance = instance;
+                this.Member = member;
+                this.TypeArguments = typeArguments ?? new Type[0];
                 this.Arguments = arguments;
             }
         }

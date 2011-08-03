@@ -40,23 +40,28 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Interactive, Version=1.0.2856.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Interactive, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\lib\System.Interactive.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reactive, Version=1.1.10425.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Interactive.Providers, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\lib\System.Interactive.Providers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\lib\System.Reactive.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reactive.Providers, Version=1.1.10425.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Reactive.Providers, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\lib\System.Reactive.Providers.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dispatcher.Candidate.cs" />
-    <Compile Include="Dispatcher.cs" />
-    <Compile Include="Delegates.cs" />
-    <Compile Include="Expressions\MemberDispatchExpression.cs" />
+    <Compile Include="Expressions\DispatchExpression.Candidate.cs" />
+    <Compile Include="SymbolTable.Root.cs" />
+    <Compile Include="Expressions\DispatchType.cs" />
+    <Compile Include="Expressions\AmbiguousLambdaExpression.cs" />
+    <Compile Include="Expressions\AmbiguousParameterExpression.cs" />
+    <Compile Include="SymbolTable.cs" />
     <Compile Include="Expressions\YacqExtension.cs" />
-    <Compile Include="Expressions\MethodDispatchExpression.cs" />
+    <Compile Include="Expressions\DispatchExpression.cs" />
     <Compile Include="Expressions\TypeCandidateExpression.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="LanguageServices\Reader.Scope.cs" />
@@ -64,15 +69,13 @@
     <Compile Include="LanguageServices\Tokenizer.cs" />
     <Compile Include="LanguageServices\TokenType.cs" />
     <Compile Include="LanguageServices\Token.cs" />
-    <Compile Include="SymbolTable.Root.cs" />
-    <Compile Include="Expressions\StringExpression.cs" />
+    <Compile Include="Expressions\TextExpression.cs" />
     <Compile Include="Expressions\ListExpression.cs" />
     <Compile Include="Expressions\VectorExpression.cs" />
     <Compile Include="Expressions\NumberExpression.cs" />
     <Compile Include="Expressions\IdentifierExpression.cs" />
     <Compile Include="Expressions\YacqExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SymbolTable.cs" />
     <Compile Include="Yacq.cs" />
   </ItemGroup>
   <ItemGroup />

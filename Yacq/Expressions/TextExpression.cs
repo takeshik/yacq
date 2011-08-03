@@ -54,7 +54,12 @@ namespace XSpect.Yacq.Expressions
             private set;
         }
 
-        internal TextExpression(Char quoteChar, String sourceText)
+        internal TextExpression(
+            SymbolTable symbols,
+            Char quoteChar,
+            String sourceText
+        )
+            : base(symbols)
         {
             this.QuoteChar = quoteChar;
             this.SourceText = sourceText;
@@ -68,7 +73,7 @@ namespace XSpect.Yacq.Expressions
                 : this.QuoteChar + this.SourceText + this.QuoteChar;
         }
 
-        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
+        protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return Constant(this.Value);
         }
@@ -89,14 +94,24 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        public static TextExpression Text(SymbolTable symbols, Char quoteChar, String sourceText)
+        {
+            return new TextExpression(symbols, quoteChar, sourceText);
+        }
+
+        public static TextExpression Text(SymbolTable symbols, String text)
+        {
+            return Text(symbols, text.First(), text.Substring(1, text.Length - 2));
+        }
+
         public static TextExpression Text(Char quoteChar, String sourceText)
         {
-            return new TextExpression(quoteChar, sourceText);
+            return Text(null, quoteChar, sourceText);
         }
 
         public static TextExpression Text(String text)
         {
-            return Text(text.First(), text.Substring(1, text.Length - 2));
+            return Text(null, text.First(), text.Substring(1, text.Length - 2));
         }
     }
 }

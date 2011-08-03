@@ -55,7 +55,11 @@ namespace XSpect.Yacq.Expressions
             private set;
         }
 
-        internal NumberExpression(String text)
+        internal NumberExpression(
+            SymbolTable symbols,
+            String text
+        )
+            : base(symbols)
         {
             this.SourceText = text;
             this.Value = this.Parse();
@@ -66,7 +70,7 @@ namespace XSpect.Yacq.Expressions
             return this.SourceText;
         }
 
-        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
+        protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return Constant(this.Value);
         }
@@ -127,9 +131,14 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        public static NumberExpression Number(SymbolTable symbols, String text)
+        {
+            return new NumberExpression(symbols, text);
+        }
+
         public static NumberExpression Number(String text)
         {
-            return new NumberExpression(text);
+            return Number(null, text);
         }
     }
 }
