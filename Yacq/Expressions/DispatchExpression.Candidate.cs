@@ -29,7 +29,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -39,6 +38,7 @@ namespace XSpect.Yacq.Expressions
     partial class DispatchExpression
     {
         public class Candidate
+            : IComparable<Candidate>
         {
             public Expression Instance
             {
@@ -168,6 +168,30 @@ namespace XSpect.Yacq.Expressions
                 this.Member = member;
                 this.TypeArguments = typeArguments ?? new Type[0];
                 this.Arguments = arguments;
+            }
+
+            public Int32 CompareTo(Candidate other)
+            {
+                Int32 value;
+                return this.Method != null
+                    && other.Method != null
+                    && (value = this.Method.IsExtensionMethod()
+                           .CompareTo(other.Method.IsExtensionMethod())
+                       ) != 0
+                    ? value
+                    : (value = this.Parameters.IsParamArrayMethod()
+                          .CompareTo(other.Method.GetParameters().IsParamArrayMethod())
+                      ) != 0
+                          ? value
+                          : this.Arguments.Select(_ => _.Type)
+                                .Zip(other.Arguments.Select(_ => _.Type), (l, r) =>
+                                    l.GetConvertibleTypes().Contains(r)
+                                        ? -1
+                                        : r.GetConvertibleTypes().Contains(l)
+                                              ? 1
+                                              : 0
+                                )
+                                .FirstOrDefault(_ => _ != 0);
             }
         }
     }

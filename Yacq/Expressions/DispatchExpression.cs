@@ -133,9 +133,7 @@ namespace XSpect.Yacq.Expressions
                     )
                     .Choose(c => InferTypeArguments(c, new Dictionary<Type, Type>(), symbols))
                     .Choose(CheckAndFixArguments)
-                    .OrderBy(c => c.Method != null && c.Method.IsExtensionMethod())
-                    .ThenByDescending(c => c.TypeArgumentMap.Count)
-                    .ThenBy(c => c.Parameters.IsParamArrayMethod())
+                    .OrderBy(c => c)
                     .FirstOrDefault()
                     .Null(c =>
                     {
