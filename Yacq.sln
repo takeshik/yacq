@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yacq", "Yacq\Yacq.csproj", "{AF21A720-B805-4F95-B872-068925A11BB5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqRun", "YacqRun\YacqRun.csproj", "{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,6 +16,10 @@ Global
 		{AF21A720-B805-4F95-B872-068925A11BB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF21A720-B805-4F95-B872-068925A11BB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF21A720-B805-4F95-B872-068925A11BB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
