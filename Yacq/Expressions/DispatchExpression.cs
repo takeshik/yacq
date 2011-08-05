@@ -93,12 +93,12 @@ namespace XSpect.Yacq.Expressions
                 case DispatchType.Member:
                     return this.Arguments.Any()
                         ? this.Left + "[" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + "]"
-                        : this.Left + "." + this.Name;
+                        : (this.Left != null ? this.Left + "." : "") + this.Name;
                 case DispatchType.Method:
-                    return this.Left + (this.TypeArguments.Any()
-                        ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">."
-                        : "."
-                    ) + this.Name + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                    return (this.Left != null ? this.Left + "." : "")
+                        + this.Name
+                        + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">" : "")
+                        + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
                 case DispatchType.Constructor:
                     return this.Left + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
                 default:

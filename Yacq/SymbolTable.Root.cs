@@ -55,17 +55,25 @@ namespace XSpect.Yacq
             AddFlowOperators();
             AddLiterals();
             AddTypes();
+            AddMacros();
         }
 
         private static void AddArithmeticOperators()
         {
             Root.Add(DispatchType.Method, "+", (e, s) =>
-                e.Arguments.Count == 1
-                    ? (Expression) Expression.UnaryPlus(e.Arguments[0])
-                    : Expression.Add(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
-                          ? e.Arguments[1].Reduce(s)
-                          : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
-                )
+                e.Arguments.Any(a => a.Type == typeof(String))
+                    ? YacqExpression.Dispatch(
+                          DispatchType.Method,
+                          YacqExpression.TypeCandidate(typeof(String)),
+                          "Concat",
+                          e.Arguments
+                      )
+                    : e.Arguments.Count == 1
+                          ? (Expression) Expression.UnaryPlus(e.Arguments[0])
+                          : Expression.Add(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                                ? e.Arguments[1].Reduce(s)
+                                : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
+                            )
             );
             Root.Add(DispatchType.Method, "-", (e, s) =>
                 e.Arguments.Count == 1
@@ -394,6 +402,19 @@ namespace XSpect.Yacq
                 typeof(Func<,,,,,,,,,,,,,,,>),
                 typeof(Func<,,,,,,,,,,,,,,,,>)
             ));
+        }
+
+        private static void AddMacros()
+        {
+            Root.Add(DispatchType.Method, typeof(Object), "print", (e, s) =>
+                YacqExpression.Dispatch(
+                    s,
+                    DispatchType.Method,
+                    YacqExpression.TypeCandidate(typeof(Console)),
+                    "WriteLine",
+                    e.Left.Reduce(s)
+                ).Reduce()
+            );
         }
     }
 }

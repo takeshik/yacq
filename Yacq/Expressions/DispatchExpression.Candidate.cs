@@ -170,6 +170,16 @@ namespace XSpect.Yacq.Expressions
                 this.Arguments = arguments;
             }
 
+            public override String ToString()
+            {
+                return (this.Instance != null ? this.Instance + "." : "")
+                    + this.Member
+                    + (this.TypeArguments.Any()
+                          ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">"
+                          : String.Join(", ", this.TypeArguments.Select(t => t.Name)))
+                    + "(" + String.Join(", ", this.Arguments.Select(t => t.ToString())) + ")";
+            }
+
             public Int32 CompareTo(Candidate other)
             {
                 Int32 value;
@@ -185,11 +195,13 @@ namespace XSpect.Yacq.Expressions
                           ? value
                           : this.Arguments.Select(_ => _.Type)
                                 .Zip(other.Arguments.Select(_ => _.Type), (l, r) =>
-                                    l.GetConvertibleTypes().Contains(r)
-                                        ? -1
-                                        : r.GetConvertibleTypes().Contains(l)
-                                              ? 1
-                                              : 0
+                                    l.GetConvertibleTypes().Let(ls =>
+                                        r.GetConvertibleTypes().Let(rs =>
+                                            ls.Contains(r)
+                                                ? rs.Contains(l) ? 0 : -1
+                                                : rs.Contains(l) ? 1 : 0
+                                            )
+                                        )
                                 )
                                 .FirstOrDefault(_ => _ != 0);
             }
