@@ -33,7 +33,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using XSpect.Yacq.Expressions;
-using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
 {
@@ -266,6 +265,26 @@ namespace XSpect.Yacq
             }
         }
 
+        public SymbolDefinition this[DispatchType dispatchType, Type leftType, String name]
+        {
+            get
+            {
+                return this._symbols[new SymbolEntry(dispatchType, leftType, name)];
+            }
+            set
+            {
+                this._symbols[new SymbolEntry(dispatchType, leftType, name)] = value;
+            }
+        }
+
+        public Expression this[String name]
+        {
+            get
+            {
+                return this[DispatchType.Member | DispatchType.Literal, null, name](null, null);
+            }
+        }
+
         public SymbolTable(SymbolTable parent = null, IDictionary<SymbolEntry, SymbolDefinition> entries = null)
         {
             this.Parent = parent ?? Root;
@@ -274,6 +293,16 @@ namespace XSpect.Yacq
                       .Where(p => !(this.Parent.ExistsKey(p.Key) && this.Parent.Resolve(p.Key) == p.Value))
                       .ToDictionary(p => p.Key, p => p.Value)
                 : new Dictionary<SymbolEntry, SymbolDefinition>();
+        }
+
+        public override String ToString()
+        {
+            return String.Format(
+                "Depth {0}: Count = {1} ({2})",
+                this.Chain.Count() - 1,
+                this.Count,
+                this.AllKeys.Count()
+            );
         }
 
         public void Add(DispatchType dispatchType, Type leftType, String name, SymbolDefinition definition)
@@ -311,6 +340,11 @@ namespace XSpect.Yacq
             return this.Resolve(new SymbolEntry(dispatchType, leftType, name));
         }
 
+        public Expression Resolve(String name)
+        {
+            return this.Resolve(DispatchType.Member | DispatchType.Literal, null, name)(null, null);
+        }
+
         public Boolean TryResolve(SymbolEntry key, out SymbolDefinition value)
         {
             if (this.ExistsKey(key))
@@ -328,6 +362,21 @@ namespace XSpect.Yacq
         public Boolean TryResolve(DispatchType dispatchType, Type leftType, String name, out SymbolDefinition value)
         {
             return this.TryResolve(new SymbolEntry(dispatchType, leftType, name), out value);
+        }
+
+        public Boolean TryResolve(String name, out Expression value)
+        {
+            SymbolDefinition literal;
+            if (this.TryResolve(DispatchType.Member | DispatchType.Literal, null, name, out literal))
+            {
+                value = literal(null, null);
+                return true;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
         }
 
         public SymbolDefinition Match(SymbolEntry key)

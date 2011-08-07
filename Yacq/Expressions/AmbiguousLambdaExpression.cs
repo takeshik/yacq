@@ -75,7 +75,7 @@ namespace XSpect.Yacq.Expressions
                       .ToArray()
                       .Let(ps => Lambda(
                           this.Body.Reduce(
-                              new SymbolTable(symbols, ps.ToDictionary(
+                              new SymbolTable(null, ps.ToDictionary(
                                   p => new SymbolEntry(DispatchType.Member, null, p.Name),
                                   p => (SymbolDefinition) ((e, s) => p)
                               ))

@@ -58,18 +58,43 @@ namespace XSpect.Yacq
             AddMacros();
         }
 
+        /* The Guideline of Reduce(SymbolTable) Method:
+         *   * If you are creating YacqExpression objects, you should not Reduce(s) arguments of
+         *     factory methods and returned YacqExpression.
+         *   * However, if you are creating Expression (non-YacqExpression) objects, you MUST
+         *     Reduce(s) ALL arguments of factory methods, however argument is YacqExpression.
+         *     All arguments in Expression factory methods MUST keep they are not need to call
+         *     Reduce(s). The returned Expression may not Reduce(s) since it is not YacqExpression.
+         *   * In YacqExpression-derived classes, all YacqExpression objects they have may be
+         *     called Reduce(symbols), or not be called, by their needs. You MUST NOT
+         *     Reduce(this.Symbols) in constructors because of symbols argument in
+         *     Reduce(SymbolTable) method.
+         */
+
         private static void AddArithmeticOperators()
         {
             Root.Add(DispatchType.Method, "+", (e, s) =>
-                e.Arguments.Any(a => a.Type == typeof(String))
+                e.Arguments.Any(a =>
+                {
+                    // For ambiguous parameters
+                    try
+                    {
+                        return a.Type == typeof(String);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                })
                     ? YacqExpression.Dispatch(
+                          s,
                           DispatchType.Method,
                           YacqExpression.TypeCandidate(typeof(String)),
                           "Concat",
                           e.Arguments
                       )
                     : e.Arguments.Count == 1
-                          ? (Expression) Expression.UnaryPlus(e.Arguments[0])
+                          ? (Expression) Expression.UnaryPlus(e.Arguments[0].Reduce(s))
                           : Expression.Add(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                                 ? e.Arguments[1].Reduce(s)
                                 : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
@@ -77,7 +102,7 @@ namespace XSpect.Yacq
             );
             Root.Add(DispatchType.Method, "-", (e, s) =>
                 e.Arguments.Count == 1
-                    ? (Expression) Expression.Negate(e.Arguments[0])
+                    ? (Expression) Expression.Negate(e.Arguments[0].Reduce(s))
                     : Expression.Subtract(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                           ? e.Arguments[1].Reduce(s)
                           : YacqExpression.Dispatch(s, DispatchType.Method, "-", e.Arguments.Skip(1)).Reduce(s)
@@ -241,7 +266,7 @@ namespace XSpect.Yacq
                     return YacqExpression.TypeCandidate(s, ((TypeCandidateExpression) e.Arguments[0]).Candidates
                         .Single(t => t.GetGenericArguments().Length == ((VectorExpression) e.Arguments[1]).Elements.Count)
                             .MakeGenericType(((VectorExpression) e.Arguments[1]).Elements
-                                .Select(_ => _.Reduce(s))
+                                .ReduceAll(s)
                                 .OfType<TypeCandidateExpression>()
                                 .Select(_ => _.Candidates.Single())
                                 .ToArray()
@@ -256,23 +281,19 @@ namespace XSpect.Yacq
                         ? YacqExpression.Dispatch(
                               s,
                               DispatchType.Method,
-                              e.Arguments[0].Reduce(s),
+                              e.Arguments[0],
                               ((IdentifierExpression) a1e0l.First()).Name,
                               ((VectorExpression) a1e0l.Last()).Elements
                                   .Cast<TypeCandidateExpression>()
                                   .Select(_ => _.ElectedType),
-                              a1.Elements
-                                  .Skip(1)
-                                  .Select(_ => _.Reduce(s))
+                              a1.Elements.Skip(1)
                           )
                         : YacqExpression.Dispatch(
                               s,
                               DispatchType.Method,
-                              e.Arguments[0].Reduce(s),
+                              e.Arguments[0],
                               ((IdentifierExpression) a1[0]).Name,
-                              a1.Elements
-                                  .Skip(1)
-                                  .Select(_ => _.Reduce(s))
+                              a1.Elements.Skip(1)
                           );
                 }
                 else if (e.Arguments[1] is VectorExpression)
@@ -280,10 +301,9 @@ namespace XSpect.Yacq
                     return YacqExpression.Dispatch(
                         s,
                         DispatchType.Member,
-                        e.Arguments[0].Reduce(s),
+                        e.Arguments[0],
                         null,
                         ((VectorExpression) e.Arguments[1]).Elements
-                            .Select(_ => _.Reduce(s))
                     );
                 }
                 else
@@ -291,7 +311,7 @@ namespace XSpect.Yacq
                     return YacqExpression.Dispatch(
                         s,
                         DispatchType.Member,
-                        e.Arguments[0].Reduce(s),
+                        e.Arguments[0],
                         ((IdentifierExpression) e.Arguments[1]).Name
                     );
                 }
@@ -315,14 +335,14 @@ namespace XSpect.Yacq
                                ? Expression.Empty()
                                : e.Arguments.Count == 2
                                      ? e.Arguments[1]
-                                     : Expression.Block(e.Arguments.Skip(1)),
+                                     : Expression.Block(e.Arguments.Skip(1).ReduceAll(s)),
                                p
                            ))
                      : e.Arguments.Count == 0
                            ? Expression.Empty()
                            : e.Arguments.Count == 1
                                  ? e.Arguments[0]
-                                 : Expression.Block(e.Arguments)
+                                 : Expression.Block(e.Arguments.ReduceAll(s))
              );
         }
 
@@ -406,14 +426,26 @@ namespace XSpect.Yacq
 
         private static void AddMacros()
         {
+            Root.Add(DispatchType.Method, typeof(Object), "as", (e, s) =>
+                Expression.TypeAs(
+                    e.Left.Reduce(s),
+                    ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
+                )
+            );
+            Root.Add(DispatchType.Method, typeof(Object), "is", (e, s) =>
+                Expression.TypeIs(
+                    e.Left.Reduce(s),
+                    ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
+                )
+            );
             Root.Add(DispatchType.Method, typeof(Object), "print", (e, s) =>
                 YacqExpression.Dispatch(
                     s,
                     DispatchType.Method,
                     YacqExpression.TypeCandidate(typeof(Console)),
                     "WriteLine",
-                    e.Left.Reduce(s)
-                ).Reduce()
+                    e.Left
+                )
             );
         }
     }

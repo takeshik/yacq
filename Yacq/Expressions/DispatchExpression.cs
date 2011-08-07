@@ -39,6 +39,8 @@ namespace XSpect.Yacq.Expressions
     public partial class DispatchExpression
         : YacqExpression
     {
+        private Expression _left;
+
         public DispatchType DispatchType
         {
             get;
@@ -108,13 +110,29 @@ namespace XSpect.Yacq.Expressions
 
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
+            this._left = this.Left.Reduce(symbols);
             return symbols.ResolveMatch(this).If(
                 d => d != null,
                 d => d(this, symbols),
                 d => this.GetMembers(symbols)
                     .Select(m => m is MethodInfo && ((MethodInfo) m).IsExtensionMethod()
-                        ? new Candidate(null, m, this.TypeArguments, this.Arguments.StartWith(this.Left).ToArray())
-                        : new Candidate(this.Left is TypeCandidateExpression ? null : this.Left, m, this.TypeArguments, this.Arguments)
+                        ? new Candidate(
+                              null,
+                              m,
+                              this.TypeArguments,
+                              this.Arguments
+                                  .ReduceAll(symbols)
+                                  .StartWith(this._left)
+                                  .ToArray()
+                          )
+                        : new Candidate(
+                              this._left is TypeCandidateExpression ? null : this._left,
+                              m,
+                              this.TypeArguments,
+                              this.Arguments
+                                  .ReduceAll(symbols)
+                                  .ToArray()
+                          )
                     )
                     .Where(c => c.Arguments.Count == c.Parameters.Count
                         || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1)
@@ -151,7 +169,7 @@ namespace XSpect.Yacq.Expressions
                                 return Call(c.Instance, c.Method, c.Arguments);
                         }
                     })
-            );
+            ) ?? this.DispatchMissing(symbols);
         }
 
         public IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
@@ -159,20 +177,20 @@ namespace XSpect.Yacq.Expressions
             switch (this.DispatchType)
             {
                 case DispatchType.Constructor:
-                    return ((TypeCandidateExpression) this.Left).ElectedType.GetConstructors(BindingFlags.Public);
+                    return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public);
                 case DispatchType.Member:
                     return String.IsNullOrEmpty(this.Name)
                         // Default members must be instance properties.
-                        ? this.Left.Type.GetDefaultMembers()
-                        : (this.Left is TypeCandidateExpression
-                              ? ((TypeCandidateExpression) this.Left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static)
-                              : this.Left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                        ? this._left.Type.GetDefaultMembers()
+                        : (this._left is TypeCandidateExpression
+                              ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static)
+                              : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
                           ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
                 case DispatchType.Method:
-                    return this.Left is TypeCandidateExpression
-                        ? ((TypeCandidateExpression) this.Left).ElectedType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    return this._left is TypeCandidateExpression
+                        ? ((TypeCandidateExpression) this._left).ElectedType.GetMethods(BindingFlags.Public | BindingFlags.Static)
                               .Where(m => m.Name == this.Name)
-                        : this.Left.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                        : this._left.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                               .Where(m => m.Name == this.Name)
                               .Concat(symbols.AllLiterals.Values
                                   .OfType<TypeCandidateExpression>()
@@ -274,6 +292,26 @@ namespace XSpect.Yacq.Expressions
                           .ToArray()
                   )
                 : null;
+        }
+
+        private Expression DispatchMissing(SymbolTable symbols)
+        {
+            // Cast Operation
+            if (this.DispatchType.HasFlag(DispatchType.Constructor)
+                && ((TypeCandidateExpression) this._left).ElectedType != null
+                && this.Arguments.Count == 1)
+            {
+                return Convert(
+                    this.Arguments
+                        .Single()
+                        .Reduce(symbols),
+                    ((TypeCandidateExpression) this._left).ElectedType
+                );
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 

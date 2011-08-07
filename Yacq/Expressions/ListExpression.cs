@@ -69,16 +69,12 @@ namespace XSpect.Yacq.Expressions
 
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
-            if(this[0] is IdentifierExpression)
-            {
-                return Dispatch(DispatchType.Method, ((IdentifierExpression) this[0]).Name, this.Elements.Skip(1).ToArray());
-            }
-            var value = this[0].Reduce(symbols);
+            var value = this[0].TryReduce(symbols);
             if (value is LambdaExpression || value is InvocationExpression)
             {
                 return Invoke(value, this.Elements.Skip(1).Select(e => e.Reduce(symbols)));
             }
-            if (value is TypeCandidateExpression)
+            else if (value is TypeCandidateExpression)
             {
                 return Dispatch(
                     DispatchType.Constructor,
@@ -87,11 +83,18 @@ namespace XSpect.Yacq.Expressions
                     this.Elements.Skip(1).Select(e => e.Reduce(symbols)).ToArray()
                 );
             }
-            if (value is Expression)
+            else if (this[0] is IdentifierExpression)
+            {
+                return Dispatch(DispatchType.Method, ((IdentifierExpression) this[0]).Name, this.Elements.Skip(1).ToArray());
+            }
+            else if (value is Expression)
             {
                 return value;
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
     }
 

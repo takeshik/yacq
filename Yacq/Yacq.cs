@@ -31,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
@@ -41,7 +42,7 @@ namespace XSpect.Yacq
         {
             return new Reader(code)
                 .Read()
-                .Select(e => e.Reduce())
+                .ReduceAll()
                 .ToArray()
                 .Last();
         }

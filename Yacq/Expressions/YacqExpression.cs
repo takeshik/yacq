@@ -64,7 +64,7 @@ namespace XSpect.Yacq.Expressions
                 {
                     this.Reduce();
                 }
-                return this._reducedExpression != this
+                return this._reducedExpression != null && this._reducedExpression != this
                     ? this._reducedExpression.Type
                     : null;
             }
@@ -79,7 +79,7 @@ namespace XSpect.Yacq.Expressions
         protected YacqExpression(SymbolTable symbols)
         {
             this._canReduce = true;
-            this.Symbols = symbols ?? SymbolTable.Root;
+            this.Symbols = symbols ?? new SymbolTable();
         }
 
         public override Expression Reduce()
@@ -89,27 +89,39 @@ namespace XSpect.Yacq.Expressions
 
         public Expression Reduce(SymbolTable symbols)
         {
-            if (this._reducedExpression == null && this.CanReduce)
+            symbols = symbols != null
+                ? new SymbolTable(
+                      this.Symbols.Parent,
+                      this.Symbols
+                          .Except(symbols.Flatten)
+                          .Concat(symbols.Flatten)
+                          .ToDictionary(p => p.Key, p => p.Value)
+                  )
+                : this.Symbols;
+            if (symbols == this.Symbols || symbols.All(p =>
+                this.Symbols.ContainsKey(p.Key) && this.Symbols[p.Key] == p.Value
+            ))
             {
-                this._reducedExpression = this.ReduceImpl(symbols != null
-                    ? new SymbolTable(this.Symbols, symbols.Parent != null && symbols.Parent != SymbolTable.Root
-                          ? symbols.Flatten
-                          : symbols
-                      )
-                    : SymbolTable.Root
-                );
-                if (this._reducedExpression == null || this._reducedExpression == this)
+                if (this._reducedExpression == null && this.CanReduce)
                 {
-                    this._reducedExpression = this;
-                    this._canReduce = false;
+                    this._reducedExpression = this.ReduceImpl(symbols) ?? this;
+                    if (this._reducedExpression != this && this.CanReduce)
+                    {
+                        this._reducedExpression = this._reducedExpression.Reduce();
+                    }
                 }
-                else if (this._reducedExpression.CanReduce)
-                {
-                    this._reducedExpression = this._reducedExpression.Reduce(symbols)
-                        ?? this._reducedExpression;
-                }
+                this._canReduce = false;
+                return this._reducedExpression;
             }
-            return this._reducedExpression;
+            else
+            {
+                var expression = this.ReduceImpl(symbols) ?? this;
+                if (expression != this && expression.CanReduce)
+                {
+                    expression = expression.Reduce(symbols);
+                }
+                return expression;
+            }
         }
 
         protected abstract Expression ReduceImpl(SymbolTable symbols);

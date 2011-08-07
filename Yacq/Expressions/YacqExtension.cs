@@ -38,9 +38,28 @@ namespace XSpect.Yacq.Expressions
     {
         public static Expression Reduce(this Expression expr, SymbolTable symbols)
         {
-            return expr is YacqExpression
-                ? ((YacqExpression) expr).Reduce(symbols)
-                : expr.Reduce();
+            return expr != null
+                ? expr is YacqExpression
+                      ? ((YacqExpression) expr).Reduce(symbols)
+                      : expr.Reduce()
+                : null;
+        }
+
+        public static Expression TryReduce(this Expression expr, SymbolTable symbols = null)
+        {
+            try
+            {
+                return expr.Reduce(symbols);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static IEnumerable<Expression> ReduceAll(this IEnumerable<Expression> expressions, SymbolTable symbols = null)
+        {
+            return expressions.Select(_ => _.Reduce(symbols));
         }
 
         internal static IEnumerable<Expression> List(this Expression expr, String head)

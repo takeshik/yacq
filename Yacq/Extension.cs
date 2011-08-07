@@ -216,7 +216,7 @@ namespace XSpect.Yacq
 
         internal static Type TryGetGenericTypeDefinition(this Type t)
         {
-            return t.IsGenericType && !t.IsGenericTypeDefinition ? t.GetGenericTypeDefinition() : t;
+            return t != null && t.IsGenericType && !t.IsGenericTypeDefinition ? t.GetGenericTypeDefinition() : t;
         }
 
         internal static Type[] ToArgumentArray(this IDictionary<Type, Type> argumentMap)
