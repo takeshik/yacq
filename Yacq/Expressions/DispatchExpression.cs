@@ -183,20 +183,30 @@ namespace XSpect.Yacq.Expressions
                         // Default members must be instance properties.
                         ? this._left.Type.GetDefaultMembers()
                         : (this._left is TypeCandidateExpression
-                              ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static)
-                              : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                              ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                              : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
                           ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
                 case DispatchType.Method:
                     return this._left is TypeCandidateExpression
-                        ? ((TypeCandidateExpression) this._left).ElectedType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
+                              .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                          )
+                              .If(_ => ((TypeCandidateExpression) this._left).ElectedType.IsInterface, _ =>
+                                  _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Static))
+                              )
                               .Where(m => m.Name == this.Name)
-                        : this._left.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                        : ((IEnumerable<MethodInfo>) this._left.Type
+                              .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                          )
+                              .If(_ => this._left.Type.IsInterface, _ =>
+                                  _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                              )
                               .Where(m => m.Name == this.Name)
                               .Concat(symbols.AllLiterals.Values
                                   .OfType<TypeCandidateExpression>()
                                   .SelectMany(e => e.Candidates)
                                   .Where(t => t.HasExtensionMethods())
-                                  .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                                  .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
                                   .Where(m => m.Name == this.Name && m.IsExtensionMethod())
                               );
                 default:

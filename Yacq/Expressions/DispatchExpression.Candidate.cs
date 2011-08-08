@@ -190,7 +190,7 @@ namespace XSpect.Yacq.Expressions
                        ) != 0
                     ? value
                     : (value = this.Parameters.IsParamArrayMethod()
-                          .CompareTo(other.Method.GetParameters().IsParamArrayMethod())
+                          .CompareTo(other.Parameters.IsParamArrayMethod())
                       ) != 0
                           ? value
                           : this.Arguments.Select(_ => _.Type)
