@@ -93,7 +93,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                return null;
+                throw new InvalidOperationException("List evaluation failed.");
             }
         }
     }

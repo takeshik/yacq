@@ -404,7 +404,7 @@ namespace XSpect.Yacq
 
         public SymbolDefinition Match(DispatchExpression expression)
         {
-            return this.Match(expression.DispatchType, expression.Left.Null(e => e.Type), expression.Name);
+            return this.Match(expression.DispatchType, expression.Left.Null(e => e.Type(this)), expression.Name);
         }
 
         public SymbolDefinition ResolveMatch(SymbolEntry key)
@@ -419,7 +419,7 @@ namespace XSpect.Yacq
 
         public SymbolDefinition ResolveMatch(DispatchExpression expression)
         {
-            return this.ResolveMatch(expression.DispatchType, expression.Left.Null(e => e.Type), expression.Name);
+            return this.ResolveMatch(expression.DispatchType, expression.Left.Null(e => e.Type(this)), expression.Name);
         }
     }
 }

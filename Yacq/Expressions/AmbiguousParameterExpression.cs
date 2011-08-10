@@ -72,7 +72,7 @@ namespace XSpect.Yacq.Expressions
         {
             return this.IsUnfixed
                 ? null
-                : Parameter(this.Type, this.Name);
+                : Parameter(this.Type(symbols), this.Name);
         }
 
         internal AmbiguousParameterExpression(

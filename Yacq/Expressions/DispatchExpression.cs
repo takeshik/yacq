@@ -108,6 +108,8 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        // this._left and Candidate.Arguments is already reduced with symbols.
+
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             this._left = this.Left.Reduce(symbols);
@@ -242,7 +244,12 @@ namespace XSpect.Yacq.Expressions
                       else
                       {
                           candidate.ParameterMap
-                              .Where(_ => _.Item1.GetGenericArguments().Any(t => !map.ContainsKey(t)))
+                              .Where(_ => (_.Item1.IsGenericParameter
+                                  ? EnumerableEx.Return(_.Item1)
+                                  : _.Item1.GetGenericArguments()
+                              )
+                                  .Any(t => !map.ContainsKey(t))
+                              )
                               .ForEach(_ =>
                               {
                                   if (_.Item2 is AmbiguousLambdaExpression)
@@ -258,7 +265,9 @@ namespace XSpect.Yacq.Expressions
                                               .If(ts => ts.All(t => t != null), ts =>
                                                   map[_.Item1.GetDelegateSignature().ReturnType] = ((AmbiguousLambdaExpression) _.Item2)
                                                       .ApplyTypeArguments(ts)
-                                                      .Reduce(symbols).Type.GetDelegateSignature().ReturnType
+                                                      .Type(symbols)
+                                                      .GetDelegateSignature()
+                                                      .ReturnType
                                               );
                                       }
                                   }
@@ -320,7 +329,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                return null;
+                throw new InvalidOperationException("Dispatch failed: " + this);
             }
         }
     }

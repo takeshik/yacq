@@ -74,18 +74,7 @@ namespace XSpect.Yacq
         private static void AddArithmeticOperators()
         {
             Root.Add(DispatchType.Method, "+", (e, s) =>
-                e.Arguments.Any(a =>
-                {
-                    // For ambiguous parameters
-                    try
-                    {
-                        return a.Type == typeof(String);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                })
+                e.Arguments.Any(a => a.Reduce(s).Type(s) == typeof(String))
                     ? YacqExpression.Dispatch(
                           s,
                           DispatchType.Method,
@@ -436,6 +425,27 @@ namespace XSpect.Yacq
                 Expression.TypeIs(
                     e.Left.Reduce(s),
                     ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
+                )
+            );
+            Root.Add(DispatchType.Method, typeof(Object), "let", (e, s) =>
+                e.Arguments[1].Reduce(new SymbolTable(s).Apply(_ => _.Add(
+                    ((IdentifierExpression) e.Arguments[0]).Name,
+                    e.Left.Reduce(s)
+                )))
+            );
+            Root.Add(DispatchType.Method, typeof(Object), "cond", (e, s) =>
+                Expression.Condition(
+                    e.Left.Reduce(s),
+                    e.Arguments[0].Reduce(s),
+                    e.Arguments[1].Reduce(s)
+                )
+            );
+            Root.Add(DispatchType.Method, null, "input", (e, s) =>
+                YacqExpression.Dispatch(
+                    s,
+                    DispatchType.Method,
+                    YacqExpression.TypeCandidate(typeof(Console)),
+                    "ReadLine"
                 )
             );
             Root.Add(DispatchType.Method, typeof(Object), "print", (e, s) =>

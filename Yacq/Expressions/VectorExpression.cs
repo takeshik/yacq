@@ -70,7 +70,7 @@ namespace XSpect.Yacq.Expressions
         {
             return this.Elements.Select(e => e.Reduce(symbols))
                 .Let(_ => NewArrayInit(_
-                    .Select(e => e.Type)
+                    .Select(e => e.Type(symbols))
                     .Distinct()
                     .If(u => u.Count() == 1, u => u.Single(), u => typeof(Object)),
                     _

@@ -62,6 +62,15 @@ namespace XSpect.Yacq.Expressions
             return expressions.Select(_ => _.Reduce(symbols));
         }
 
+        public static Type Type(this Expression expr, SymbolTable symbols)
+        {
+            return expr != null
+                ? expr is YacqExpression
+                      ? ((YacqExpression) expr).Reduce(symbols).Type
+                      : expr.Reduce().Type
+                : null;
+        }
+
         internal static IEnumerable<Expression> List(this Expression expr, String head)
         {
             return (expr as ListExpression).If(
