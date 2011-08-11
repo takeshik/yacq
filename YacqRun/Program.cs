@@ -30,7 +30,7 @@ namespace XSpect.Yacq.Runner
         private static Int32 ReadAsScript(TextReader input)
         {
             var head = input.ReadLine();
-            var ret =  Run((head.StartsWith("#!") ? "" : head) + input.ReadToEnd(), false);
+            var ret =  Run((head.StartsWith("#!") ? "" : head) + input.ReadToEnd(), Environment.GetCommandLineArgs().Contains("-v"));
             return ret is Int32 ? (Int32) ret : 0;
         }
 
@@ -116,21 +116,24 @@ Type \help [ENTER] to show help."
         {
             try
             {
-                var expr = Yacq.Parse(code);
-                if (showInfo)
+                Object ret = null;
+                foreach (var expr in Yacq.ParseAll(code))
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write("Expression: ");
-                    Console.WriteLine(expr);
-                    Console.ResetColor();
-                }
-                var ret = Expression.Lambda(expr).Compile().DynamicInvoke();
-                if (showInfo)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write("Returns: ");
-                    Console.WriteLine(ret ?? "(null)");
-                    Console.ResetColor();
+                    if (showInfo)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.Write("Expression: ");
+                        Console.WriteLine(expr);
+                        Console.ResetColor();
+                    }
+                    ret = Expression.Lambda(expr).Compile().DynamicInvoke();
+                    if (showInfo)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write("Returns: ");
+                        Console.WriteLine(ret ?? "(null)");
+                        Console.ResetColor();
+                    }
                 }
                 return ret;
             }

@@ -38,13 +38,17 @@ namespace XSpect.Yacq
 {
     public static class Yacq
     {
-        public static Expression Parse(String code)
+        public static Expression[] ParseAll(String code)
         {
             return new Reader(code)
                 .Read()
                 .ReduceAll()
-                .ToArray()
-                .Last();
+                .ToArray();
+        }
+
+        public static Expression Parse(String code)
+        {
+            return ParseAll(code).Last();
         }
 
         public static TExpression Parse<TExpression>(String code)

@@ -1,0 +1,13 @@
+; + means addition, and string concatenation.
+(+ '1 + 2 + 3 = ' (+ 1 2 3)).(print)
+
+(+ '(2 * 3) + (4 * 5) = ' (+ (* 2 3) (* 4 5))).(print)
+
+; Logical operator, Conditional operator.
+(+
+    '1 * 2 * 3 * 4 * 5 '
+    (> (* 1 2 3 4 5) 100)
+        .(cond 'is greater than 100.' 'is not greater than 100.')
+).(print)
+
+; cond is similar to ?: operator.

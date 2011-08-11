@@ -1,0 +1,5 @@
+; This is comment line.
+
+'Hello, world.'.(print) ; Output "Hello, world." to the stdout.
+
+; foo.(print) means Console.WriteLine(foo).
