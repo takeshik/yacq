@@ -108,7 +108,7 @@ namespace XSpect.Yacq.LanguageServices
                 case '\n':
                     return this.CreateToken(TokenType.Whitespace, this.RegexSlice(@"[ \t\r\n]+"));
                 case ';':
-                    return this.CreateToken(TokenType.Comment, this.RegexSlice(@"[\r\n]+"));
+                    return this.CreateToken(TokenType.Comment, this.RegexSlice(@"[\r\n]+|$"));
                 case '\'':
                     return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"[^\\]'"));
                 case '"':
@@ -134,8 +134,8 @@ namespace XSpect.Yacq.LanguageServices
                 case ':':
                     return this.CreateToken(TokenType.Colon, ":");
                 default:
-                    return Char.IsNumber(c)
-                        ? this.CreateToken(TokenType.NumberLiteral, this.RegexSlice("[0-9a-z_.]+"))
+                    return Char.IsNumber(c) || (c == '+' || c == '-') && char.IsDigit(this.PeekChar(1))
+                        ? this.CreateToken(TokenType.NumberLiteral, this.RegexSlice(@"[0-9a-fox+\-._]*[0-9a-f_]"))
                         : this.CreateToken(TokenType.Identifier, this.RegexSlice(@"[^ \t\r\n""#\(\),.:;\[\]`\{\}]+"));
             }
         }
@@ -143,7 +143,14 @@ namespace XSpect.Yacq.LanguageServices
         private String RegexSlice(String pattern)
         {
             var match = Regex.Match(this.Input.Substring(this._position), pattern);
-            return this.Input.Substring(this._position, match.Index + match.Length);
+            if (match.Success)
+            {
+                return this.Input.Substring(this._position, match.Index + match.Length);
+            }
+            else
+            {
+                throw new InvalidOperationException("Failed to tokenize.");
+            }
         }
 
         public Token Read()

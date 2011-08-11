@@ -92,7 +92,7 @@ namespace XSpect.Yacq.Expressions
                     {
                         text = text.Substring(1);
                     }
-                    var b = text.Length > 3
+                    var b = text.Length > 2
                         ? GetBase(text.Substring(0, 2))
                         : 10;
                     var value = b != 10
@@ -106,7 +106,9 @@ namespace XSpect.Yacq.Expressions
                 }
                 else
                 {
-                    var b = GetBase(text.Substring(1, 3));
+                    var b = text.Length > 3
+                        ? GetBase(text.Substring(1, 3))
+                        : 10;
                     var value = b != 10
                         ? System.Convert.ToInt64("-" + text.Substring(3), b)
                         : Int64.Parse(text, CultureInfo.InvariantCulture);

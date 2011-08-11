@@ -74,7 +74,7 @@ namespace XSpect.Yacq
         private static void AddArithmeticOperators()
         {
             Root.Add(DispatchType.Method, "+", (e, s) =>
-                e.Arguments.Any(a => a.Reduce(s).Type(s) == typeof(String))
+                e.Arguments.Any(a => a.Type(s) == typeof(String))
                     ? YacqExpression.Dispatch(
                           s,
                           DispatchType.Method,
@@ -415,6 +415,12 @@ namespace XSpect.Yacq
 
         private static void AddMacros()
         {
+            Root.Add(DispatchType.Method, typeof(Object), "to", (e, s) =>
+                Expression.Convert(
+                    e.Left.Reduce(s),
+                    ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
+                )
+            );
             Root.Add(DispatchType.Method, typeof(Object), "as", (e, s) =>
                 Expression.TypeAs(
                     e.Left.Reduce(s),
