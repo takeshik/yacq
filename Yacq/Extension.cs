@@ -160,6 +160,21 @@ namespace XSpect.Yacq
                 : Expression.Convert(expr, type);
         }
 
+        internal static IEnumerable<Expression> GetDescendants(this Expression self)
+        {
+            return self.GetType().GetConvertibleTypes()
+                .SelectMany(t => t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+                .Select(f => f.GetValue(self))
+                .SelectMany(_ => _ as IEnumerable<Expression>
+                    ?? (_ is Expression
+                           ? EnumerableEx.Return((Expression) _)
+                           : Enumerable.Empty<Expression>()
+                       )
+                )
+                .SelectMany(GetDescendants)
+                .StartWith(self);
+        }
+
         internal static Boolean EqualsExact(this Expression self, Expression other)
         {
             return self.GetType() == other.GetType() &&

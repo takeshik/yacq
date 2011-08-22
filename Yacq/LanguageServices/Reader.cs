@@ -90,9 +90,8 @@ namespace XSpect.Yacq.LanguageServices
                 switch (this._cursor.Value.Type)
                 {
                     case TokenType.LeftParenthesis:
-                        this.EnterScope();
-                        break;
                     case TokenType.LeftBracket:
+                    case TokenType.LeftBrace:
                         this.EnterScope();
                         break;
                     case TokenType.RightParenthesis:
@@ -103,6 +102,11 @@ namespace XSpect.Yacq.LanguageServices
                     case TokenType.RightBracket:
                         this.LeaveScope().Apply(l =>
                             this.Current.AddLast(YacqExpression.Vector(l))
+                        );
+                        break;
+                    case TokenType.RightBrace:
+                        this.LeaveScope().Apply(l =>
+                            this.Current.AddLast(YacqExpression.LambdaList(l))
                         );
                         break;
                     case TokenType.Period:
