@@ -372,6 +372,7 @@ namespace XSpect.Yacq
             Root.Add("EnumerableEx", YacqExpression.TypeCandidate(typeof(EnumerableEx)));
             Root.Add("Queryable", YacqExpression.TypeCandidate(typeof(Queryable)));
             Root.Add("Observable", YacqExpression.TypeCandidate(typeof(Observable)));
+            Root.Add("ObservableExtensions", YacqExpression.TypeCandidate(typeof(ObservableExtensions)));
             Root.Add("Qbservable", YacqExpression.TypeCandidate(typeof(Qbservable)));
             Root.Add("Action", YacqExpression.TypeCandidate(
                 typeof(Action),

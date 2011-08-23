@@ -138,18 +138,15 @@ namespace XSpect.Yacq.Expressions
                     )
                     .Where(c => c.Arguments.Count == c.Parameters.Count
                         || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1)
-                        && Enumerable.SequenceEqual(
-                               c.Parameters.Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
-                                   ? p.ParameterType.GetDelegateSignature().GetParameters().Length
-                                   : 0
-                               ),
-                               c.Arguments.Select(a => a is AmbiguousLambdaExpression
-                                   ? ((AmbiguousLambdaExpression) a).Parameters.Count
-                                   : a is LambdaExpression
-                                         ? ((LambdaExpression) a).Parameters.Count
-                                         : 0
-                               )
-                           )
+                        && c.Parameters.Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
+                               ? p.ParameterType.GetDelegateSignature().GetParameters().Length
+                               : 0
+                           ).SequenceEqual(c.Arguments.Select(a => a is AmbiguousLambdaExpression
+                               ? ((AmbiguousLambdaExpression) a).Parameters.Count
+                               : a is LambdaExpression
+                                     ? ((LambdaExpression) a).Parameters.Count
+                                     : 0
+                           ))
                     )
                     .Choose(c => InferTypeArguments(c, new Dictionary<Type, Type>(), symbols))
                     .Choose(CheckAndFixArguments)
@@ -179,7 +176,7 @@ namespace XSpect.Yacq.Expressions
             switch (this.DispatchType)
             {
                 case DispatchType.Constructor:
-                    return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public);
+                    return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
                 case DispatchType.Member:
                     return String.IsNullOrEmpty(this.Name)
                         // Default members must be instance properties.
@@ -231,7 +228,7 @@ namespace XSpect.Yacq.Expressions
                                   : candidate.Member,
                               map,
                               candidate.ParameterMap
-                                  .Select(_ => _.Item2 is AmbiguousLambdaExpression
+                                  .Select(_ => _.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null
                                       ? ((AmbiguousLambdaExpression) _.Item2)
                                             .ApplyTypeArguments(_.Item1)
                                             .ApplyTypeArguments(map)
@@ -252,7 +249,7 @@ namespace XSpect.Yacq.Expressions
                               )
                               .ForEach(_ =>
                               {
-                                  if (_.Item2 is AmbiguousLambdaExpression)
+                                  if (_.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null)
                                   {
                                       if (_.Item1.GetDelegateSignature().ReturnType.Let(r =>
                                           r.IsGenericParameter && !map.ContainsKey(r)
@@ -297,10 +294,7 @@ namespace XSpect.Yacq.Expressions
                       candidate.Member,
                       candidate.TypeArgumentMap,
                       candidate.ParameterMap
-                          .Select(_ => _.Item1 == _.Item2.Type
-                              ? _.Item2
-                              : Convert(_.Item2, _.Item1)
-                          )
+                          .Select(_ => _.Item2)
                           .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
                               _.Take(candidate.Parameters.Count - 1)
                                   .Concat(EnumerableEx.Return(NewArrayInit(

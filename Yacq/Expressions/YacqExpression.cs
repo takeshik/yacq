@@ -89,25 +89,21 @@ namespace XSpect.Yacq.Expressions
 
         public Expression Reduce(SymbolTable symbols)
         {
-            symbols = symbols != null
-                ? new SymbolTable(
-                      this.Symbols.Parent,
-                      this.Symbols
-                          .Except(symbols.Flatten)
-                          .Concat(symbols.Flatten)
-                          .ToDictionary(p => p.Key, p => p.Value)
-                  )
-                : this.Symbols;
-            if (symbols == this.Symbols || symbols.All(p =>
-                this.Symbols.ContainsKey(p.Key) && this.Symbols[p.Key] == p.Value
-            ))
+            symbols = new SymbolTable(this.Symbols.Parent, symbols != null
+                ? this.Symbols
+                      .Except(symbols.Flatten)
+                      .Concat(symbols.Flatten)
+                      .ToDictionary(p => p.Key, p => p.Value)
+                : null
+            );
+            if (symbols.All(p => this.Symbols.ContainsKey(p.Key) && this.Symbols[p.Key] == p.Value))
             {
                 if (this._reducedExpression == null && this.CanReduce)
                 {
                     this._reducedExpression = this.ReduceImpl(symbols) ?? this;
                     if (this._reducedExpression != this && this.CanReduce)
                     {
-                        this._reducedExpression = this._reducedExpression.Reduce();
+                        this._reducedExpression = this._reducedExpression.Reduce(symbols);
                     }
                 }
                 this._canReduce = false;

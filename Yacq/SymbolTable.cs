@@ -102,6 +102,8 @@ namespace XSpect.Yacq
     {
         private readonly IDictionary<SymbolEntry, SymbolDefinition> _symbols;
 
+        private Nullable<Int32> _hash;
+
         public IEnumerator<KeyValuePair<SymbolEntry, SymbolDefinition>> GetEnumerator()
         {
             return this._symbols.GetEnumerator();
@@ -114,11 +116,13 @@ namespace XSpect.Yacq
 
         void ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Add(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
+            this._hash = null;
             this._symbols.Add(item);
         }
 
         public void Clear()
         {
+            this._hash = 0;
             this._symbols.Clear();
         }
 
@@ -134,6 +138,7 @@ namespace XSpect.Yacq
 
         Boolean ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Remove(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
+            this._hash = null;
             return this._symbols.Remove(item);
         }
 
@@ -160,11 +165,13 @@ namespace XSpect.Yacq
 
         public void Add(SymbolEntry key, SymbolDefinition value)
         {
+            this._hash = null;
             this._symbols.Add(key, value);
         }
 
         public Boolean Remove(SymbolEntry key)
         {
+            this._hash = null;
             return this._symbols.Remove(key);
         }
 
@@ -265,6 +272,18 @@ namespace XSpect.Yacq
             }
         }
 
+        public Int32 AllKeysHash
+        {
+            get
+            {
+                return this.Chain.Aggregate(0, (sa, s) =>
+                    sa ^ s._hash ?? (Int32) (s._hash = s.Keys.Aggregate(0, (ka, k) =>
+                        ka ^ k.GetHashCode()
+                    ))
+                );
+            }
+        }
+
         public SymbolDefinition this[DispatchType dispatchType, Type leftType, String name]
         {
             get
@@ -293,6 +312,7 @@ namespace XSpect.Yacq
                       .Where(p => !(this.Parent.ExistsKey(p.Key) && this.Parent.Resolve(p.Key) == p.Value))
                       .ToDictionary(p => p.Key, p => p.Value)
                 : new Dictionary<SymbolEntry, SymbolDefinition>();
+            this._hash = null;
         }
 
         public override String ToString()
