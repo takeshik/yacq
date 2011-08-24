@@ -36,7 +36,7 @@ using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
 {
-    public static class Yacq
+    public static class YacqServices
     {
         public static Expression[] ParseAll(SymbolTable symbols, String code)
         {

@@ -117,7 +117,7 @@ Type \help [ENTER] to show help."
             try
             {
                 Object ret = null;
-                foreach (var expr in Yacq.ParseAll(code))
+                foreach (var expr in YacqServices.ParseAll(code))
                 {
                     if (showInfo)
                     {
