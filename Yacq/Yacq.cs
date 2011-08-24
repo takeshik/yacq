@@ -38,28 +38,89 @@ namespace XSpect.Yacq
 {
     public static class Yacq
     {
-        public static Expression[] ParseAll(String code)
+        public static Expression[] ParseAll(SymbolTable symbols, String code)
         {
             return new Reader(code)
                 .Read()
-                .ReduceAll()
+                .ReduceAll(symbols)
                 .ToArray();
+        }
+
+        public static Expression Parse(SymbolTable symbols, String code)
+        {
+            return ParseAll(symbols, code).Last();
+        }
+
+        public static LambdaExpression ParseLambda(SymbolTable symbols, String code, params AmbiguousParameterExpression[] parameters)
+        {
+            return (LambdaExpression) YacqExpression.AmbiguousLambda(
+                new Reader(code).Read().Single(),
+                parameters
+            ).Reduce(symbols);
+        }
+
+        public static Expression<TDelegate> ParseLambda<TDelegate>(SymbolTable symbols, String code, params String[] parameterNames)
+        {
+            return (Expression<TDelegate>) ParseLambda(
+                symbols,
+                code,
+                typeof(TDelegate)
+                    .GetDelegateSignature()
+                    .GetParameters()
+                    .Select(p => p.ParameterType)
+                    .Zip(parameterNames, YacqExpression.AmbiguousParameter)
+                    .ToArray()
+            );
+        }
+
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, String code)
+        {
+            return ParseLambda(symbols, code, YacqExpression.AmbiguousParameter(itType, "it"));
+        }
+
+        public static Expression<Func<TReturn>> ParseLambda<TReturn>(SymbolTable symbols, String code)
+        {
+            return (Expression<Func<TReturn>>) ParseLambda(symbols, code);
+        }
+
+        public static Expression<Func<T, TReturn>> ParseLambda<T, TReturn>(SymbolTable symbols, String code)
+        {
+            return (Expression<Func<T, TReturn>>) ParseLambda(symbols, typeof(T), code);
+        }
+
+        public static Expression[] ParseAll(String code)
+        {
+            return ParseAll(null, code);
         }
 
         public static Expression Parse(String code)
         {
-            return ParseAll(code).Last();
+            return Parse(null, code);
         }
 
-        public static TExpression Parse<TExpression>(String code)
-            where TExpression : Expression
+        public static LambdaExpression ParseLambda(String code, params AmbiguousParameterExpression[] parameters)
         {
-            return (TExpression) Parse(code);
+            return ParseLambda(null, code, parameters);
         }
 
-        public static Expression<TDelegate> ParseLambda<TDelegate>(String code)
+        public static Expression<TDelegate> ParseLambda<TDelegate>(String code, params String[] parameterNames)
         {
-            return Parse<Expression<TDelegate>>(code);
+            return ParseLambda<TDelegate>(null, code, parameterNames);
+        }
+
+        public static LambdaExpression ParseLambda(Type itType, String code)
+        {
+            return ParseLambda(null, itType, code);
+        }
+
+        public static Expression<Func<TReturn>> ParseLambda<TReturn>(String code)
+        {
+            return ParseLambda<TReturn>(default(SymbolTable), code);
+        }
+
+        public static Expression<Func<T, TReturn>> ParseLambda<T, TReturn>(String code)
+        {
+            return ParseLambda<T, TReturn>(null, code);
         }
     }
 }
