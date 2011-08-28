@@ -294,7 +294,10 @@ namespace XSpect.Yacq.Expressions
                       candidate.Member,
                       candidate.TypeArgumentMap,
                       candidate.ParameterMap
-                          .Select(_ => _.Item2)
+                          .Select(_ => typeof(LambdaExpression).IsAssignableFrom(_.Item1)
+                              ? Quote(_.Item2)
+                              : _.Item2
+                          )
                           .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
                               _.Take(candidate.Parameters.Count - 1)
                                   .Concat(EnumerableEx.Return(NewArrayInit(

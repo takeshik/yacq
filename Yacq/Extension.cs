@@ -278,7 +278,13 @@ namespace XSpect.Yacq
             ) ||
                 target.GetConvertibleTypes()
                     .Select(t => t.TryGetGenericTypeDefinition())
-                    .Contains(type.TryGetGenericTypeDefinition());
+                    .Contains(type.TryGetGenericTypeDefinition())
+            // Special matches:
+            || (
+                typeof(LambdaExpression).IsAssignableFrom(type) &&
+                typeof(Delegate).IsAssignableFrom(target) &&
+                type.GetDelegateSignature() == target.GetDelegateSignature()
+            );
         }
 
         internal static MethodInfo GetDelegateSignature(this Type type)

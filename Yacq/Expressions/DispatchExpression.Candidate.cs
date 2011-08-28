@@ -193,8 +193,8 @@ namespace XSpect.Yacq.Expressions
                           .CompareTo(other.Parameters.IsParamArrayMethod())
                       ) != 0
                           ? value
-                          : this.Arguments.Select(_ => _.Type)
-                                .Zip(other.Arguments.Select(_ => _.Type), (l, r) =>
+                          : this.Parameters.Select(_ => _.ParameterType)
+                                .Zip(other.Parameters.Select(_ => _.ParameterType), (l, r) =>
                                     l.GetConvertibleTypes().Let(ls =>
                                         r.GetConvertibleTypes().Let(rs =>
                                             ls.Contains(r)
