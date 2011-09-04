@@ -73,6 +73,9 @@ namespace XSpect.Yacq
 
         private static void AddArithmeticOperators()
         {
+            Root.Add(DispatchType.Method, "=", (e, s) =>
+                Expression.Assign(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+            );
             Root.Add(DispatchType.Method, "+", (e, s) =>
                 e.Arguments.Any(a => a.Type(s) == typeof(String))
                     ? YacqExpression.Dispatch(
@@ -89,6 +92,23 @@ namespace XSpect.Yacq
                                 : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
                             )
             );
+            Root.Add(DispatchType.Method, "+=", (e, s) =>
+                e.Arguments.Any(a => a.Type(s) == typeof(String))
+                    ? Expression.Assign(
+                          e.Arguments[0].Reduce(s),
+                          YacqExpression.Dispatch(
+                              s,
+                              DispatchType.Method,
+                              YacqExpression.TypeCandidate(typeof(String)),
+                              "Concat",
+                              e.Arguments
+                          )
+                      )
+                    : Expression.AddAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                          ? e.Arguments[1].Reduce(s)
+                          : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
+                      )
+            );
             Root.Add(DispatchType.Method, "-", (e, s) =>
                 e.Arguments.Count == 1
                     ? (Expression) Expression.Negate(e.Arguments[0].Reduce(s))
@@ -97,8 +117,20 @@ namespace XSpect.Yacq
                           : YacqExpression.Dispatch(s, DispatchType.Method, "-", e.Arguments.Skip(1)).Reduce(s)
                 )
             );
+            Root.Add(DispatchType.Method, "-=", (e, s) =>
+                Expression.SubtractAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "-", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
             Root.Add(DispatchType.Method, "*", (e, s) =>
                 Expression.Multiply(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "*", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
+            Root.Add(DispatchType.Method, "*=", (e, s) =>
+                Expression.MultiplyAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                     ? e.Arguments[1].Reduce(s)
                     : YacqExpression.Dispatch(s, DispatchType.Method, "*", e.Arguments.Skip(1)).Reduce(s)
                 )
@@ -109,11 +141,23 @@ namespace XSpect.Yacq
                     : YacqExpression.Dispatch(s, DispatchType.Method, "/", e.Arguments.Skip(1)).Reduce(s)
                 )
             );
+            Root.Add(DispatchType.Method, "/=", (e, s) =>
+                Expression.MultiplyAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "/", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
             Root.Add(DispatchType.Method, "**", (e, s) =>
                  Expression.Power(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                      ? e.Arguments[1].Reduce(s)
                      : YacqExpression.Dispatch(s, DispatchType.Method, "**", e.Arguments.Skip(1)).Reduce(s)
                  )
+            );
+            Root.Add(DispatchType.Method, "**=", (e, s) =>
+                Expression.PowerAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "**", e.Arguments.Skip(1)).Reduce(s)
+                )
             );
             Root.Add(DispatchType.Method, "%", (e, s) =>
                  Expression.Modulo(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
@@ -121,11 +165,23 @@ namespace XSpect.Yacq
                      : YacqExpression.Dispatch(s, DispatchType.Method, "%", e.Arguments.Skip(1)).Reduce(s)
                  )
             );
+            Root.Add(DispatchType.Method, "%=", (e, s) =>
+                Expression.ModuloAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "%", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
             Root.Add(DispatchType.Method, "<<", (e, s) =>
                  Expression.LeftShift(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                      ? e.Arguments[1].Reduce(s)
                      : YacqExpression.Dispatch(s, DispatchType.Method, "<<", e.Arguments.Skip(1)).Reduce(s)
                  )
+            );
+            Root.Add(DispatchType.Method, "<<=", (e, s) =>
+                Expression.LeftShiftAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "<<", e.Arguments.Skip(1)).Reduce(s)
+                )
             );
             Root.Add(DispatchType.Method, ">>", (e, s) =>
                  Expression.RightShift(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
@@ -133,11 +189,29 @@ namespace XSpect.Yacq
                      : YacqExpression.Dispatch(s, DispatchType.Method, ">>", e.Arguments.Skip(1)).Reduce(s)
                  )
             );
+            Root.Add(DispatchType.Method, ">>=", (e, s) =>
+                Expression.LeftShiftAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, ">>", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
             Root.Add(DispatchType.Method, "++", (e, s) =>
                  Expression.Increment(e.Arguments[0].Reduce(s))
             );
+            Root.Add(DispatchType.Method, "++=", (e, s) =>
+                 Expression.PreIncrementAssign(e.Arguments[0].Reduce(s))
+            );
+            Root.Add(DispatchType.Method, "=++", (e, s) =>
+                 Expression.PostIncrementAssign(e.Arguments[0].Reduce(s))
+            );
             Root.Add(DispatchType.Method, "--", (e, s) =>
                  Expression.Decrement(e.Arguments[0].Reduce(s))
+            );
+            Root.Add(DispatchType.Method, "--=", (e, s) =>
+                 Expression.PreDecrementAssign(e.Arguments[0].Reduce(s))
+            );
+            Root.Add(DispatchType.Method, "=--", (e, s) =>
+                 Expression.PostDecrementAssign(e.Arguments[0].Reduce(s))
             );
         }
 
@@ -219,14 +293,32 @@ namespace XSpect.Yacq
                     : YacqExpression.Dispatch(s, DispatchType.Method, "&", e.Arguments.Skip(1)).Reduce(s)
                 )
             );
+            Root.Add(DispatchType.Method, "&=", (e, s) =>
+                Expression.AndAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "&", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
             Root.Add(DispatchType.Method, "|", (e, s) =>
                 Expression.Or(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                     ? e.Arguments[1].Reduce(s)
                     : YacqExpression.Dispatch(s, DispatchType.Method, "|", e.Arguments.Skip(1)).Reduce(s)
                 )
             );
+            Root.Add(DispatchType.Method, "|=", (e, s) =>
+                Expression.OrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "|", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
             Root.Add(DispatchType.Method, "^", (e, s) =>
                 Expression.ExclusiveOr(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Dispatch(s, DispatchType.Method, "^", e.Arguments.Skip(1)).Reduce(s)
+                )
+            );
+            Root.Add(DispatchType.Method, "^=", (e, s) =>
+                Expression.ExclusiveOrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                     ? e.Arguments[1].Reduce(s)
                     : YacqExpression.Dispatch(s, DispatchType.Method, "^", e.Arguments.Skip(1)).Reduce(s)
                 )
@@ -435,10 +527,14 @@ namespace XSpect.Yacq
                 )
             );
             Root.Add(DispatchType.Method, typeof(Object), "let", (e, s) =>
-                e.Arguments[1].Reduce(new SymbolTable(s).Apply(_ => _.Add(
-                    ((IdentifierExpression) e.Arguments[0]).Name,
-                    e.Left.Reduce(s)
-                )))
+                e.Left.Reduce(s).Let(_ => Expression.Invoke(
+                    YacqExpression.AmbiguousLambda(
+                        s,
+                        e.Arguments[1],
+                        YacqExpression.AmbiguousParameter(s, _.Type, ((IdentifierExpression) e.Arguments[0]).Name)
+                    ).Reduce(s),
+                    _
+                ))
             );
             Root.Add(DispatchType.Method, typeof(Object), "cond", (e, s) =>
                 Expression.Condition(
