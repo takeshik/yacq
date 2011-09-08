@@ -91,7 +91,7 @@ Type \help [ENTER] to show help."
   (CODE)
     Otherwise: Run one-line code."
                             #endregion
-);
+                            );
                             break;
                         case "debug":
                             Debugger.Launch();
