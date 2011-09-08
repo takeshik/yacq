@@ -412,6 +412,15 @@ namespace XSpect.Yacq
                                      ? e.Arguments[0]
                                      : Expression.Block(e.Arguments.ReduceAll(s))
                 },
+                {DispatchType.Method, typeof(Static<Object>), "new", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchType.Constructor,
+                        e.Left,
+                        null,
+                        e.Arguments
+                    )
+                },
                 {DispatchType.Method, typeof(Object), "to", (e, s) =>
                     Expression.Convert(
                         e.Left.Reduce(s),
