@@ -116,13 +116,12 @@ namespace XSpect.Yacq
 
         void ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Add(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
-            this._hash = null;
-            this._symbols.Add(item);
+            this.Add(item.Key, item.Value);
         }
 
         public void Clear()
         {
-            this._hash = 0;
+            this.PrepareModify();
             this._symbols.Clear();
         }
 
@@ -138,7 +137,7 @@ namespace XSpect.Yacq
 
         Boolean ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.Remove(KeyValuePair<SymbolEntry, SymbolDefinition> item)
         {
-            this._hash = null;
+            this.PrepareModify();
             return this._symbols.Remove(item);
         }
 
@@ -150,11 +149,12 @@ namespace XSpect.Yacq
             }
         }
 
-        Boolean ICollection<KeyValuePair<SymbolEntry, SymbolDefinition>>.IsReadOnly
+        public Boolean IsReadOnly
         {
             get
             {
-                return false;
+                // Modifying Root SymbolTable is permitted only in static constructor.
+                return this.Parent == null && Root != null;
             }
         }
 
@@ -165,13 +165,13 @@ namespace XSpect.Yacq
 
         public void Add(SymbolEntry key, SymbolDefinition value)
         {
-            this._hash = null;
+            this.PrepareModify();
             this._symbols.Add(key, value);
         }
 
         public Boolean Remove(SymbolEntry key)
         {
-            this._hash = null;
+            this.PrepareModify();
             return this._symbols.Remove(key);
         }
 
@@ -464,6 +464,15 @@ namespace XSpect.Yacq
                     ),
                 expression.Name
             );
+        }
+
+        private void PrepareModify()
+        {
+            if(this.IsReadOnly)
+            {
+                throw new InvalidOperationException("This SymbolTable is read-only.");
+            }
+            this._hash = null;
         }
     }
 }
