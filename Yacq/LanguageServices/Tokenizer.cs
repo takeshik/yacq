@@ -130,9 +130,13 @@ namespace XSpect.Yacq.LanguageServices
                 case ',':
                     return this.CreateToken(TokenType.Comma, ",");
                 case '.':
-                    return this.CreateToken(TokenType.Period, ".");
+                    return " \t\r\n.".IndexOf(this.PeekChar(1)) < 0
+                        ? this.CreateToken(TokenType.Period, ".")
+                        : this.CreateToken(TokenType.Identifier, this.RegexSlice(@"\.+"));
                 case ':':
-                    return this.CreateToken(TokenType.Colon, ":");
+                    return " \t\r\n:".IndexOf(this.PeekChar(1)) < 0
+                        ? this.CreateToken(TokenType.Colon, ":")
+                        : this.CreateToken(TokenType.Identifier, this.RegexSlice(@":+"));
                 default:
                     return Char.IsNumber(c) || (c == '+' || c == '-') && char.IsDigit(this.PeekChar(1))
                         ? this.CreateToken(TokenType.NumberLiteral, this.RegexSlice(@"[0-9a-fox+\-._]*[0-9a-f_]"))

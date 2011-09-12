@@ -64,6 +64,9 @@ namespace XSpect.Yacq
 
             Root = new SymbolTable()
             {
+                {DispatchType.Member, "...", (e, s) =>
+                    Expression.Throw(Expression.Constant(new NotImplementedException()))
+                },
                 {DispatchType.Method, "=", (e, s) =>
                     Expression.Assign(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
                 },
@@ -323,6 +326,30 @@ namespace XSpect.Yacq
                     Expression.OrElse(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
                         : YacqExpression.Dispatch(s, DispatchType.Method, "||", e.Arguments.Skip(1)).Reduce(s)
+                    )
+                },
+                {DispatchType.Method, "??", (e, s) =>
+                     Expression.Coalesce(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                         ? e.Arguments[1].Reduce(s)
+                         : YacqExpression.Dispatch(s, DispatchType.Method, "??", e.Arguments.Skip(1)).Reduce(s)
+                     )
+                },
+                {DispatchType.Method, "?", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchType.Method,
+                        "!==",
+                        e.Arguments[0],
+                        Expression.Constant(null)
+                    )
+                },
+                {DispatchType.Method, "!?", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchType.Method,
+                        "===",
+                        e.Arguments[0],
+                        Expression.Constant(null)
                     )
                 },
                 {DispatchType.Method, ".", (e, s) =>

@@ -81,7 +81,7 @@ namespace XSpect.Yacq.Expressions
             if (text.Contains("."))
             {
                 return text.Last() == 'f'
-                    ? Single.Parse(text.Remove(text.Length - 1), NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture)
+                    ? (Object) Single.Parse(text.Remove(text.Length - 1), NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture)
                     : Double.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
             }
             else
@@ -114,7 +114,7 @@ namespace XSpect.Yacq.Expressions
                         : Int64.Parse(text, CultureInfo.InvariantCulture);
                     return value >= Int32.MinValue && value <= Int32.MaxValue
                         ? (Int32) value
-                        : value;
+                        : (Object) value;
                 }
             }
         }
