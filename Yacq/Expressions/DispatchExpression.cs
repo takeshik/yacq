@@ -148,7 +148,7 @@ namespace XSpect.Yacq.Expressions
                                      : 0
                            ))
                     )
-                    .Choose(c => InferTypeArguments(c, new Dictionary<Type, Type>(), symbols))
+                    .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
                     .Choose(CheckAndFixArguments)
                     .OrderBy(c => c)
                     .FirstOrDefault()
@@ -296,7 +296,9 @@ namespace XSpect.Yacq.Expressions
                       candidate.ParameterMap
                           .Select(_ => typeof(LambdaExpression).IsAssignableFrom(_.Item1)
                               ? Quote(_.Item2)
-                              : _.Item2
+                              : !_.Item1.IsValueType && _.Item2.Type.IsValueType
+                                    ? Convert(_.Item2, _.Item1)
+                                    : _.Item2
                           )
                           .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
                               _.Take(candidate.Parameters.Count - 1)

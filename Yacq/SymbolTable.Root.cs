@@ -64,9 +64,7 @@ namespace XSpect.Yacq
 
             Root = new SymbolTable()
             {
-                {DispatchType.Member, "...", (e, s) =>
-                    Expression.Throw(Expression.Constant(new NotImplementedException()))
-                },
+                #region Global Method: Arithmetic Operator
                 {DispatchType.Method, "=", (e, s) =>
                     Expression.Assign(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
                 },
@@ -207,6 +205,8 @@ namespace XSpect.Yacq
                 {DispatchType.Method, "=--", (e, s) =>
                      Expression.PostDecrementAssign(e.Arguments[0].Reduce(s))
                 },
+                #endregion
+                #region Global Method: Logical Operator
                 {DispatchType.Method, "!", (e, s) =>
                     Expression.Not(e.Arguments[0].Reduce(s))
                 },
@@ -328,6 +328,8 @@ namespace XSpect.Yacq
                         : YacqExpression.Dispatch(s, DispatchType.Method, "||", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
+                #endregion
+                #region Global Method: Null Testing Operator
                 {DispatchType.Method, "??", (e, s) =>
                      Expression.Coalesce(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
@@ -352,6 +354,8 @@ namespace XSpect.Yacq
                         Expression.Constant(null)
                     )
                 },
+                #endregion
+                #region Global Method: Flow Operator
                 {DispatchType.Method, ".", (e, s) =>
                 {
                     var a0 = e.Arguments[0].Reduce(s);
@@ -379,6 +383,7 @@ namespace XSpect.Yacq
                                   e.Arguments[0],
                                   ((IdentifierExpression) a1e0l.First()).Name,
                                   ((VectorExpression) a1e0l.Last()).Elements
+                                      .ReduceAll(s)
                                       .Cast<TypeCandidateExpression>()
                                       .Select(_ => _.ElectedType),
                                   a1.Elements.Skip(1)
@@ -412,33 +417,68 @@ namespace XSpect.Yacq
                     }
                 }},
                 {DispatchType.Method, "\\", (e, s) =>
-                     e.Arguments[0] is VectorExpression
-                         ? ((VectorExpression) e.Arguments[0]).Elements
-                               .Select(p => p.List(":").If(_ => _ != null,
-                                   _ => YacqExpression.AmbiguousParameter(
-                                       s,
-                                       ((TypeCandidateExpression) _.Last().Reduce(s)).ElectedType,
-                                       ((IdentifierExpression) _.First()).Name
-                                   ),
-                                   _ => YacqExpression.AmbiguousParameter(
-                                       s,
-                                       ((IdentifierExpression) p).Name
-                                   )
-                               ))
-                               .ToArray()
-                               .Let(p => YacqExpression.AmbiguousLambda(s, e.Arguments.Count == 1
-                                   ? Expression.Empty()
-                                   : e.Arguments.Count == 2
-                                         ? e.Arguments[1]
-                                         : Expression.Block(e.Arguments.Skip(1).ReduceAll(s)),
-                                   p
-                               ))
-                         : e.Arguments.Count == 0
-                               ? Expression.Empty()
-                               : e.Arguments.Count == 1
-                                     ? e.Arguments[0]
-                                     : Expression.Block(e.Arguments.ReduceAll(s))
+                    e.Arguments[0] is VectorExpression
+                        ? ((VectorExpression) e.Arguments[0]).Elements
+                              .Select(p => p.List(":").If(_ => _ != null,
+                                  _ => YacqExpression.AmbiguousParameter(
+                                      s,
+                                      ((TypeCandidateExpression) _.Last().Reduce(s)).ElectedType,
+                                      ((IdentifierExpression) _.First()).Name
+                                  ),
+                                  _ => YacqExpression.AmbiguousParameter(
+                                      s,
+                                      ((IdentifierExpression) p).Name
+                                  )
+                              ))
+                              .ToArray()
+                              .Let(p => YacqExpression.AmbiguousLambda(s, e.Arguments.Count == 1
+                                  ? Expression.Empty()
+                                  : e.Arguments.Count == 2
+                                        ? e.Arguments[1]
+                                        : Expression.Block(e.Arguments.Skip(1).ReduceAll(s)),
+                                  p
+                              ))
+                        : e.Arguments.Count == 0
+                              ? Expression.Empty()
+                              : e.Arguments.Count == 1
+                                    ? e.Arguments[0]
+                                    : Expression.Block(e.Arguments.ReduceAll(s))
                 },
+                #endregion
+                #region Global Method: Common
+                {DispatchType.Method, "input", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchType.Method,
+                        YacqExpression.TypeCandidate(typeof(Console)),
+                        "ReadLine"
+                    )
+                },
+                {DispatchType.Method, typeof(Object), "print", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchType.Method,
+                        YacqExpression.TypeCandidate(typeof(Console)),
+                        "WriteLine",
+                        e.Left
+                    )
+                },
+                {DispatchType.Method, "typeof", (e, s) =>
+                    Expression.Constant(AppDomain.CurrentDomain.GetAssemblies()
+                        .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
+                        .First()
+                    )
+                },
+                #endregion
+                #region Global Method: Expressions
+                {DispatchType.Method, "type", (e, s) =>
+                    YacqExpression.TypeCandidate(AppDomain.CurrentDomain.GetAssemblies()
+                        .Choose(a => a.GetType((String) ((TextExpression) e.Arguments[0]).Value))
+                        .First()
+                    )
+                },
+                #endregion
+                #region Macro Method: Type Handling
                 {DispatchType.Method, typeof(Static<Object>), "new", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
@@ -466,6 +506,8 @@ namespace XSpect.Yacq
                         ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
                     )
                 },
+                #endregion
+                #region Macro Method: Flow
                 {DispatchType.Method, typeof(Object), "let", (e, s) =>
                     e.Left.Reduce(s).Let(_ => Expression.Invoke(
                         YacqExpression.AmbiguousLambda(
@@ -483,38 +525,14 @@ namespace XSpect.Yacq
                         e.Arguments[1].Reduce(s)
                     )
                 },
-                {DispatchType.Method, null, "input", (e, s) =>
-                    YacqExpression.Dispatch(
-                        s,
-                        DispatchType.Method,
-                        YacqExpression.TypeCandidate(typeof(Console)),
-                        "ReadLine"
-                    )
-                },
-                {DispatchType.Method, null, "type", (e, s) =>
-                    YacqExpression.TypeCandidate(AppDomain.CurrentDomain.GetAssemblies()
-                        .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
-                        .First()
-                    )
-                },
-                {DispatchType.Method, null, "typeof", (e, s) =>
-                    Expression.Constant(AppDomain.CurrentDomain.GetAssemblies()
-                        .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
-                        .First()
-                    )
-                },
-                {DispatchType.Method, typeof(Object), "print", (e, s) =>
-                    YacqExpression.Dispatch(
-                        s,
-                        DispatchType.Method,
-                        YacqExpression.TypeCandidate(typeof(Console)),
-                        "WriteLine",
-                        e.Left
-                    )
-                },
+                #endregion
+                #region Global Literal: Keyword
+                {"...", Expression.Throw(Expression.Constant(new NotImplementedException()))},
                 {"true", Expression.Constant(true)},
                 {"false", Expression.Constant(false)},
                 {"nil", Expression.Constant(null)},
+                #endregion
+                #region Global Literal: Type Import
                 {"Object", YacqExpression.TypeCandidate(typeof(Object))},
                 {"Boolean", YacqExpression.TypeCandidate(typeof(Boolean))},
                 {"Char", YacqExpression.TypeCandidate(typeof(Char))},
@@ -583,6 +601,19 @@ namespace XSpect.Yacq
                     typeof(Func<,,,,,,,,,,,,,,,>),
                     typeof(Func<,,,,,,,,,,,,,,,,>)
                 )},
+                #endregion
+                #region Macro Member: Type Handling
+                {DispatchType.Member, typeof(Static<Object>), "array", (e, s) =>
+                    YacqExpression.TypeCandidate(
+                        ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType.MakeArrayType()
+                    )
+                },
+                {DispatchType.Member, typeof(Static<Object>), "type", (e, s) =>
+                    Expression.Constant(
+                        ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType
+                    )
+                },
+                #endregion
             };
         }
     }

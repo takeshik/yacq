@@ -122,16 +122,21 @@ Type \help [ENTER] to show help."
                     if (showInfo)
                     {
                         Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write("Expression: ");
-                        Console.WriteLine(expr);
+                        Console.WriteLine("Expression : {0} => {1}\n  {2}", expr.GetType().Name, expr.Type, expr);
                         Console.ResetColor();
                     }
                     ret = Expression.Lambda(expr).Compile().DynamicInvoke();
                     if (showInfo)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write("Returns: ");
-                        Console.WriteLine(ret ?? "(null)");
+                        if (ret != null)
+                        {
+                            Console.WriteLine("Returned : {0}\n  {1}", ret.GetType(), ret);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Returned : null");
+                        }
                         Console.ResetColor();
                     }
                 }
