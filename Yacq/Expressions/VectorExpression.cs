@@ -68,13 +68,20 @@ namespace XSpect.Yacq.Expressions
 
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
-            return this.Elements.Select(e => e.Reduce(symbols))
-                .Let(_ => NewArrayInit(_
-                    .Select(e => e.Type(symbols))
+            return this.Elements.ReduceAll(symbols)
+                .Let(_ => _
+                    .Select(e => e.Type)
                     .Distinct()
-                    .If(u => u.Count() == 1, u => u.Single(), u => typeof(Object)),
-                    _
-                ));
+                    .If(ts => ts.Count() == 1, ts => ts.Single(), ts => typeof(Object))
+                    .Let(t => NewArrayInit(t, t.IsValueType
+                        ? _
+                        : _.Select(e => e.Type.IsValueType
+                              ? Convert(e, t)
+                              : e
+                          )
+                    ))
+                );
+
         }
     }
 
