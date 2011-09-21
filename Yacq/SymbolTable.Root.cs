@@ -36,6 +36,7 @@ using System.Reactive.Linq;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace XSpect.Yacq
 {
@@ -452,6 +453,29 @@ namespace XSpect.Yacq
                                     : Expression.Block(e.Arguments.ReduceAll(s))
                 },
                 #endregion
+                #region Global Method: Flow
+                {DispatchType.Method, "let", (e, s) =>
+                    e.Arguments
+                        .SkipLast(1)
+                        .Share(_ => _.Zip(_, (k, v) => Tuple.Create(((IdentifierExpression) k).Name, v.Reduce(s))))
+                        .Let(_ => Expression.Invoke(
+                            YacqExpression.AmbiguousLambda(
+                                s,
+                                e.Arguments.Last(),
+                                _.Select(t => YacqExpression.AmbiguousParameter(s, t.Item2.Type, t.Item1))
+                            ).Reduce(s),
+                            _.Select(t => t.Item2)
+                        ))
+                },
+                {DispatchType.Method, "alias", (e, s) =>
+                    e.Arguments.Last().Reduce(new SymbolTable(s).Apply(s2 =>
+                        e.Arguments
+                            .SkipLast(1)
+                            .Share(_ => _.Zip(_, (k, v) => Tuple.Create(((IdentifierExpression) k).Name, v.Reduce(s))))
+                            .ForEach(t => s2.Add(t.Item1, t.Item2))
+                    ))
+                },
+                #endregion
                 #region Global Method: Common
                 {DispatchType.Method, "input", (e, s) =>
                     YacqExpression.Dispatch(
@@ -495,6 +519,23 @@ namespace XSpect.Yacq
                         e.Arguments
                     )
                 },
+                {DispatchType.Method, typeof(Object), "with", (e, s) =>
+                    e.Left.Reduce(s).Let(l => l is NewExpression
+                        ? (Expression) Expression.MemberInit(
+                              (NewExpression) l,
+                              e.Arguments.Share(_ => _
+                                  .Zip(_, (k, v) => Expression.Bind(
+                                      l.Type.GetMember(
+                                          ((IdentifierExpression) k).Name,
+                                          BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+                                      ).Single(),
+                                      v.Reduce(s)
+                                  ))
+                              )
+                          )
+                        : e
+                    )
+                },
                 {DispatchType.Method, typeof(Object), "to", (e, s) =>
                     Expression.Convert(
                         e.Left.Reduce(s),
@@ -524,6 +565,12 @@ namespace XSpect.Yacq
                         ).Reduce(s),
                         _
                     ))
+                },
+                {DispatchType.Method, typeof(Object), "alias", (e, s) =>
+                    e.Arguments[1].Reduce(new SymbolTable(s).Apply(s2 => s2.Add(
+                        ((IdentifierExpression) e.Arguments[0]).Name,
+                        e.Left.Reduce(s)
+                    )))
                 },
                 {DispatchType.Method, typeof(Object), "cond", (e, s) =>
                     Expression.Condition(

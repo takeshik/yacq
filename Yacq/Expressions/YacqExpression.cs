@@ -101,7 +101,7 @@ namespace XSpect.Yacq.Expressions
                 if (this._reducedExpression == null && this.CanReduce)
                 {
                     this._reducedExpression = this.ReduceImpl(symbols) ?? this;
-                    if (this._reducedExpression != this && this.CanReduce)
+                    if (this._reducedExpression != this && this._reducedExpression is YacqExpression)
                     {
                         this._reducedExpression = this._reducedExpression.Reduce(symbols);
                     }
@@ -112,7 +112,7 @@ namespace XSpect.Yacq.Expressions
             else
             {
                 var expression = this.ReduceImpl(symbols) ?? this;
-                if (expression != this && expression.CanReduce)
+                if (expression != this && expression is YacqExpression)
                 {
                     expression = expression.Reduce(symbols);
                 }
