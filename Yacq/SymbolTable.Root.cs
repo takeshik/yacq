@@ -398,13 +398,20 @@ namespace XSpect.Yacq
                     }
                     else if (e.Arguments[1] is VectorExpression)
                     {
-                        return YacqExpression.Dispatch(
-                            s,
-                            DispatchType.Member,
-                            e.Arguments[0],
-                            null,
-                            ((VectorExpression) e.Arguments[1]).Elements
-                        );
+                        return a0.Type.IsArray
+                            ? (Expression) Expression.ArrayAccess(
+                                  a0,
+                                  ((VectorExpression) e.Arguments[1])
+                                      .Elements
+                                      .ReduceAll(s)
+                              )
+                            : YacqExpression.Dispatch(
+                                  s,
+                                  DispatchType.Member,
+                                  e.Arguments[0],
+                                  null,
+                                  ((VectorExpression) e.Arguments[1]).Elements
+                              );
                     }
                     else
                     {

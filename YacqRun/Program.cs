@@ -1,10 +1,43 @@
-﻿using System;
+﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
+// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
+// $Id$
+/* YACQ Runner
+ *   Runner and Compiler frontend of YACQ
+ * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * All rights reserved.
+ * 
+ * This file is part of YACQ Runner.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
+using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Runner
 {
@@ -17,21 +50,43 @@ namespace XSpect.Yacq.Runner
                 Repl();
                 return 0;
             }
-            else if (args[0] == "-")
+            else if (args[0].StartsWith("-c"))
             {
-                return ReadAsScript(Console.In);
+                using (var reader = args[1] == "-"
+                    ? Console.In
+                    : new StreamReader(args[1])
+                )
+                {
+                    var head = reader.ReadLine();
+                    Compile(
+                        (head.StartsWith("#!") ? "" : head) + reader.ReadToEnd(),
+                        args[1] == "-"
+                            ? "a.out"
+                            : Path.GetFileNameWithoutExtension(args[1]),
+                        args[0] == "-cw"
+                            ? PEFileKinds.WindowApplication
+                            : args[0] == "-cl"
+                                  ? PEFileKinds.Dll
+                                  : PEFileKinds.ConsoleApplication
+                    );
+                    return 0;
+                }
             }
             else
             {
-                return ReadAsScript(new StreamReader(args[0]));
+                using (var reader = args[0] == "-"
+                    ? Console.In
+                    : new StreamReader(args[0])
+                )
+                {
+                    var head = reader.ReadLine();
+                    var ret =  Run(
+                        (head.StartsWith("#!") ? "" : head) + reader.ReadToEnd(),
+                        Environment.GetCommandLineArgs().Contains("-v")
+                    );
+                    return ret is Int32 ? (Int32) ret : 0;
+                }
             }
-        }
-
-        private static Int32 ReadAsScript(TextReader input)
-        {
-            var head = input.ReadLine();
-            var ret =  Run((head.StartsWith("#!") ? "" : head) + input.ReadToEnd(), Environment.GetCommandLineArgs().Contains("-v"));
-            return ret is Int32 ? (Int32) ret : 0;
         }
 
         private static void Repl()
@@ -65,21 +120,31 @@ Type \help [ENTER] to show help."
                         code += input + Environment.NewLine;
                     }
                 }
+                // EOF
+                else if (input == null)
+                {
+                    return;
+                }
                 else if (input.StartsWith("\\"))
                 {
                     switch (input.Substring(1))
                     {
                         case "exit":
-                            Environment.Exit(0);
-                            break;
+                            return;
                         case "help":
                             Console.WriteLine(
-                            #region String
+                                #region String
 @"Commands:
   \exit
     Exit this program.
   \help
     Show this message.
+  \chelp
+    Show command-line option help.
+  \man
+    Open the reference manual web page.
+  \about
+    Show general and copyright description.
   \debug
     Attach the debugger.
   \gc
@@ -90,13 +155,71 @@ Type \help [ENTER] to show help."
     Run multi-line CODES while INPUT line was got (heredoc <<EOT).
   (CODE)
     Otherwise: Run one-line code."
-                            #endregion
+                                #endregion
+                            );
+                            break;
+                        case "chelp":
+                            Console.WriteLine(
+                                #region String
+@"Command-line Options:
+  YacqRun
+    Run in REPL mode.
+  YacqRun PATH
+    Run script file in PATH.
+  YacqRun -c PATH
+    Compile script file in PATH to Console Application EXE.
+  YacqRun -cw PATH
+    Compile script file in PATH to Windows Application EXE.
+  YacqRun -cl PATH
+    Compile script file in PATH to Library DLL.
+  NOTE: Specify - in PATH means read script data from standard input."
+                                #endregion
+                            );
+                            break;
+                        case "man":
+                            Process.Start("https://github.com/takeshik/yacq/wiki");
+                            break;
+                        case "about":
+                            Console.WriteLine(
+                                #region String
+@"YACQ <https://github.com/takeshik/yacq>
+  Yet Another Compilable Query Language, based on Expression Trees API
+  Language service is provided by Yacq.dll, the assembly name is:
+    {0}
+YACQ Runner (YACQRun) is part of YACQ
+  Runner and Compiler of YACQ
+
+Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+All rights reserved.
+
+YACQ and YACQ Runner are Free Software; licensed under the MIT License.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ""Software""), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE."
+                                #endregion
+                                , typeof(YacqServices).Assembly.GetName()
                             );
                             break;
                         case "debug":
                             Debugger.Launch();
                             break;
                         case "gc":
+                            Console.WriteLine();
                             GC.Collect();
                             break;
                     }
@@ -149,6 +272,45 @@ Type \help [ENTER] to show help."
                 Console.ResetColor();
                 return null;
             }
+        }
+
+        private static void Compile(String code, String name, PEFileKinds fileKind)
+        {
+            name += fileKind == PEFileKinds.Dll
+                ? ".dll"
+                : ".exe";
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(
+                new AssemblyName()
+                {
+                    Name = name,
+                    Version = new Version(0, 0, 0, 0),
+                    CultureInfo = CultureInfo.InvariantCulture,
+                },
+                AssemblyBuilderAccess.RunAndSave
+            );
+            var type = assembly
+                .DefineDynamicModule(name)
+                .DefineType(
+                    "Program",
+                    TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed
+                );
+            var method = type.DefineMethod(
+                "Main",
+                MethodAttributes.Public | MethodAttributes.Static,
+                typeof(void),
+                Type.EmptyTypes
+            );
+            var expressions = YacqServices.ParseAll(code);
+            Expression.Lambda<Action>(expressions.Length == 1
+                ? expressions.Single()
+                : Expression.Block(expressions)
+            ).CompileToMethod(method);
+            type.CreateType();
+            if (fileKind != PEFileKinds.Dll)
+            {
+                assembly.SetEntryPoint(method, fileKind);
+            }
+            assembly.Save(name);
         }
     }
 }

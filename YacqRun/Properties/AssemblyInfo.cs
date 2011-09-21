@@ -1,12 +1,12 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
 // $Id$
-/* YACQ
- *   Yet Another Compilable Query Language, based on Expression Trees API
+/* YACQ Runner
+ *   Runner and Compiler frontend of YACQ
  * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
- * This file is part of YACQ.
+ * This file is part of YACQ Runner.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
