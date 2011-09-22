@@ -35,15 +35,27 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents an expression which is a type candidate, a symbol of types and indicates static references.
+    /// </summary>
     public class TypeCandidateExpression
         : YacqExpression
     {
+        /// <summary>
+        /// Gets the candidate types of this expression.
+        /// </summary>
+        /// <value>The candidate types of this expression.</value>
         public ReadOnlyCollection<Type> Candidates
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the <see cref="Type"/> object which indicates the most appropriate type of <see cref="Candidates"/>.
+        /// </summary>
+        /// <value>The <see cref="Type"/> object which indicates the most appropriate type of <see cref="Candidates"/>,
+        /// or <c>null</c> if no appropriate types in this expression</value>
         public Type ElectedType
         {
             get
@@ -64,6 +76,12 @@ namespace XSpect.Yacq.Expressions
             this.Candidates = new ReadOnlyCollection<Type>(candidates);
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
             return this.ElectedType != null
@@ -71,6 +89,11 @@ namespace XSpect.Yacq.Expressions
                 : this.Candidates.First().Name + "[+" + (this.Candidates.Count - 1) + "]";
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return null;
@@ -79,21 +102,43 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="TypeCandidateExpression"/> that represents the type candidates, a symbol of type(s).
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="candidates">An array of <see cref="Type"/> objects that represents the candidate types of the expression.</param>
+        /// <returns>An <see cref="TypeCandidateExpression"/> that has specified candidate types.</returns>
         public static TypeCandidateExpression TypeCandidate(SymbolTable symbols, params Type[] candidates)
         {
             return new TypeCandidateExpression(symbols, candidates);
         }
 
+        /// <summary>
+        /// Creates a <see cref="TypeCandidateExpression"/> that represents the type candidates, a symbol of type(s).
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="candidates">A sequence of <see cref="Type"/> objects that represents the candidate types of the expression.</param>
+        /// <returns>An <see cref="TypeCandidateExpression"/> that has specified candidate types.</returns>
         public static TypeCandidateExpression TypeCandidate(SymbolTable symbols, IEnumerable<Type> candidates)
         {
             return TypeCandidate(symbols, candidates.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="TypeCandidateExpression"/> that represents the type candidates, a symbol of type(s).
+        /// </summary>
+        /// <param name="candidates">An array of <see cref="Type"/> objects that represents the candidate types of the expression.</param>
+        /// <returns>An <see cref="TypeCandidateExpression"/> that has specified candidate types.</returns>
         public static TypeCandidateExpression TypeCandidate(params Type[] candidates)
         {
             return TypeCandidate(null, candidates);
         }
 
+        /// <summary>
+        /// Creates a <see cref="TypeCandidateExpression"/> that represents the type candidates, a symbol of type(s).
+        /// </summary>
+        /// <param name="candidates">A sequence of <see cref="Type"/> objects that represents the candidate types of the expression.</param>
+        /// <returns>An <see cref="TypeCandidateExpression"/> that has specified candidate types.</returns>
         public static TypeCandidateExpression TypeCandidate(IEnumerable<Type> candidates)
         {
             return TypeCandidate(null, candidates.ToArray());

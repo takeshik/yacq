@@ -36,15 +36,27 @@ using System.Reflection;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents a list, the basic expression of YACQ to call functions, methods and constructors.
+    /// </summary>
     public class ListExpression
         : YacqExpression
     {
+        /// <summary>
+        /// Gets a collection of expressions that represent elements of this expression.
+        /// </summary>
+        /// <value>A collection of expressions that represent elements of this expression.</value>
         public ReadOnlyCollection<Expression> Elements
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the element at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the element to get.</param>
+        /// <returns>The element at the specified index.</returns>
         public Expression this[Int32 index]
         {
             get
@@ -62,11 +74,22 @@ namespace XSpect.Yacq.Expressions
             this.Elements = new ReadOnlyCollection<Expression>(elements);
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
             return "(" + String.Join(" ", this.Elements.Select(e => e.ToString())) + ")";
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             var value = this[0].TryReduce(symbols);
@@ -77,7 +100,7 @@ namespace XSpect.Yacq.Expressions
             else if (value is TypeCandidateExpression)
             {
                 return Dispatch(
-                    DispatchType.Constructor,
+                    DispatchTypes.Constructor,
                     value,
                     null,
                     this.Elements.Skip(1).Select(e => e.Reduce(symbols)).ToArray()
@@ -85,7 +108,7 @@ namespace XSpect.Yacq.Expressions
             }
             else if (this[0] is IdentifierExpression)
             {
-                return Dispatch(DispatchType.Method, ((IdentifierExpression) this[0]).Name, this.Elements.Skip(1).ToArray());
+                return Dispatch(DispatchTypes.Method, ((IdentifierExpression) this[0]).Name, this.Elements.Skip(1).ToArray());
             }
             else if (value is Expression)
             {
@@ -100,21 +123,43 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="ListExpression"/> that represents the list.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
         public static ListExpression List(SymbolTable symbols, params Expression[] elements)
         {
             return new ListExpression(symbols, elements);
         }
 
+        /// <summary>
+        /// Creates a <see cref="ListExpression"/> that represents the list.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
         public static ListExpression List(SymbolTable symbols, IEnumerable<Expression> elements)
         {
             return List(symbols, elements.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="ListExpression"/> that represents the list.
+        /// </summary>
+        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
         public static ListExpression List(params Expression[] elements)
         {
             return List(null, elements);
         }
 
+        /// <summary>
+        /// Creates a <see cref="ListExpression"/> that represents the list.
+        /// </summary>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
         public static ListExpression List(IEnumerable<Expression> elements)
         {
             return List(null, elements.ToArray());

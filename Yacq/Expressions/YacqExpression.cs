@@ -33,6 +33,10 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Provides the base class from which the classes that represent YACQ expression tree nodes are derived.
+    /// It also contains static factory methods to create the various node types. This is an abstract class.
+    /// </summary>
     public abstract partial class YacqExpression
         : Expression
     {
@@ -40,6 +44,10 @@ namespace XSpect.Yacq.Expressions
 
         private Expression _reducedExpression;
 
+        /// <summary>
+        /// Gets the node type of this expression.
+        /// </summary>
+        /// <returns>One of the <see cref="ExpressionType"/> values.</returns>
         public override ExpressionType NodeType
         {
             get
@@ -48,6 +56,10 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// Indicates that the node can be reduced to a simpler node. If this returns true, Reduce() can be called to produce the reduced form.
+        /// </summary>
+        /// <returns><c>true</c> if the node can be reduced, otherwise <c>false</c>.</returns>
         public override Boolean CanReduce
         {
             get
@@ -56,6 +68,10 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// Gets the static type of the expression that this expression represents.
+        /// </summary>
+        /// <returns>The <see cref="System.Type"/> that represents the static type of the expression.</returns>
         public override Type Type
         {
             get
@@ -70,23 +86,45 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// Gets the symbol table linked with this expression.
+        /// </summary>
+        /// <value>
+        /// The symbol table linked with this expression.
+        /// </value>
         public SymbolTable Symbols
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Constructs a new instance of <see cref="YacqExpression"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table linked with this expression.</param>
         protected YacqExpression(SymbolTable symbols)
         {
             this._canReduce = true;
             this.Symbols = symbols ?? new SymbolTable();
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression. If <see cref="CanReduce"/> returns <c>true</c>, this should return a valid expression.
+        /// This method can return another node which itself must be reduced.
+        /// </summary>
+        /// <returns>
+        /// The reduced expression.
+        /// </returns>
         public override Expression Reduce()
         {
             return this.Reduce(null);
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables. Reducing is continued while the reduced expression is not <see cref="YacqExpression"/>.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         public Expression Reduce(SymbolTable symbols)
         {
             symbols = new SymbolTable(this.Symbols.Parent, symbols != null
@@ -120,6 +158,11 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// When implemented in a derived class, reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected abstract Expression ReduceImpl(SymbolTable symbols);
     }
 }

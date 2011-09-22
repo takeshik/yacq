@@ -34,21 +34,26 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents an expression which is a number.
+    /// </summary>
     public class NumberExpression
         : YacqExpression
     {
-        public Char QuoteChar
-        {
-            get;
-            private set;
-        }
-
+        /// <summary>
+        /// Gets the original string and source of constant number of this expression.
+        /// </summary>
+        /// <value>The original string and source of constant number of this expression.</value>
         public String SourceText
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the constant number which this expression represents.
+        /// </summary>
+        /// <value>The constant number which this expression represents.</value>
         public Object Value
         {
             get;
@@ -65,11 +70,22 @@ namespace XSpect.Yacq.Expressions
             this.Value = this.Parse();
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
             return this.SourceText;
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return Constant(this.Value);
@@ -133,11 +149,22 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="NumberExpression"/> that represents a number from specified source string.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="text">The source string of this expression.</param>
+        /// <returns>An <see cref="NumberExpression"/> which generates a number from specified string.</returns>
         public static NumberExpression Number(SymbolTable symbols, String text)
         {
             return new NumberExpression(symbols, text);
         }
 
+        /// <summary>
+        /// Creates a <see cref="NumberExpression"/> that represents a number from specified source string.
+        /// </summary>
+        /// <param name="text">The source string of this expression.</param>
+        /// <returns>An <see cref="NumberExpression"/> which generates a number from specified string.</returns>
         public static NumberExpression Number(String text)
         {
             return Number(null, text);

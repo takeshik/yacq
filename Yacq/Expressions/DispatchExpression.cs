@@ -36,35 +36,58 @@ using System.Reflection;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents an dispatch expression, an abstract layer to member references and method calls with <see cref="SymbolTable"/>.
+    /// </summary>
     public partial class DispatchExpression
         : YacqExpression
     {
         private Expression _left;
 
-        public DispatchType DispatchType
+        /// <summary>
+        /// Gets the type of dispatching of this expression.
+        /// </summary>
+        /// <value>The type of dispatching of this expression.</value>
+        public DispatchTypes DispatchType
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets an <see cref="Expression"/> that representts the receiver or static reference for dispatching.
+        /// </summary>
+        /// <value>An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</value>
         public Expression Left
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the name for dispatching.
+        /// </summary>
+        /// <value>The name for dispatching.</value>
         public String Name
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets a collection of types that represent type arguments for dispatching.
+        /// </summary>
+        /// <value>a collection of types that represent type arguments for dispatching.</value>
         public ReadOnlyCollection<Type> TypeArguments
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets a collection of expressions that represent arguments for dispatching.
+        /// </summary>
+        /// <value>a collection of expressions that represent arguments for dispatching.</value>
         public ReadOnlyCollection<Expression> Arguments
         {
             get;
@@ -73,7 +96,7 @@ namespace XSpect.Yacq.Expressions
 
         internal DispatchExpression(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IList<Type> typeArguments,
@@ -88,20 +111,26 @@ namespace XSpect.Yacq.Expressions
             this.Arguments = new ReadOnlyCollection<Expression>(arguments);
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
-            switch (this.DispatchType & DispatchType.TargetMask)
+            switch (this.DispatchType & DispatchTypes.TargetMask)
             {
-                case DispatchType.Member:
+                case DispatchTypes.Member:
                     return this.Arguments.Any()
                         ? this.Left + "[" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + "]"
                         : (this.Left != null ? this.Left + "." : "") + this.Name;
-                case DispatchType.Method:
+                case DispatchTypes.Method:
                     return (this.Left != null ? this.Left + "." : "")
                         + this.Name
                         + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">" : "")
                         + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
-                case DispatchType.Constructor:
+                case DispatchTypes.Constructor:
                     return this.Left + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
                 default:
                     return "Dispatch(?)";
@@ -110,6 +139,11 @@ namespace XSpect.Yacq.Expressions
 
         // this._left and Candidate.Arguments is already reduced with symbols.
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             this._left = this.Left.Reduce(symbols);
@@ -156,9 +190,9 @@ namespace XSpect.Yacq.Expressions
                     {
                         switch (this.DispatchType)
                         {
-                            case DispatchType.Constructor:
+                            case DispatchTypes.Constructor:
                                 return New(c.Constructor, c.Arguments);
-                            case DispatchType.Member:
+                            case DispatchTypes.Member:
                                 return c.Property != null
                                     ? c.Arguments.Any()
                                           ? (Expression) Property(c.Instance, c.Property, c.Arguments)
@@ -171,13 +205,13 @@ namespace XSpect.Yacq.Expressions
             ) ?? this.DispatchMissing(symbols);
         }
 
-        public IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
+        private IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
         {
             switch (this.DispatchType)
             {
-                case DispatchType.Constructor:
+                case DispatchTypes.Constructor:
                     return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-                case DispatchType.Member:
+                case DispatchTypes.Member:
                     return String.IsNullOrEmpty(this.Name)
                         // Default members must be instance properties.
                         ? this._left.Type.GetDefaultMembers()
@@ -185,7 +219,7 @@ namespace XSpect.Yacq.Expressions
                               ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                               : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
                           ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
-                case DispatchType.Method:
+                case DispatchTypes.Method:
                     return this._left is TypeCandidateExpression
                         ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
                               .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
@@ -215,7 +249,7 @@ namespace XSpect.Yacq.Expressions
 
         private Candidate InferTypeArguments(Candidate candidate, IDictionary<Type, Type> typeArgumentMap, SymbolTable symbols)
         {
-            return this.DispatchType != DispatchType.Method
+            return this.DispatchType != DispatchTypes.Method
                 ? candidate
                 : new Dictionary<Type, Type>(typeArgumentMap).Let(map =>
                   {
@@ -315,7 +349,7 @@ namespace XSpect.Yacq.Expressions
         private Expression DispatchMissing(SymbolTable symbols)
         {
             // Cast Operation
-            if (this.DispatchType.HasFlag(DispatchType.Constructor)
+            if (this.DispatchType.HasFlag(DispatchTypes.Constructor)
                 && ((TypeCandidateExpression) this._left).ElectedType != null
                 && this.Arguments.Count == 1)
             {
@@ -335,9 +369,19 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IEnumerable<Type> typeArguments,
@@ -354,9 +398,18 @@ namespace XSpect.Yacq.Expressions
             );
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             params Expression[] arguments
@@ -365,9 +418,18 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, left, name, Enumerable.Empty<Type>(), arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             IEnumerable<Type> typeArguments,
             params Expression[] arguments
@@ -376,9 +438,17 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, null, name, (typeArguments ?? Enumerable.Empty<Type>()).ToArray(), arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             params Expression[] arguments
         )
@@ -386,9 +456,19 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, null, name, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IEnumerable<Type> typeArguments,
@@ -398,9 +478,18 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, left, name, typeArguments, arguments.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IEnumerable<Expression> arguments
@@ -409,9 +498,18 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, left, name, arguments.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             IEnumerable<Type> typeArguments,
             IEnumerable<Expression> arguments
@@ -420,9 +518,17 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, name, typeArguments, arguments.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
             SymbolTable symbols,
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             IEnumerable<Expression> arguments
         )
@@ -430,8 +536,17 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(symbols, dispatchType, name, arguments.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IEnumerable<Type> typeArguments,
@@ -441,8 +556,16 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, left, name, typeArguments, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             params Expression[] arguments
@@ -451,8 +574,16 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, left, name, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             IEnumerable<Type> typeArguments,
             params Expression[] arguments
@@ -461,8 +592,15 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, name, typeArguments, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             params Expression[] arguments
         )
@@ -470,8 +608,17 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, name, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IEnumerable<Type> typeArguments,
@@ -481,8 +628,16 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, left, name, typeArguments, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             Expression left,
             String name,
             IEnumerable<Expression> arguments
@@ -491,8 +646,16 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, left, name, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="typeArguments">A sequence of <see cref="Type"/> objects that represents the type arguments for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             IEnumerable<Type> typeArguments,
             IEnumerable<Expression> arguments
@@ -501,8 +664,15 @@ namespace XSpect.Yacq.Expressions
             return Dispatch(null, dispatchType, name, typeArguments, arguments);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
+        /// </summary>
+        /// <param name="dispatchType">The dispatching type.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>An <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
         public static DispatchExpression Dispatch(
-            DispatchType dispatchType,
+            DispatchTypes dispatchType,
             String name,
             IEnumerable<Expression> arguments
         )

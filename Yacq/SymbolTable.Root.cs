@@ -30,6 +30,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
@@ -42,6 +43,12 @@ namespace XSpect.Yacq
 {
     partial class SymbolTable
     {
+        /// <summary>
+        /// Returns the root <see cref="SymbolTable"/>, the common symbols for all <see cref="YacqExpression"/>.
+        /// </summary>
+        /// <value>
+        /// The root <see cref="SymbolTable"/>, the common symbols for all <see cref="YacqExpression"/>.
+        /// </value>
         public static SymbolTable Root
         {
             get;
@@ -66,14 +73,14 @@ namespace XSpect.Yacq
             Root = new SymbolTable()
             {
                 #region Global Method: Arithmetic Operator
-                {DispatchType.Method, "=", (e, s) =>
+                {DispatchTypes.Method, "=", (e, s) =>
                     Expression.Assign(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
                 },
-                {DispatchType.Method, "+", (e, s) =>
+                {DispatchTypes.Method, "+", (e, s) =>
                     e.Arguments.Any(a => a.Type(s) == typeof(String))
                         ? YacqExpression.Dispatch(
                               s,
-                              DispatchType.Method,
+                              DispatchTypes.Method,
                               YacqExpression.TypeCandidate(typeof(String)),
                               "Concat",
                               e.Arguments
@@ -82,16 +89,16 @@ namespace XSpect.Yacq
                               ? (Expression) Expression.UnaryPlus(e.Arguments[0].Reduce(s))
                               : Expression.Add(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                                     ? e.Arguments[1].Reduce(s)
-                                    : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
+                                    : YacqExpression.Dispatch(s, DispatchTypes.Method, "+", e.Arguments.Skip(1)).Reduce(s)
                                 )
                 },
-                {DispatchType.Method, "+=", (e, s) =>
+                {DispatchTypes.Method, "+=", (e, s) =>
                     e.Arguments.Any(a => a.Type(s) == typeof(String))
                         ? Expression.Assign(
                               e.Arguments[0].Reduce(s),
                               YacqExpression.Dispatch(
                                   s,
-                                  DispatchType.Method,
+                                  DispatchTypes.Method,
                                   YacqExpression.TypeCandidate(typeof(String)),
                                   "Concat",
                                   e.Arguments
@@ -99,257 +106,257 @@ namespace XSpect.Yacq
                           )
                         : Expression.AddAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                               ? e.Arguments[1].Reduce(s)
-                              : YacqExpression.Dispatch(s, DispatchType.Method, "+", e.Arguments.Skip(1)).Reduce(s)
+                              : YacqExpression.Dispatch(s, DispatchTypes.Method, "+", e.Arguments.Skip(1)).Reduce(s)
                           )
                 },
-                {DispatchType.Method, "-", (e, s) =>
+                {DispatchTypes.Method, "-", (e, s) =>
                     e.Arguments.Count == 1
                         ? (Expression) Expression.Negate(e.Arguments[0].Reduce(s))
                         : Expression.Subtract(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                               ? e.Arguments[1].Reduce(s)
-                              : YacqExpression.Dispatch(s, DispatchType.Method, "-", e.Arguments.Skip(1)).Reduce(s)
+                              : YacqExpression.Dispatch(s, DispatchTypes.Method, "-", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "-=", (e, s) =>
+                {DispatchTypes.Method, "-=", (e, s) =>
                     Expression.SubtractAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "-", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "-", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "*", (e, s) =>
+                {DispatchTypes.Method, "*", (e, s) =>
                     Expression.Multiply(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "*", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "*", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "*=", (e, s) =>
+                {DispatchTypes.Method, "*=", (e, s) =>
                     Expression.MultiplyAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "*", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "*", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "/", (e, s) =>
+                {DispatchTypes.Method, "/", (e, s) =>
                     Expression.Divide(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "/", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "/", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "/=", (e, s) =>
+                {DispatchTypes.Method, "/=", (e, s) =>
                     Expression.MultiplyAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "/", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "/", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "**", (e, s) =>
+                {DispatchTypes.Method, "**", (e, s) =>
                      Expression.Power(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
-                         : YacqExpression.Dispatch(s, DispatchType.Method, "**", e.Arguments.Skip(1)).Reduce(s)
+                         : YacqExpression.Dispatch(s, DispatchTypes.Method, "**", e.Arguments.Skip(1)).Reduce(s)
                      )
                 },
-                {DispatchType.Method, "**=", (e, s) =>
+                {DispatchTypes.Method, "**=", (e, s) =>
                     Expression.PowerAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "**", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "**", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "%", (e, s) =>
+                {DispatchTypes.Method, "%", (e, s) =>
                      Expression.Modulo(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
-                         : YacqExpression.Dispatch(s, DispatchType.Method, "%", e.Arguments.Skip(1)).Reduce(s)
+                         : YacqExpression.Dispatch(s, DispatchTypes.Method, "%", e.Arguments.Skip(1)).Reduce(s)
                      )
                 },
-                {DispatchType.Method, "%=", (e, s) =>
+                {DispatchTypes.Method, "%=", (e, s) =>
                     Expression.ModuloAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "%", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "%", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "<<", (e, s) =>
+                {DispatchTypes.Method, "<<", (e, s) =>
                      Expression.LeftShift(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
-                         : YacqExpression.Dispatch(s, DispatchType.Method, "<<", e.Arguments.Skip(1)).Reduce(s)
+                         : YacqExpression.Dispatch(s, DispatchTypes.Method, "<<", e.Arguments.Skip(1)).Reduce(s)
                      )
                 },
-                {DispatchType.Method, "<<=", (e, s) =>
+                {DispatchTypes.Method, "<<=", (e, s) =>
                     Expression.LeftShiftAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "<<", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "<<", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, ">>", (e, s) =>
+                {DispatchTypes.Method, ">>", (e, s) =>
                      Expression.RightShift(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
-                         : YacqExpression.Dispatch(s, DispatchType.Method, ">>", e.Arguments.Skip(1)).Reduce(s)
+                         : YacqExpression.Dispatch(s, DispatchTypes.Method, ">>", e.Arguments.Skip(1)).Reduce(s)
                      )
                 },
-                {DispatchType.Method, ">>=", (e, s) =>
+                {DispatchTypes.Method, ">>=", (e, s) =>
                     Expression.LeftShiftAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, ">>", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, ">>", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "++", (e, s) =>
+                {DispatchTypes.Method, "++", (e, s) =>
                      Expression.Increment(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "++=", (e, s) =>
+                {DispatchTypes.Method, "++=", (e, s) =>
                      Expression.PreIncrementAssign(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "=++", (e, s) =>
+                {DispatchTypes.Method, "=++", (e, s) =>
                      Expression.PostIncrementAssign(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "--", (e, s) =>
+                {DispatchTypes.Method, "--", (e, s) =>
                      Expression.Decrement(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "--=", (e, s) =>
+                {DispatchTypes.Method, "--=", (e, s) =>
                      Expression.PreDecrementAssign(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "=--", (e, s) =>
+                {DispatchTypes.Method, "=--", (e, s) =>
                      Expression.PostDecrementAssign(e.Arguments[0].Reduce(s))
                 },
                 #endregion
                 #region Global Method: Logical Operator
-                {DispatchType.Method, "!", (e, s) =>
+                {DispatchTypes.Method, "!", (e, s) =>
                     Expression.Not(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "~", (e, s) =>
+                {DispatchTypes.Method, "~", (e, s) =>
                     Expression.OnesComplement(e.Arguments[0].Reduce(s))
                 },
-                {DispatchType.Method, "<", (e, s) =>
+                {DispatchTypes.Method, "<", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.LessThan(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, "<", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, "<", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "<", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "<", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, "<=", (e, s) =>
+                {DispatchTypes.Method, "<=", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.LessThanOrEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, "<=", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, "<=", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "<=", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "<=", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, ">", (e, s) =>
+                {DispatchTypes.Method, ">", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.GreaterThan(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, ">", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, ">", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, ">", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, ">", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, ">=", (e, s) =>
+                {DispatchTypes.Method, ">=", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.GreaterThanOrEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, ">=", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, ">=", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, ">=", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, ">=", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, "<=>", (e, s) =>
-                    YacqExpression.Dispatch(DispatchType.Method, e.Arguments[0], "CompareTo", e.Arguments[1])
+                {DispatchTypes.Method, "<=>", (e, s) =>
+                    YacqExpression.Dispatch(DispatchTypes.Method, e.Arguments[0], "CompareTo", e.Arguments[1])
                 },
-                {DispatchType.Method, "==", (e, s) =>
+                {DispatchTypes.Method, "==", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.Equal(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, "==", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, "==", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "==", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "==", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, "!=", (e, s) =>
+                {DispatchTypes.Method, "!=", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.NotEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, "!=", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, "!=", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "!=", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "!=", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, "===", (e, s) =>
+                {DispatchTypes.Method, "===", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.ReferenceEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, "===", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, "===", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "===", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "===", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, "!==", (e, s) =>
+                {DispatchTypes.Method, "!==", (e, s) =>
                     e.Arguments.Count == 2
                         ? (Expression) Expression.ReferenceNotEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&",
-                              YacqExpression.Dispatch(s, DispatchType.Method, "!==", e.Arguments[0], e.Arguments[1]),
-                              YacqExpression.Dispatch(s, DispatchType.Method, "!==", e.Arguments.Skip(1))
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&",
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "!==", e.Arguments[0], e.Arguments[1]),
+                              YacqExpression.Dispatch(s, DispatchTypes.Method, "!==", e.Arguments.Skip(1))
                           )
                 },
-                {DispatchType.Method, "&", (e, s) =>
+                {DispatchTypes.Method, "&", (e, s) =>
                     Expression.And(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "&=", (e, s) =>
+                {DispatchTypes.Method, "&=", (e, s) =>
                     Expression.AndAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "|", (e, s) =>
+                {DispatchTypes.Method, "|", (e, s) =>
                     Expression.Or(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "|", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "|", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "|=", (e, s) =>
+                {DispatchTypes.Method, "|=", (e, s) =>
                     Expression.OrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "|", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "|", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "^", (e, s) =>
+                {DispatchTypes.Method, "^", (e, s) =>
                     Expression.ExclusiveOr(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "^", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "^", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "^=", (e, s) =>
+                {DispatchTypes.Method, "^=", (e, s) =>
                     Expression.ExclusiveOrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "^", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "^", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "&&", (e, s) =>
+                {DispatchTypes.Method, "&&", (e, s) =>
                     Expression.AndAlso(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "&&", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "&&", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
-                {DispatchType.Method, "||", (e, s) =>
+                {DispatchTypes.Method, "||", (e, s) =>
                     Expression.OrElse(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                         ? e.Arguments[1].Reduce(s)
-                        : YacqExpression.Dispatch(s, DispatchType.Method, "||", e.Arguments.Skip(1)).Reduce(s)
+                        : YacqExpression.Dispatch(s, DispatchTypes.Method, "||", e.Arguments.Skip(1)).Reduce(s)
                     )
                 },
                 #endregion
                 #region Global Method: Null Testing Operator
-                {DispatchType.Method, "??", (e, s) =>
+                {DispatchTypes.Method, "??", (e, s) =>
                      Expression.Coalesce(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
-                         : YacqExpression.Dispatch(s, DispatchType.Method, "??", e.Arguments.Skip(1)).Reduce(s)
+                         : YacqExpression.Dispatch(s, DispatchTypes.Method, "??", e.Arguments.Skip(1)).Reduce(s)
                      )
                 },
-                {DispatchType.Method, "?", (e, s) =>
+                {DispatchTypes.Method, "?", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
-                        DispatchType.Method,
+                        DispatchTypes.Method,
                         "!==",
                         e.Arguments[0],
                         Expression.Constant(null)
                     )
                 },
-                {DispatchType.Method, "!?", (e, s) =>
+                {DispatchTypes.Method, "!?", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
-                        DispatchType.Method,
+                        DispatchTypes.Method,
                         "===",
                         e.Arguments[0],
                         Expression.Constant(null)
@@ -357,7 +364,7 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Global Method: Flow Operator
-                {DispatchType.Method, ".", (e, s) =>
+                {DispatchTypes.Method, ".", (e, s) =>
                 {
                     var a0 = e.Arguments[0].Reduce(s);
                     if (a0 is TypeCandidateExpression && e.Arguments[1] is VectorExpression)
@@ -380,7 +387,7 @@ namespace XSpect.Yacq
                         return a1e0l != null
                             ? YacqExpression.Dispatch(
                                   s,
-                                  DispatchType.Method,
+                                  DispatchTypes.Method,
                                   e.Arguments[0],
                                   ((IdentifierExpression) a1e0l.First()).Name,
                                   ((VectorExpression) a1e0l.Last()).Elements
@@ -391,7 +398,7 @@ namespace XSpect.Yacq
                               )
                             : YacqExpression.Dispatch(
                                   s,
-                                  DispatchType.Method,
+                                  DispatchTypes.Method,
                                   e.Arguments[0],
                                   ((IdentifierExpression) a1[0]).Name,
                                   a1.Elements.Skip(1)
@@ -408,7 +415,7 @@ namespace XSpect.Yacq
                               )
                             : YacqExpression.Dispatch(
                                   s,
-                                  DispatchType.Member,
+                                  DispatchTypes.Member,
                                   e.Arguments[0],
                                   null,
                                   ((VectorExpression) e.Arguments[1]).Elements
@@ -418,13 +425,13 @@ namespace XSpect.Yacq
                     {
                         return YacqExpression.Dispatch(
                             s,
-                            DispatchType.Member,
+                            DispatchTypes.Member,
                             e.Arguments[0],
                             ((IdentifierExpression) e.Arguments[1]).Name
                         );
                     }
                 }},
-                {DispatchType.Method, "\\", (e, s) =>
+                {DispatchTypes.Method, "\\", (e, s) =>
                     e.Arguments[0] is VectorExpression
                         ? ((VectorExpression) e.Arguments[0]).Elements
                               .Select(p => p.List(":").If(_ => _ != null,
@@ -453,8 +460,17 @@ namespace XSpect.Yacq
                                     : Expression.Block(e.Arguments.ReduceAll(s))
                 },
                 #endregion
+                #region Global Method: Common Operator
+                {DispatchTypes.Method, "...", (e, s) =>
+                {
+                    throw new Exception();
+                }},
+                {DispatchTypes.Method, ">_<", (e, s) =>
+                    Expression.Empty().Apply(_ => Debugger.Break())
+                },
+                #endregion
                 #region Global Method: Flow
-                {DispatchType.Method, "let", (e, s) =>
+                {DispatchTypes.Method, "let", (e, s) =>
                     e.Arguments
                         .SkipLast(1)
                         .Share(_ => _.Zip(_, (k, v) => Tuple.Create(((IdentifierExpression) k).Name, v.Reduce(s))))
@@ -467,7 +483,7 @@ namespace XSpect.Yacq
                             _.Select(t => t.Item2)
                         ))
                 },
-                {DispatchType.Method, "alias", (e, s) =>
+                {DispatchTypes.Method, "alias", (e, s) =>
                     e.Arguments.Last().Reduce(new SymbolTable(s).Apply(s2 =>
                         e.Arguments
                             .SkipLast(1)
@@ -477,24 +493,24 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Global Method: Common
-                {DispatchType.Method, "input", (e, s) =>
+                {DispatchTypes.Method, "input", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
-                        DispatchType.Method,
+                        DispatchTypes.Method,
                         YacqExpression.TypeCandidate(typeof(Console)),
                         "ReadLine"
                     )
                 },
-                {DispatchType.Method, typeof(Object), "print", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "print", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
-                        DispatchType.Method,
+                        DispatchTypes.Method,
                         YacqExpression.TypeCandidate(typeof(Console)),
                         "WriteLine",
                         e.Left
                     )
                 },
-                {DispatchType.Method, "typeof", (e, s) =>
+                {DispatchTypes.Method, "typeof", (e, s) =>
                     Expression.Constant(AppDomain.CurrentDomain.GetAssemblies()
                         .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
                         .First()
@@ -502,7 +518,7 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Global Method: Expressions
-                {DispatchType.Method, "type", (e, s) =>
+                {DispatchTypes.Method, "type", (e, s) =>
                     YacqExpression.TypeCandidate(AppDomain.CurrentDomain.GetAssemblies()
                         .Choose(a => a.GetType((String) ((TextExpression) e.Arguments[0]).Value))
                         .First()
@@ -510,16 +526,16 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Macro Method: Type Handling
-                {DispatchType.Method, typeof(Static<Object>), "new", (e, s) =>
+                {DispatchTypes.Method, typeof(Static<Object>), "new", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
-                        DispatchType.Constructor,
+                        DispatchTypes.Constructor,
                         e.Left,
                         null,
                         e.Arguments
                     )
                 },
-                {DispatchType.Method, typeof(Object), "with", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "with", (e, s) =>
                     e.Left.Reduce(s).Let(l => l is NewExpression
                         ? (Expression) Expression.MemberInit(
                               (NewExpression) l,
@@ -536,19 +552,19 @@ namespace XSpect.Yacq
                         : e
                     )
                 },
-                {DispatchType.Method, typeof(Object), "to", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "to", (e, s) =>
                     Expression.Convert(
                         e.Left.Reduce(s),
                         ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
                     )
                 },
-                {DispatchType.Method, typeof(Object), "as", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "as", (e, s) =>
                     Expression.TypeAs(
                         e.Left.Reduce(s),
                         ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
                     )
                 },
-                {DispatchType.Method, typeof(Object), "is", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "is", (e, s) =>
                     Expression.TypeIs(
                         e.Left.Reduce(s),
                         ((TypeCandidateExpression) e.Arguments[0].Reduce(s)).ElectedType
@@ -556,7 +572,7 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Macro Method: Flow
-                {DispatchType.Method, typeof(Object), "let", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "let", (e, s) =>
                     e.Left.Reduce(s).Let(_ => Expression.Invoke(
                         YacqExpression.AmbiguousLambda(
                             s,
@@ -566,13 +582,13 @@ namespace XSpect.Yacq
                         _
                     ))
                 },
-                {DispatchType.Method, typeof(Object), "alias", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "alias", (e, s) =>
                     e.Arguments[1].Reduce(new SymbolTable(s).Apply(s2 => s2.Add(
                         ((IdentifierExpression) e.Arguments[0]).Name,
                         e.Left.Reduce(s)
                     )))
                 },
-                {DispatchType.Method, typeof(Object), "cond", (e, s) =>
+                {DispatchTypes.Method, typeof(Object), "cond", (e, s) =>
                     Expression.Condition(
                         e.Left.Reduce(s),
                         e.Arguments[0].Reduce(s),
@@ -585,6 +601,14 @@ namespace XSpect.Yacq
                 {"true", Expression.Constant(true)},
                 {"false", Expression.Constant(false)},
                 {"nil", Expression.Constant(null)},
+                {DispatchTypes.Member, ">_<", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        YacqExpression.TypeCandidate(typeof(Debugger)),
+                        "Break"
+                    )
+                },
                 #endregion
                 #region Global Literal: Type Import
                 {"Object", YacqExpression.TypeCandidate(typeof(Object))},
@@ -657,12 +681,12 @@ namespace XSpect.Yacq
                 )},
                 #endregion
                 #region Macro Member: Type Handling
-                {DispatchType.Member, typeof(Static<Object>), "array", (e, s) =>
+                {DispatchTypes.Member, typeof(Static<Object>), "array", (e, s) =>
                     YacqExpression.TypeCandidate(
                         ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType.MakeArrayType()
                     )
                 },
-                {DispatchType.Member, typeof(Static<Object>), "type", (e, s) =>
+                {DispatchTypes.Member, typeof(Static<Object>), "type", (e, s) =>
                     Expression.Constant(
                         ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType
                     )

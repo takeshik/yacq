@@ -37,7 +37,7 @@ namespace XSpect.Yacq.Expressions
 {
     partial class DispatchExpression
     {
-        public class Candidate
+        private class Candidate
             : IComparable<Candidate>
         {
             public Expression Instance

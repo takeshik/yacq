@@ -33,38 +33,69 @@ using System.Linq;
 
 namespace XSpect.Yacq.LanguageServices
 {
+    /// <summary>
+    /// Represents code token.
+    /// </summary>
     public struct Token
     {
+        /// <summary>
+        /// Gets the kind of this token.
+        /// </summary>
+        /// <value>Kind of this token.</value>
         public TokenType Type
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the string expression of this token.
+        /// </summary>
+        /// <value>The string expression of this token.</value>
         public String Text
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the 0-origin position in the sequence of the input of this token.
+        /// </summary>
+        /// <value>The 0-origin position in the sequence of the input of this token.</value>
         public Int32 Position
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the 1-origin line number of this token,
+        /// </summary>
+        /// <value>The 1-origin line number of this token.</value>
         public Int32 Line
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the 1-origin column number of this token,
+        /// </summary>
+        /// <value>The 1-origin column number of this token.</value>
         public Int32 Column
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Token"/> structure.
+        /// </summary>
+        /// <param name="type">The kind of this token.</param>
+        /// <param name="text">The string expression of this token.</param>
+        /// <param name="position">The 0-origin position in the sequence of the input of this token.</param>
+        /// <param name="line">The 1-origin line number of this token.</param>
+        /// <param name="column">The 1-origin column number of this token.</param>
         public Token(TokenType type, String text, Int32 position, Int32 line, Int32 column)
             : this()
         {

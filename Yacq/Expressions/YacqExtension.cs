@@ -34,8 +34,17 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Provides a set of static methods for working with specific kinds of <see cref="YacqExpression"/> and other instances.
+    /// </summary>
     public static class YacqExtension
     {
+        /// <summary>
+        /// Reduces this node to a simpler expression, with (if possible) additional symbol tables.
+        /// </summary>
+        /// <param name="expr">The reducing expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <returns>The reduced expression.</returns>
         public static Expression Reduce(this Expression expr, SymbolTable symbols)
         {
             return expr != null
@@ -45,6 +54,12 @@ namespace XSpect.Yacq.Expressions
                 : null;
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression, with (if possible) additional symbol tables. Any errors are ignored and returns <c>null</c>.
+        /// </summary>
+        /// <param name="expr">The reducing expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <returns>The reduced expression, or <c>null</c> if reducing was failed.</returns>
         public static Expression TryReduce(this Expression expr, SymbolTable symbols = null)
         {
             try
@@ -57,11 +72,24 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// Reduces all node in this sequence to a simpler expression, with (if possible) additional symbol tables.
+        /// </summary>
+        /// <param name="expressions">The sequence which contains reducing expressions.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expressions"/> contains expression which is not
+        /// <see cref="YacqExpression"/>, this parameter is ignored in them.</param>
+        /// <returns>The sequence which contains reduced expression.</returns>
         public static IEnumerable<Expression> ReduceAll(this IEnumerable<Expression> expressions, SymbolTable symbols = null)
         {
             return expressions.Select(_ => _.Reduce(symbols));
         }
 
+        /// <summary>
+        /// Gets the static type of the expression (which with reduced with additional symbol tables, if possible) that this <see cref="Expression"/> represents.
+        /// </summary>
+        /// <param name="expr">The expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>.</returns>
         public static Type Type(this Expression expr, SymbolTable symbols)
         {
             return expr != null

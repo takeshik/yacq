@@ -35,15 +35,27 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents a vector, similar to <see cref="ListExpression"/> but this generates arrays when you reduce.
+    /// </summary>
     public class VectorExpression
         : YacqExpression
     {
+        /// <summary>
+        /// Gets a collection of expressions that represent elements of this expression.
+        /// </summary>
+        /// <value>A collection of expressions that represent elements of this expression.</value>
         public ReadOnlyCollection<Expression> Elements
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the element at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the element to get.</param>
+        /// <returns>The element at the specified index.</returns>
         public Expression this[Int32 index]
         {
             get
@@ -61,11 +73,22 @@ namespace XSpect.Yacq.Expressions
             this.Elements = new ReadOnlyCollection<Expression>(elements);
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
             return "[" + String.Join(" ", this.Elements.Select(e => e.ToString())) + "]";
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return this.Elements.ReduceAll(symbols)
@@ -98,21 +121,43 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="VectorExpression"/> that represents the vector.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="VectorExpression"/> that has specified elements.</returns>
         public static VectorExpression Vector(SymbolTable symbols, params Expression[] elements)
         {
             return new VectorExpression(symbols, elements);
         }
 
+        /// <summary>
+        /// Creates a <see cref="VectorExpression"/> that represents the vector.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="VectorExpression"/> that has specified elements.</returns>
         public static VectorExpression Vector(SymbolTable symbols, IEnumerable<Expression> elements)
         {
             return Vector(symbols, elements.ToArray());
         }
 
+        /// <summary>
+        /// Creates a <see cref="VectorExpression"/> that represents the vector.
+        /// </summary>
+        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="VectorExpression"/> that has specified elements.</returns>
         public static VectorExpression Vector(params Expression[] elements)
         {
             return Vector(null, elements);
         }
 
+        /// <summary>
+        /// Creates a <see cref="VectorExpression"/> that represents the vector.
+        /// </summary>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>An <see cref="VectorExpression"/> that has specified elements.</returns>
         public static VectorExpression Vector(IEnumerable<Expression> elements)
         {
             return Vector(null, elements.ToArray());

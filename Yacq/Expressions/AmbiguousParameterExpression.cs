@@ -33,11 +33,18 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents an ambiguous paranmeter expression, a parameter expression which may be type-unfixed.
+    /// </summary>
     public class AmbiguousParameterExpression
         : YacqExpression
     {
         private readonly Type _type;
 
+        /// <summary>
+        /// Gets the static type of the expression that this expression represents.
+        /// </summary>
+        /// <value>The <see cref="System.Type"/> that represents the static type of the expression.</value>
         public override Type Type
         {
             get
@@ -46,12 +53,20 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// Gets the name of this parameter.
+        /// </summary>
+        /// <value>The name of this parameter.</value>
         public String Name
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the type of this parameter is unfixed.
+        /// </summary>
+        /// <value><c>true</c> if the type of this parameter is unfixed; otherwise, <c>false</c>.</value>
         public Boolean IsUnfixed
         {
             get
@@ -63,11 +78,22 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
             return this.Name ?? "?";
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return this.IsUnfixed
@@ -89,41 +115,84 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="type">>The type of the parameter.</param>
+        /// <param name="name">The name of this parameter.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has the specified name and type.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(SymbolTable symbols, Type type, String name)
         {
             return new AmbiguousParameterExpression(symbols, type, name);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="type">>The type of the parameter.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has no name and specified type.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(SymbolTable symbols, Type type)
         {
             return AmbiguousParameter(symbols, type, null);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="name">The name of this parameter.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has the specified name and its type is not fixed.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(SymbolTable symbols, String name)
         {
             return AmbiguousParameter(symbols, null, name);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has no name and its type is not fixed.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(SymbolTable symbols)
         {
             return AmbiguousParameter(symbols, null, null);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="type">>The type of the parameter.</param>
+        /// <param name="name">The name of this parameter.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has the specified name and type.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(Type type, String name)
         {
             return AmbiguousParameter(null, type, name);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="type">>The type of the parameter.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has no name and specified type.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(Type type)
         {
             return AmbiguousParameter(null, type, null);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
+        /// <param name="name">The name of this parameter.</param>
+        /// <returns>An <see cref="AmbiguousParameterExpression"/> that has the specified name and its type is not fixed.</returns>
         public static AmbiguousParameterExpression AmbiguousParameter(String name)
         {
             return AmbiguousParameter(null, null, name);
         }
 
+        /// <summary>
+        /// Creates a <see cref="AmbiguousParameterExpression"/> that represents the type-unfixed parameter expression.
+        /// </summary>
         public static AmbiguousParameterExpression AmbiguousParameter()
         {
             return AmbiguousParameter(null, null, null);

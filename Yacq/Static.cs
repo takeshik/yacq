@@ -29,6 +29,10 @@
 
 namespace XSpect.Yacq
 {
+    /// <summary>
+    /// Specify the symbol is for static call, not instance call. Use only for <see cref="SymbolEntry"/>.
+    /// </summary>
+    /// <typeparam name="T">The type which specify for the symbol's LeftType.</typeparam>
     public class Static<T>
     {
     }

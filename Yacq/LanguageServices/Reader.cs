@@ -35,13 +35,16 @@ using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.LanguageServices
 {
+    /// <summary>
+    /// Provides pre-evaluating <see cref="YacqExpression"/> generator from <see cref="Token"/> sequence.
+    /// </summary>
     public partial class Reader
     {
         private LinkedListNode<Token> _cursor;
 
         private readonly Stack<Scope> _stack;
 
-        public Scope Current
+        internal Scope Current
         {
             get
             {
@@ -49,6 +52,10 @@ namespace XSpect.Yacq.LanguageServices
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Reader"/> class.
+        /// </summary>
+        /// <param name="tokens">The reading <see cref="Token"/> sequence.</param>
         public Reader(IEnumerable<Token> tokens)
         {
             this._cursor = new LinkedList<Token>(tokens).First;
@@ -56,6 +63,10 @@ namespace XSpect.Yacq.LanguageServices
             this.EnterScope();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Reader"/> class.
+        /// </summary>
+        /// <param name="code">The reading code string.</param>
         public Reader(String code)
             : this(new Tokenizer(code))
         {
@@ -66,7 +77,7 @@ namespace XSpect.Yacq.LanguageServices
             this._stack.Push(new Scope(this._cursor.Value));
         }
 
-        public ICollection<Expression> LeaveScope()
+        internal ICollection<YacqExpression> LeaveScope()
         {
             var context = this._stack.Pop();
             if (!(
@@ -83,7 +94,11 @@ namespace XSpect.Yacq.LanguageServices
             }
         }
 
-        public ICollection<Expression> Read()
+        /// <summary>
+        /// Read the token sequence and generate expressions.
+        /// </summary>
+        /// <returns>Generated expressions.</returns>
+        public ICollection<YacqExpression> Read()
         {
             do
             {

@@ -1,5 +1,4 @@
-﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
+﻿// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
@@ -36,6 +35,9 @@ using System.Text.RegularExpressions;
 
 namespace XSpect.Yacq.LanguageServices
 {
+    /// <summary>
+    /// Provides <see cref="Token"/> enumerator from code string.
+    /// </summary>
     public class Tokenizer
         : Object,
           IEnumerable<Token>
@@ -46,12 +48,20 @@ namespace XSpect.Yacq.LanguageServices
 
         private Int32 _column;
 
+        /// <summary>
+        /// Gets the input code string.
+        /// </summary>
+        /// <value>The input code string.</value>
         public String Input
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Tokenizer"/> class.
+        /// </summary>
+        /// <param name="input">The input code string.</param>
         public Tokenizer(String input)
         {
             this._position = 0;
@@ -60,21 +70,21 @@ namespace XSpect.Yacq.LanguageServices
             this.Input = input;
         }
 
-        public Char PeekChar(Int32 offset = 0)
+        internal Char PeekChar(Int32 offset = 0)
         {
             return this._position + offset >= this.Input.Length
                 ? '\0'
                 : this.Input[this._position + offset];
         }
 
-        public Char ReadChar()
+        internal Char ReadChar()
         {
             var c = this.PeekChar();
             ++this._position;
             return c;
         }
 
-        public String Peek(Int32 length, Int32 offset = 0)
+        internal String Peek(Int32 length, Int32 offset = 0)
         {
             var sb = new StringBuilder(length, length);
             Enumerable.Range(offset, length)
@@ -83,7 +93,7 @@ namespace XSpect.Yacq.LanguageServices
             return sb.ToString();
         }
 
-        public String Read(Int32 length)
+        internal String Read(Int32 length)
         {
             var s = this.Peek(length);
             this._position += length;
@@ -95,7 +105,7 @@ namespace XSpect.Yacq.LanguageServices
             return new Token(type, str, this._position, this._line, this._column);
         }
 
-        public Token Peek()
+        internal Token Peek()
         {
             Char c;
             switch (c = this.PeekChar())
@@ -157,7 +167,7 @@ namespace XSpect.Yacq.LanguageServices
             }
         }
 
-        public Token Read()
+        internal Token Read()
         {
             Token t = this.Peek();
             if (t.Text.Contains("\r") || t.Text.Contains("\n"))
@@ -173,6 +183,12 @@ namespace XSpect.Yacq.LanguageServices
             return t;
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="IEnumerator{T}"/> that can be used to iterate through the collection.
+        /// </returns>
         public IEnumerator<Token> GetEnumerator()
         {
             Token t;

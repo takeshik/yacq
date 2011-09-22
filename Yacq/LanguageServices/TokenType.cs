@@ -33,24 +33,75 @@ using System.Linq;
 
 namespace XSpect.Yacq.LanguageServices
 {
+    /// <summary>
+    /// Specifies kinds of <see cref="Token"/>.
+    /// </summary>
     public enum TokenType
         : byte
     {
+        /// <summary>
+        /// End of token sequence.
+        /// </summary>
         End = 0,
+        /// <summary>
+        /// String which is composed by spaces, tabs and newlines.
+        /// </summary>
         Whitespace,
+        /// <summary>
+        /// ' character (not used; reserved).
+        /// </summary>
         Quote,
+        /// <summary>
+        /// ( character.
+        /// </summary>
         LeftParenthesis,
+        /// <summary>
+        /// ) character.
+        /// </summary>
         RightParenthesis,
+        /// <summary>
+        /// , character.
+        /// </summary>
         Comma,
+        /// <summary>
+        /// . character.
+        /// </summary>
         Period,
+        /// <summary>
+        /// : character.
+        /// </summary>
         Colon,
+        /// <summary>
+        /// [ character.
+        /// </summary>
         LeftBracket,
+        /// <summary>
+        /// ] character.
+        /// </summary>
         RightBracket,
+        /// <summary>
+        /// { character.
+        /// </summary>
         LeftBrace,
+        /// <summary>
+        /// } character.
+        /// </summary>
         RightBrace,
+        /// <summary>
+        /// String which is marked as comment.
+        /// </summary>
         Comment,
+        /// <summary>
+        /// String which is marked as string literal.
+        /// </summary>
         StringLiteral,
+        /// <summary>
+        /// String which is marked as number literal.
+        /// </summary>
         NumberLiteral,
+        /// <summary>
+        /// String which is marked as identifer.
+        /// </summary>
         Identifier,
     }
 }

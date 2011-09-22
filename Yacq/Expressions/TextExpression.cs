@@ -33,21 +33,36 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Represents an expression which is a string or a character.
+    /// </summary>
     public class TextExpression
         : YacqExpression
     {
+        /// <summary>
+        /// Gets the character in <see cref="SourceText"/> which is used to quote the string.
+        /// </summary>
+        /// <value>The character in <see cref="SourceText"/> which is used to quote the string.</value>
         public Char QuoteChar
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the quoted inner string and source of constant string or character of this expression.
+        /// </summary>
+        /// <value>The quoted inner string and source of constant string or character of this expression.</value>
         public String SourceText
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the constant string or character which this expression represents.
+        /// </summary>
+        /// <value>The constant string or character which this expression represents.</value>
         public Object Value
         {
             get;
@@ -66,6 +81,12 @@ namespace XSpect.Yacq.Expressions
             this.Value = this.Parse();
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this expression.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this expression.
+        /// </returns>
         public override String ToString()
         {
             return this.QuoteChar == default(Char)
@@ -73,12 +94,17 @@ namespace XSpect.Yacq.Expressions
                 : this.QuoteChar + this.SourceText + this.QuoteChar;
         }
 
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             return Constant(this.Value);
         }
 
-        public Object Parse()
+        private Object Parse()
         {
             if (this.QuoteChar == default(Char))
             {
@@ -94,21 +120,45 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        /// <summary>
+        /// Creates a <see cref="TextExpression"/> that represents a string or a character from specified source string.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="quoteChar">The character which is used for quoting the text.</param>
+        /// <param name="sourceText">The quoted inner string.</param>
+        /// <returns>An <see cref="TextExpression"/> which generates a string or a character from specified string.</returns>
         public static TextExpression Text(SymbolTable symbols, Char quoteChar, String sourceText)
         {
             return new TextExpression(symbols, quoteChar, sourceText);
         }
 
+        /// <summary>
+        /// Creates a <see cref="TextExpression"/> that represents a string or a character from specified source string.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="text">The string which contains quoting characters..</param>
+        /// <returns>An <see cref="TextExpression"/> which generates a string or a character from specified string.</returns>
         public static TextExpression Text(SymbolTable symbols, String text)
         {
             return Text(symbols, text.First(), text.Substring(1, text.Length - 2));
         }
 
+        /// <summary>
+        /// Creates a <see cref="TextExpression"/> that represents a string or a character from specified source string.
+        /// </summary>
+        /// <param name="quoteChar">The character which is used for quoting the text.</param>
+        /// <param name="sourceText">The quoted inner string.</param>
+        /// <returns>An <see cref="TextExpression"/> which generates a string or a character from specified string.</returns>
         public static TextExpression Text(Char quoteChar, String sourceText)
         {
             return Text(null, quoteChar, sourceText);
         }
 
+        /// <summary>
+        /// Creates a <see cref="TextExpression"/> that represents a string or a character from specified source string.
+        /// </summary>
+        /// <param name="text">The string which contains quoting characters..</param>
+        /// <returns>An <see cref="TextExpression"/> which generates a string or a character from specified string.</returns>
         public static TextExpression Text(String text)
         {
             return Text(null, text.First(), text.Substring(1, text.Length - 2));

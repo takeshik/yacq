@@ -37,7 +37,7 @@ namespace XSpect.Yacq.LanguageServices
 {
     public partial class Reader
     {
-        public class Scope
+        internal class Scope
         {
             public Token Header
             {
@@ -45,7 +45,7 @@ namespace XSpect.Yacq.LanguageServices
                 private set;
             }
 
-            public LinkedList<Expression> List
+            public LinkedList<YacqExpression> List
             {
                 get;
                 private set;
@@ -60,11 +60,11 @@ namespace XSpect.Yacq.LanguageServices
             public Scope(Token header)
             {
                 this.Header = header;
-                this.List = new LinkedList<Expression>();
+                this.List = new LinkedList<YacqExpression>();
                 this.Hook = new Stack<Action<Scope>>();
             }
 
-            public void AddLast(Expression obj)
+            public void AddLast(YacqExpression obj)
             {
                 this.List.AddLast(obj);
                 if (this.Hook.Any())
