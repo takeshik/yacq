@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XSpect.Yacq</RootNamespace>
+    <AssemblyName>Yacq</AssemblyName>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+  </PropertyGroup>
+  <!-- This property group is only here to support building this project using the 
+       MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
+       to set the TargetFrameworkVersion to v3.5 -->
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Yacq.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugNoSign|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugNoSign\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;SILVERLIGHT;NOSIGN</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>Bin\Debug\YacqSilverlight.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSign|AnyCPU'">
+    <OutputPath>bin\ReleaseNoSign\</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT;NOSIGN</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>Bin\Release\YacqSilverlight.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <NoConfig>true</NoConfig>
+    <DocumentationFile>bin\ReleaseNoSign\Yacq.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="system" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Interactive, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ix_Experimental-Main.1.1.10823\lib\SL4\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Interactive.Providers, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ix_Experimental-Providers.1.1.10823\lib\SL4\System.Interactive.Providers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rx_Experimental-Main.1.1.10621\lib\SL4\System.Reactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Providers, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rx_Experimental-Providers.1.1.10621\lib\SL4\System.Reactive.Providers.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Yacq\Expressions\AmbiguousLambdaExpression.cs">
+      <Link>Expressions\AmbiguousLambdaExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\AmbiguousParameterExpression.cs">
+      <Link>Expressions\AmbiguousParameterExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\DispatchExpression.Candidate.cs">
+      <Link>Expressions\DispatchExpression.Candidate.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\DispatchExpression.cs">
+      <Link>Expressions\DispatchExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\DispatchTypes.cs">
+      <Link>Expressions\DispatchTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\IdentifierExpression.cs">
+      <Link>Expressions\IdentifierExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\LambdaListExpression.cs">
+      <Link>Expressions\LambdaListExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\ListExpression.cs">
+      <Link>Expressions\ListExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\NumberExpression.cs">
+      <Link>Expressions\NumberExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\TextExpression.cs">
+      <Link>Expressions\TextExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\TypeCandidateExpression.cs">
+      <Link>Expressions\TypeCandidateExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\VectorExpression.cs">
+      <Link>Expressions\VectorExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqExpression.cs">
+      <Link>Expressions\YacqExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqExtension.cs">
+      <Link>Expressions\YacqExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Extension.cs">
+      <Link>Extension.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Reader.cs">
+      <Link>LanguageServices\Reader.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Reader.Scope.cs">
+      <Link>LanguageServices\Reader.Scope.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Token.cs">
+      <Link>LanguageServices\Token.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Tokenizer.cs">
+      <Link>LanguageServices\Tokenizer.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\TokenType.cs">
+      <Link>LanguageServices\TokenType.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Static.cs">
+      <Link>Static.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\SymbolTable.cs">
+      <Link>SymbolTable.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\SymbolTable.Root.cs">
+      <Link>SymbolTable.Root.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\YacqServices.cs">
+      <Link>YacqServices.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
