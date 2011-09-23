@@ -220,7 +220,7 @@ namespace XSpect.Yacq.Expressions
                               : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
                           ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
                 case DispatchTypes.Method:
-                    return this._left is TypeCandidateExpression
+                    return (this._left is TypeCandidateExpression
                         ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
                               .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                           )
@@ -241,7 +241,12 @@ namespace XSpect.Yacq.Expressions
                                   .Where(t => t.HasExtensionMethods())
                                   .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
                                   .Where(m => m.Name == this.Name && m.IsExtensionMethod())
-                              );
+                              )
+#if SILVERLIGHT
+                    ).Cast<MemberInfo>();
+#else
+                    );
+#endif
                 default:
                     throw new NotSupportedException("Dispatcher doesn't support: " + this.DispatchType);
             }
@@ -336,10 +341,15 @@ namespace XSpect.Yacq.Expressions
                           )
                           .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
                               _.Take(candidate.Parameters.Count - 1)
-                                  .Concat(EnumerableEx.Return(NewArrayInit(
-                                      candidate.Parameters.Last().ParameterType.GetElementType(),
-                                      _.Skip(candidate.Parameters.Count - 1)
-                                  )))
+                                  .Concat(EnumerableEx.Return(
+#if SILVERLIGHT
+                                      (Expression)
+#endif
+                                      NewArrayInit(
+                                          candidate.Parameters.Last().ParameterType.GetElementType(),
+                                          _.Skip(candidate.Parameters.Count - 1)
+                                      )
+                                  ))
                           )
                           .ToArray()
                   )

@@ -511,17 +511,27 @@ namespace XSpect.Yacq
                     )
                 },
                 {DispatchTypes.Method, "typeof", (e, s) =>
-                    Expression.Constant(AppDomain.CurrentDomain.GetAssemblies()
-                        .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
-                        .First()
+                    Expression.Constant(
+#if SILVERLIGHT
+                        Type.GetType((String) ((TextExpression) e.Arguments[0]).Value)
+#else
+                        AppDomain.CurrentDomain.GetAssemblies()
+                            .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
+                            .First()
+#endif
                     )
                 },
                 #endregion
                 #region Global Method: Expressions
                 {DispatchTypes.Method, "type", (e, s) =>
-                    YacqExpression.TypeCandidate(AppDomain.CurrentDomain.GetAssemblies()
-                        .Choose(a => a.GetType((String) ((TextExpression) e.Arguments[0]).Value))
-                        .First()
+                    YacqExpression.TypeCandidate(
+#if SILVERLIGHT
+                        Type.GetType((String) ((TextExpression) e.Arguments[0]).Value)
+#else
+                        AppDomain.CurrentDomain.GetAssemblies()
+                            .Choose(a => a.GetType((String) ((TextExpression) e.Arguments[0]).Value))
+                            .First()
+#endif
                     )
                 },
                 #endregion
@@ -539,15 +549,19 @@ namespace XSpect.Yacq
                     e.Left.Reduce(s).Let(l => l is NewExpression
                         ? (Expression) Expression.MemberInit(
                               (NewExpression) l,
-                              e.Arguments.Share(_ => _
-                                  .Zip(_, (k, v) => Expression.Bind(
-                                      l.Type.GetMember(
-                                          ((IdentifierExpression) k).Name,
-                                          BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
-                                      ).Single(),
-                                      v.Reduce(s)
-                                  ))
-                              )
+                              e.Arguments
+                                  .Share(_ => _
+                                      .Zip(_, (k, v) => Expression.Bind(
+                                          l.Type.GetMember(
+                                              ((IdentifierExpression) k).Name,
+                                              BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+                                          ).Single(),
+                                          v.Reduce(s)
+                                      ))
+                                  )
+#if SILVERLIGHT
+                                  .Cast<MemberBinding>()
+#endif
                           )
                         : e
                     )

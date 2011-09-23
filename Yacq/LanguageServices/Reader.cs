@@ -111,17 +111,32 @@ namespace XSpect.Yacq.LanguageServices
                         break;
                     case TokenType.RightParenthesis:
                         this.LeaveScope().Apply(l =>
-                            this.Current.AddLast(YacqExpression.List(l))
+                            this.Current.AddLast(YacqExpression.List(
+                                l
+#if SILVERLIGHT
+                                    .Cast<Expression>()
+#endif
+                            ))
                         );
                         break;
                     case TokenType.RightBracket:
                         this.LeaveScope().Apply(l =>
-                            this.Current.AddLast(YacqExpression.Vector(l))
+                            this.Current.AddLast(YacqExpression.Vector(
+                                l
+#if SILVERLIGHT
+                                    .Cast<Expression>()
+#endif
+                            ))
                         );
                         break;
                     case TokenType.RightBrace:
                         this.LeaveScope().Apply(l =>
-                            this.Current.AddLast(YacqExpression.LambdaList(l))
+                            this.Current.AddLast(YacqExpression.LambdaList(
+                                l
+#if SILVERLIGHT
+                                    .Cast<Expression>()
+#endif
+                            ))
                         );
                         break;
                     case TokenType.Period:

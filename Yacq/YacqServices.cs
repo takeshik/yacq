@@ -51,6 +51,9 @@ namespace XSpect.Yacq
         {
             return new Reader(code)
                 .Read()
+#if SILVERLIGHT
+                .Cast<Expression>()
+#endif
                 .ReduceAll(symbols)
                 .ToArray();
         }
