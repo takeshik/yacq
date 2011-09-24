@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqRun", "YacqRun\YacqRun.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqSilverlight", "YacqSilverlight\YacqSilverlight.csproj", "{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqSilverlightRun", "YacqSilverlightRun\YacqSilverlightRun.csproj", "{A726FAEF-C23A-4811-A947-E06B9A3A206C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,14 @@ Global
 		{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}.ReleaseNoSign|Any CPU.ActiveCfg = ReleaseNoSign|Any CPU
 		{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}.ReleaseNoSign|Any CPU.Build.0 = ReleaseNoSign|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.DebugNoSign|Any CPU.ActiveCfg = DebugNoSign|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.DebugNoSign|Any CPU.Build.0 = DebugNoSign|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.ReleaseNoSign|Any CPU.ActiveCfg = ReleaseNoSign|Any CPU
+		{A726FAEF-C23A-4811-A947-E06B9A3A206C}.ReleaseNoSign|Any CPU.Build.0 = ReleaseNoSign|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
