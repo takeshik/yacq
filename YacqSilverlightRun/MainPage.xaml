@@ -1,0 +1,76 @@
+﻿<UserControl x:Class="XSpect.Yacq.Runner.MainPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:mvlc="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Extras.SL4"
+             mc:Ignorable="d"
+             Height="600"
+             Width="800"
+             DataContext="{Binding Main, Source={StaticResource Locator}}" xmlns:sdk="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid x:Name="LayoutRoot">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid x:Name="codeListPane" Grid.Column="0" Margin="0,0,6,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <ListBox x:Name="codeListBox" Grid.Row="0" ItemsSource="{Binding Codes}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" ToolTipService.ToolTip="{Binding Description}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBox Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                     Text="{Binding SelectedItem.Description,ElementName=codeListBox}" />
+        </Grid>
+        <sdk:GridSplitter Width="6" />
+        <Grid x:Name="codingPane" Grid.Column="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock FontSize="14" FontWeight="Bold">YACQ Runner for Silverlight</TextBlock>
+                </StackPanel>
+                <TextBox Grid.Row="1" AcceptsReturn="True" Text="{Binding SelectedItem.Body, ElementName=codeListBox, Mode=TwoWay}"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas, Portable User Interface" FontSize="12" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Button Width="50" Content="Run">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <mvlc:EventToCommand Command="{Binding SelectedItem.Run, ElementName=codeListBox}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                    <Button Width="75" Content="Reset Code">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <mvlc:EventToCommand Command="{Binding SelectedItem.Reset, ElementName=codeListBox}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+                    <TextBlock />
+                </StackPanel>
+                <TextBox Grid.Row="3" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                         TextWrapping="Wrap" Text="{Binding SelectedItem.Output, ElementName=codeListBox}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
