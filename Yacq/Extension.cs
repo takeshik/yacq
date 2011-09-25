@@ -163,8 +163,22 @@ namespace XSpect.Yacq
         internal static IEnumerable<Expression> GetDescendants(this Expression self)
         {
             return self.GetType().GetConvertibleTypes()
+#if SILVERLIGHT
+                .SelectMany(t => t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(p => 
+                        (typeof(Expression).IsAssignableFrom(p.PropertyType)
+                            || p.PropertyType.GetInterfaces()
+                                   .Any(_ => _.TryGetGenericTypeDefinition() == typeof(IEnumerable<>)
+                                       && typeof(Expression).IsAssignableFrom(_.GetGenericArguments()[0])
+                                   )
+                        ) && p.GetIndexParameters().IsEmpty()
+                    )
+                )
+                .Select(p => p.GetValue(self, null))
+#else
                 .SelectMany(t => t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
-                .Select(f => f.GetValue(self))
+                .Select(p => p.GetValue(self))
+#endif
                 .SelectMany(_ => _ as IEnumerable<Expression>
                     ?? (_ is Expression
                            ? EnumerableEx.Return((Expression) _)

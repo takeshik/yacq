@@ -35,10 +35,9 @@ using System.Net;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows;
-using System.Windows.Threading;
-using System.Xml.Linq;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Threading;
 using XSpect.Yacq.Runner.Model;
 
 namespace XSpect.Yacq.Runner.ViewModel
@@ -54,7 +53,7 @@ namespace XSpect.Yacq.Runner.ViewModel
             private set;
         }
 
-        public CodeCollectionViewModel()
+        public CodeCollectionViewModel(Boolean isInDesignMode)
         {
             this._model = new CodeCollection();
             this._model.CollectionChanged += (s, e) =>
@@ -62,9 +61,12 @@ namespace XSpect.Yacq.Runner.ViewModel
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Deployment.Current.Dispatcher.BeginInvoke(() =>
-                            this.Insert(e.NewStartingIndex, new CodeViewModel(e.NewItems.OfType<Code>().Single()))
-                        );
+                        if (!isInDesignMode)
+                        {
+                            DispatcherHelper.UIDispatcher.BeginInvoke(() =>
+                                this.Add(new CodeViewModel(e.NewItems.OfType<Code>().Single()))
+                            );
+                        }
                         break;
                 }
             };

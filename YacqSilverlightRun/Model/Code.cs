@@ -32,6 +32,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reactive.Linq;
 using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Runner.Model
@@ -134,41 +135,46 @@ namespace XSpect.Yacq.Runner.Model
         public void Run()
         {
             this.Output = "";
-            try
+            Observable.Start(() =>
             {
-                this.WriteOutput("Started.");
-                var expr = YacqServices.Parse(
-                    new SymbolTable()
-                    {
-                        {DispatchTypes.Method, typeof(Object), "print", (e, s) =>
-                            YacqExpression.Dispatch(
-                                s,
-                                DispatchTypes.Method,
-                                Expression.Constant(this),
-                                "Print",
-                                e.Left
-                            )
-                        },
-                    },
-                    this.Body
-                );
-                this.WriteOutput("Parsed.\nGenerated Expression:\n" + expr);
-                var func = Expression.Lambda(expr).Compile();
-                this.WriteOutput("Compiled.");
-                var ret = func.DynamicInvoke();
-                this.WriteOutput("Finished.\nReturned Type: " + (ret != null ? ret.GetType().Name : "null"));
-                if (ret != null)
+                try
                 {
-                    this.Output += "Returned Value:\n" + (ret is IEnumerable && !(ret is String)
-                        ? String.Join(", ", ((IEnumerable) ret).OfType<Object>().Select(e => e.ToString()))
-                        : ret
+                    this.WriteOutput("Started.");
+                    var expr = YacqServices.Parse(
+                        new SymbolTable()
+                        {
+                            {DispatchTypes.Method, typeof(Object), "print", (e, s) =>
+                                YacqExpression.Dispatch(
+                                    s,
+                                    DispatchTypes.Method,
+                                    Expression.Constant(this),
+                                    "Print",
+                                    e.Left
+                                )
+                            },
+                        },
+                        this.Body
                     );
+                    this.WriteOutput("Parsed.\nGenerated Expression:\n" + expr);
+                    var func = Expression.Lambda(expr).Compile();
+                    this.WriteOutput("Compiled.");
+                    var ret = func.DynamicInvoke();
+                    this.WriteOutput("Finished.\nReturned Type: " + (ret != null ? ret.GetType().Name : "null"));
+                    if (ret != null)
+                    {
+                        this.Output += "Returned Value:\n" + (ret is IEnumerable && !(ret is String)
+                            ? String.Join(", ", ((IEnumerable) ret).OfType<Object>().Select(e => e.ToString()))
+                            : ret
+                        );
+                    }
                 }
-            }
-            catch (Exception ex)
+                catch (Exception ex)
+                {
+                    this.WriteOutput(ex.ToString());
+                }
+            }).Subscribe(_ =>
             {
-                this.WriteOutput(ex.ToString());
-            }
+            });
         }
 
         public void Reset()
@@ -179,6 +185,7 @@ namespace XSpect.Yacq.Runner.Model
 
         public void Print(Object obj)
         {
+            
             this.Output += obj + "\n";
         }
 

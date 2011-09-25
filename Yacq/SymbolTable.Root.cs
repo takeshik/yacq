@@ -28,16 +28,17 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
+using System.Text;
 using XSpect.Yacq.Expressions;
-using XSpect.Yacq.LanguageServices;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using System.Reactive;
 
 namespace XSpect.Yacq
 {
@@ -625,6 +626,7 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Global Literal: Type Import
+                // System, Data Types
                 {"Object", YacqExpression.TypeCandidate(typeof(Object))},
                 {"Boolean", YacqExpression.TypeCandidate(typeof(Boolean))},
                 {"Char", YacqExpression.TypeCandidate(typeof(Char))},
@@ -638,6 +640,7 @@ namespace XSpect.Yacq
                 {"Int64", YacqExpression.TypeCandidate(typeof(Int64))},
                 {"UInt64", YacqExpression.TypeCandidate(typeof(UInt64))},
                 {"IntPtr", YacqExpression.TypeCandidate(typeof(IntPtr))},
+                {"UIntPtr", YacqExpression.TypeCandidate(typeof(UIntPtr))},
                 {"Single", YacqExpression.TypeCandidate(typeof(Single))},
                 {"Double", YacqExpression.TypeCandidate(typeof(Double))},
                 {"Decimal", YacqExpression.TypeCandidate(typeof(Decimal))},
@@ -645,16 +648,40 @@ namespace XSpect.Yacq
                 {"DateTimeOffset", YacqExpression.TypeCandidate(typeof(DateTimeOffset))},
                 {"TimeSpan", YacqExpression.TypeCandidate(typeof(TimeSpan))},
                 {"Guid", YacqExpression.TypeCandidate(typeof(Guid))},
-                {"Math", YacqExpression.TypeCandidate(typeof(Math))},
+                {"Uri", YacqExpression.TypeCandidate(typeof(Uri))},
+                // System, Utility Classes
                 {"Convert", YacqExpression.TypeCandidate(typeof(Convert))},
+                {"Math", YacqExpression.TypeCandidate(typeof(Math))},
+                {"Nullable", YacqExpression.TypeCandidate(typeof(Nullable))},
+                {"Random", YacqExpression.TypeCandidate(typeof(Random))},
                 {"Tuple", YacqExpression.TypeCandidate(typeof(Tuple))},
+                // System.Collections.*
+                {"Dictionary", YacqExpression.TypeCandidate(typeof(Dictionary<,>))},
+                {"HashSet", YacqExpression.TypeCandidate(typeof(HashSet<>))},
+                {"LinkedList", YacqExpression.TypeCandidate(typeof(LinkedList<>))},
+                {"List", YacqExpression.TypeCandidate(typeof(List<>))},
+                {"Queue", YacqExpression.TypeCandidate(typeof(LinkedList<>))},
+                {"Stack", YacqExpression.TypeCandidate(typeof(Stack<>))},
+                // System.IO
+                {"Directory", YacqExpression.TypeCandidate(typeof(Directory))},
+                {"DirectoryInfo", YacqExpression.TypeCandidate(typeof(DirectoryInfo))},
+                {"File", YacqExpression.TypeCandidate(typeof(File))},
+                {"FileInfo", YacqExpression.TypeCandidate(typeof(FileInfo))},
+                {"Path", YacqExpression.TypeCandidate(typeof(Path))},
+                // System.Text.*
+                {"Encoding", YacqExpression.TypeCandidate(typeof(Encoding))},
                 {"Regex", YacqExpression.TypeCandidate(typeof(Regex))},
+                {"StringBuilder", YacqExpression.TypeCandidate(typeof(StringBuilder))},
+                // LINQ Types
                 {"Enumerable", YacqExpression.TypeCandidate(typeof(Enumerable))},
                 {"EnumerableEx", YacqExpression.TypeCandidate(typeof(EnumerableEx))},
                 {"Queryable", YacqExpression.TypeCandidate(typeof(Queryable))},
+                {"QueryableEx", YacqExpression.TypeCandidate(typeof(QueryableEx))},
                 {"Observable", YacqExpression.TypeCandidate(typeof(Observable))},
+                {"Observer", YacqExpression.TypeCandidate(typeof(Observer))},
                 {"ObservableExtensions", YacqExpression.TypeCandidate(typeof(ObservableExtensions))},
                 {"Qbservable", YacqExpression.TypeCandidate(typeof(Qbservable))},
+                // Generic Delegate Types
                 {"Action", YacqExpression.TypeCandidate(
                     typeof(Action),
                     typeof(Action<>),
