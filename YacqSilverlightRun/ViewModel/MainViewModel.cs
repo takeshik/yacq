@@ -57,15 +57,10 @@ namespace XSpect.Yacq.Runner.ViewModel
         /// </summary>
         public MainViewModel()
         {
-            this.Codes = new CodeCollectionViewModel();
-            this.Codes.Fetch.Execute(null);
-            if (IsInDesignMode)
+            this.Codes = new CodeCollectionViewModel(this.IsInDesignMode);
+            if (!this.IsInDesignMode)
             {
-                // Code runs in Blend --> create design time data.
-            }
-            else
-            {
-                // Code runs "for real"
+                this.Codes.Fetch.Execute(null);
             }
         }
     }

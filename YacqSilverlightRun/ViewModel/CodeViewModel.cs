@@ -30,6 +30,7 @@
 using System;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Threading;
 using XSpect.Yacq.Runner.Model;
 
 namespace XSpect.Yacq.Runner.ViewModel
@@ -134,7 +135,9 @@ namespace XSpect.Yacq.Runner.ViewModel
             {
                 if (e.PropertyName == "Output" || e.PropertyName == "Body")
                 {
-                    this.RaisePropertyChanged(e.PropertyName);
+                    DispatcherHelper.UIDispatcher.BeginInvoke(() =>
+                        this.RaisePropertyChanged(e.PropertyName)
+                    );
                 }
             };
             this.Run = new RelayCommand(() => this._model.Run(), () => !String.IsNullOrWhiteSpace(this.Body));
