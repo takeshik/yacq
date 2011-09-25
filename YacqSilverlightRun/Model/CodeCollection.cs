@@ -33,6 +33,7 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Windows;
 using System.Xml.Linq;
 using AsynchronousExtensions;
 
@@ -43,7 +44,14 @@ namespace XSpect.Yacq.Runner.Model
     {
         public void Fetch()
         {
-            WebRequest.CreateHttp("http://www.takeshik.org/yacq/codes.xml")
+            var sourceUri = new Uri(Application.Current.Host.Source.AbsoluteUri);
+            var sourceBase =
+                "http://" +
+                sourceUri.Host +
+                String.Join("/", sourceUri.AbsolutePath.Split('/').SkipLast(1)) +
+                "/";
+            var query = "?_=" + (DateTime.UtcNow - new DateTime(1970, 1, 1)).Seconds;
+            WebRequest.CreateHttp(sourceBase + "codes.xml" + query)
                 .DownloadStringAsync()
                 .Subscribe(s => XDocument.Parse(s).Root
                     .Elements("code")
@@ -55,9 +63,7 @@ namespace XSpect.Yacq.Runner.Model
                             Title = xc.Attribute("title").Value,
                             Description = xc.Element("desc").Let(x =>
                                 new Lazy<String>(String.IsNullOrEmpty(x.Value) && x.Attribute("see") != null
-                                    ? ((Func<String>) (() => WebRequest.Create(
-                                          "http://www.takeshik.org/yacq/codes/" + id + ".desc"
-                                      )
+                                    ? ((Func<String>) (() => WebRequest.Create(sourceBase + id + ".desc" + query)
                                           .DownloadStringAsync()
                                           .First()
                                       ))
@@ -66,9 +72,7 @@ namespace XSpect.Yacq.Runner.Model
                             ),
                             OriginalBody = xc.Element("body").Let(x =>
                                 new Lazy<String>(String.IsNullOrEmpty(x.Value) && x.Attribute("see") != null
-                                    ? ((Func<String>) (() => WebRequest.Create(
-                                          "http://www.takeshik.org/yacq/codes/" + id + ".yacq"
-                                      )
+                                    ? ((Func<String>) (() => WebRequest.Create(sourceBase + id + ".yacq" + query)
                                           .DownloadStringAsync()
                                           .First()
                                       ))
