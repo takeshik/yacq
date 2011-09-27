@@ -122,5 +122,13 @@ namespace XSpect.Yacq.Expressions
         {
             return self is IdentifierExpression ? ((IdentifierExpression) self).Name : null;
         }
+
+        internal static IDictionary<SymbolEntry, SymbolDefinition> ToSymbols(this IEnumerable<ParameterExpression> parameters)
+        {
+            return parameters.ToDictionary(
+                p => new SymbolEntry(DispatchTypes.Member | DispatchTypes.Literal, null, p.Name),
+                p => (SymbolDefinition) ((e, s) => p)
+            );
+        }
     }
 }

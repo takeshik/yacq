@@ -432,34 +432,6 @@ namespace XSpect.Yacq
                         );
                     }
                 }},
-                {DispatchTypes.Method, "\\", (e, s) =>
-                    e.Arguments[0] is VectorExpression
-                        ? ((VectorExpression) e.Arguments[0]).Elements
-                              .Select(p => p.List(":").If(_ => _ != null,
-                                  _ => YacqExpression.AmbiguousParameter(
-                                      s,
-                                      ((TypeCandidateExpression) _.Last().Reduce(s)).ElectedType,
-                                      ((IdentifierExpression) _.First()).Name
-                                  ),
-                                  _ => YacqExpression.AmbiguousParameter(
-                                      s,
-                                      ((IdentifierExpression) p).Name
-                                  )
-                              ))
-                              .ToArray()
-                              .Let(p => YacqExpression.AmbiguousLambda(s, e.Arguments.Count == 1
-                                  ? Expression.Empty()
-                                  : e.Arguments.Count == 2
-                                        ? e.Arguments[1]
-                                        : Expression.Block(e.Arguments.Skip(1).ReduceAll(s)),
-                                  p
-                              ))
-                        : e.Arguments.Count == 0
-                              ? Expression.Empty()
-                              : e.Arguments.Count == 1
-                                    ? e.Arguments[0]
-                                    : Expression.Block(e.Arguments.ReduceAll(s))
-                },
                 #endregion
                 #region Global Method: Common Operator
                 {DispatchTypes.Method, "...", (e, s) =>
@@ -472,18 +444,53 @@ namespace XSpect.Yacq
                 #endregion
                 #region Global Method: Flow
                 {DispatchTypes.Method, "let", (e, s) =>
-                    e.Arguments
-                        .SkipLast(1)
-                        .Share(_ => _.Zip(_, (k, v) => Tuple.Create(((IdentifierExpression) k).Name, v.Reduce(s))))
-                        .Let(_ => Expression.Invoke(
-                            YacqExpression.AmbiguousLambda(
-                                s,
-                                e.Arguments.Last(),
-                                _.Select(t => YacqExpression.AmbiguousParameter(s, t.Item2.Type, t.Item1))
-                            ).Reduce(s),
-                            _.Select(t => t.Item2)
-                        ))
+                    e.Arguments.Any()
+                        ? e.Arguments[0] is VectorExpression
+                              ? new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
+                                    .SelectMany(_ => _.List(":").Let(l => l != null
+                                        ? new [] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
+                                        : EnumerableEx.Return(_)
+                                    ))
+                                    .Share(_ => _.Zip(_, (i, v) => ((IdentifierExpression) i).Name.Let(n =>
+                                        v.Reduce(s_).Apply(r => s_.Add(n, Expression.Variable(r.Type, n)))
+                                    )))
+                                    .ToArray()
+                                    .Let(_ => e.Arguments.Count > 1
+                                        ? Expression.Block(
+                                              s_.Literals.Values.OfType<ParameterExpression>(),
+                                              e.Arguments
+                                                  .Skip(1)
+                                                  .ReduceAll(s_)
+                                                  .StartWith(s_.Literals.Values.Zip(_, Expression.Assign).ToArray())
+                                          )
+                                        : (Expression) Expression.Empty()
+                                    )
+                                )
+                              : Expression.Block(e.Arguments.ReduceAll(s))
+                        : Expression.Empty()
                 },
+                {DispatchTypes.Method, "$", DispatchTypes.Method, "let"},
+                {DispatchTypes.Method, "fun", (e, s) =>
+                    e.Arguments.Any()
+                        ? e.Arguments[0] is VectorExpression
+                              ? ((VectorExpression) e.Arguments[0]).Elements
+                                    .Select(p => p.List(":").If(_ => _ != null,
+                                        _ => YacqExpression.AmbiguousParameter(
+                                            s,
+                                            ((TypeCandidateExpression) _.Last().Reduce(s)).ElectedType,
+                                            ((IdentifierExpression) _.First()).Name
+                                        ),
+                                        _ => YacqExpression.AmbiguousParameter(
+                                            s,
+                                            ((IdentifierExpression) p).Name
+                                        )
+                                    ))
+                                    .ToArray()
+                                    .Let(p => YacqExpression.AmbiguousLambda(s, e.Arguments.Skip(1), p))
+                              : YacqExpression.AmbiguousLambda(s, e.Arguments)
+                        : (Expression) Expression.Lambda(Expression.Empty())
+                },
+                {DispatchTypes.Method, "\\", DispatchTypes.Method, "fun"},
                 {DispatchTypes.Method, "alias", (e, s) =>
                     e.Arguments.Last().Reduce(new SymbolTable(s).Apply(s2 =>
                         e.Arguments
@@ -508,6 +515,15 @@ namespace XSpect.Yacq
                         DispatchTypes.Method,
                         YacqExpression.TypeCandidate(typeof(Console)),
                         "WriteLine",
+                        e.Left
+                    )
+                },
+                {DispatchTypes.Method, typeof(Object), "printn", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        YacqExpression.TypeCandidate(typeof(Console)),
+                        "Write",
                         e.Left
                     )
                 },

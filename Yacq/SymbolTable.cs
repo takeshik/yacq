@@ -546,11 +546,73 @@ namespace XSpect.Yacq
         /// <summary>
         /// Add the literal symbol to this symbol table.
         /// </summary>
-        /// <param name="name">Ths literal symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="name">The literal symbol's <see cref="SymbolEntry.Name"/>.</param>
         /// <param name="expression">The symbol's literal value.</param>
         public void Add(String name, Expression expression)
         {
             this.Add(DispatchTypes.Member | DispatchTypes.Literal, name, (e, s) => expression);
+        }
+
+        /// <summary>
+        /// Adds the alias symbol to this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="leftType">The symbol's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="name">The symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="targetDispatchType">The target symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="targetLeftType">The target symbol's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="targetName">The target symbol's <see cref="SymbolEntry.Name"/>.</param>
+        public void Add(DispatchTypes dispatchType, Type leftType, String name, DispatchTypes targetDispatchType, Type targetLeftType, String targetName)
+        {
+            this.Add(dispatchType, leftType, name, this[targetDispatchType, targetLeftType, targetName]);
+        }
+
+        /// <summary>
+        /// Adds the alias symbol to this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="targetDispatchType">The target symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="targetLeftType">The target symbol's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="targetName">The target symbol's <see cref="SymbolEntry.Name"/>.</param>
+        public void Add(DispatchTypes dispatchType, String name, DispatchTypes targetDispatchType, Type targetLeftType, String targetName)
+        {
+            this.Add(dispatchType, name, this[targetDispatchType, targetLeftType, targetName]);
+        }
+
+        /// <summary>
+        /// Adds the alias symbol to this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="leftType">The symbol's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="name">The symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="targetDispatchType">The target symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="targetName">The target symbol's <see cref="SymbolEntry.Name"/>.</param>
+        public void Add(DispatchTypes dispatchType, Type leftType, String name, DispatchTypes targetDispatchType, String targetName)
+        {
+            this.Add(dispatchType, leftType, name, this[targetDispatchType, null, targetName]);
+        }
+
+        /// <summary>
+        /// Adds the alias symbol to this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="targetDispatchType">The target symbol's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="targetName">The target symbol's <see cref="SymbolEntry.Name"/>.</param>
+        public void Add(DispatchTypes dispatchType, String name, DispatchTypes targetDispatchType, String targetName)
+        {
+            this.Add(dispatchType, name, this[targetDispatchType, null, targetName]);
+        }
+
+        /// <summary>
+        /// Adds the alias literal symbol to this symbol table.
+        /// </summary>
+        /// <param name="name">The literal symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="targetName">The target literal symbol's <see cref="SymbolEntry.Name"/>.</param>
+        public void Add(String name, String targetName)
+        {
+            this.Add(name, this[targetName]);
         }
 
         /// <summary>
