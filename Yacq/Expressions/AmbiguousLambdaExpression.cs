@@ -42,10 +42,10 @@ namespace XSpect.Yacq.Expressions
         : YacqExpression
     {
         /// <summary>
-        /// Gets the body of this expression.
+        /// Gets the body expressions in this expression.
         /// </summary>
-        /// <value>The body of this expression.</value>
-        public Expression Body
+        /// <value>The body expressions in this expression.</value>
+        public ReadOnlyCollection<Expression> Bodies
         {
             get;
             private set;
@@ -83,7 +83,7 @@ namespace XSpect.Yacq.Expressions
         {
             return String.Join(", ", this.Parameters.Select(p => p.ToString()))
                 + " => "
-                + this.Body;
+                + (this.Bodies.Count > 2 ? "{ ... }" : this.Bodies.Single().ToString());
         }
 
         /// <summary>
@@ -98,26 +98,26 @@ namespace XSpect.Yacq.Expressions
                 : this.Parameters
                       .Select(p => p.Reduce(symbols))
                       .Cast<ParameterExpression>()
-                      .ToArray()
-                      .Let(ps => Lambda(
-                          this.Body.Reduce(
-                              new SymbolTable(symbols, ps.ToDictionary(
-                                  p => new SymbolEntry(DispatchTypes.Member, null, p.Name),
-                                  p => (SymbolDefinition) ((e, s) => p)
-                              ))
-                          ),
-                          ps
-                      ));
+                      .Let(ps =>
+                          new SymbolTable(symbols, ps.ToSymbols())
+                              .Let(s => this.Bodies.Count == 0
+                                  ? Empty()
+                                  : this.Bodies.Count == 1
+                                        ? this.Bodies.Single().Reduce(s)
+                                        : Block(this.Bodies.ReduceAll(s))
+                              )
+                              .Let(e => Lambda(e, ps))
+                      );
         }
 
         internal AmbiguousLambdaExpression(
             SymbolTable symbols,
-            Expression body,
+            IList<Expression> bodies,
             IList<AmbiguousParameterExpression> parameters
         )
             : base(symbols)
         {
-            this.Body = body;
+            this.Bodies = new ReadOnlyCollection<Expression>(bodies);
             this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters);
         }
 
@@ -130,7 +130,7 @@ namespace XSpect.Yacq.Expressions
         {
             return AmbiguousLambda(
                 this.Symbols,
-                this.Body,
+                this.Bodies,
                 this.Parameters
                     .Select(p => AmbiguousParameter(
                         p.Symbols,
@@ -151,7 +151,7 @@ namespace XSpect.Yacq.Expressions
         {
             return AmbiguousLambda(
                 this.Symbols,
-                this.Body,
+                this.Bodies,
                 this.Parameters
                     .Zip(types, (p, t) => AmbiguousParameter(
                         p.Symbols,
@@ -181,7 +181,39 @@ namespace XSpect.Yacq.Expressions
         /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
-        /// <param name="body">>An <see cref="Expression"/> to set the <see cref="AmbiguousLambdaExpression.Body"/> property equal to.</param>
+        /// <param name="bodies">>A sequence of <see cref="Expression"/> objects that represents the bodies of this expression.</param>
+        /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
+        /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
+        public static AmbiguousLambdaExpression AmbiguousLambda(
+            SymbolTable symbols,
+            IEnumerable<Expression> bodies,
+            params AmbiguousParameterExpression[] parameters
+        )
+        {
+            return new AmbiguousLambdaExpression(symbols, bodies.ToArray(), parameters);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="bodies">>A sequence of <see cref="Expression"/> objects that represents the bodies of this expression.</param>
+        /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
+        /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
+        public static AmbiguousLambdaExpression AmbiguousLambda(
+            SymbolTable symbols,
+            IEnumerable<Expression> bodies,
+            IEnumerable<AmbiguousParameterExpression> parameters
+        )
+        {
+            return AmbiguousLambda(symbols, bodies, parameters.ToArray());
+        }
+
+        /// <summary>
+        /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
         /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
         public static AmbiguousLambdaExpression AmbiguousLambda(
@@ -190,14 +222,14 @@ namespace XSpect.Yacq.Expressions
             params AmbiguousParameterExpression[] parameters
         )
         {
-            return new AmbiguousLambdaExpression(symbols, body, parameters);
+            return AmbiguousLambda(symbols, EnumerableEx.Return(body), parameters);
         }
 
         /// <summary>
         /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
-        /// <param name="body">>An <see cref="Expression"/> to set the <see cref="AmbiguousLambdaExpression.Body"/> property equal to.</param>
+        /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
         /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
         public static AmbiguousLambdaExpression AmbiguousLambda(
@@ -212,7 +244,35 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
         /// </summary>
-        /// <param name="body">>An <see cref="Expression"/> to set the <see cref="AmbiguousLambdaExpression.Body"/> property equal to.</param>
+        /// <param name="bodies">>A sequence of <see cref="Expression"/> objects that represents the bodies of this expression.</param>
+        /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
+        /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
+        public static AmbiguousLambdaExpression AmbiguousLambda(
+            IEnumerable<Expression> bodies,
+            params AmbiguousParameterExpression[] parameters
+        )
+        {
+            return AmbiguousLambda(null, bodies, parameters);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
+        /// </summary>
+        /// <param name="bodies">>A sequence of <see cref="Expression"/> objects that represents the bodies of this expression.</param>
+        /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
+        /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
+        public static AmbiguousLambdaExpression AmbiguousLambda(
+            IEnumerable<Expression> bodies,
+            IEnumerable<AmbiguousParameterExpression> parameters
+        )
+        {
+            return AmbiguousLambda(null, bodies, parameters.ToArray());
+        }
+
+        /// <summary>
+        /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
+        /// </summary>
+        /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
         /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
         public static AmbiguousLambdaExpression AmbiguousLambda(
@@ -226,7 +286,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="AmbiguousLambdaExpression"/> that represents the lambda expression with <see cref="AmbiguousParameterExpression"/>.
         /// </summary>
-        /// <param name="body">>An <see cref="Expression"/> to set the <see cref="AmbiguousLambdaExpression.Body"/> property equal to.</param>
+        /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
         /// <returns>An <see cref="AmbiguousLambdaExpression"/> that has the properties set to the specified values.</returns>
         public static AmbiguousLambdaExpression AmbiguousLambda(

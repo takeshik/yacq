@@ -93,9 +93,9 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
             var value = this[0].TryReduce(symbols);
-            if (value is LambdaExpression || value is InvocationExpression)
+            if (value != null && value.Type.GetDelegateSignature() != null)
             {
-                return Invoke(value, this.Elements.Skip(1).Select(e => e.Reduce(symbols)));
+                return Invoke(value, this.Elements.Skip(1).ReduceAll(symbols));
             }
             else if (value is TypeCandidateExpression)
             {
