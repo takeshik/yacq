@@ -207,48 +207,55 @@ namespace XSpect.Yacq.Expressions
 
         private IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
         {
-            switch (this.DispatchType)
+            try
             {
-                case DispatchTypes.Constructor:
-                    return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-                case DispatchTypes.Member:
-                    return String.IsNullOrEmpty(this.Name)
-                        // Default members must be instance properties.
-                        ? this._left.Type.GetDefaultMembers()
-                        : (this._left is TypeCandidateExpression
-                              ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                              : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                          ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
-                case DispatchTypes.Method:
-                    return (this._left is TypeCandidateExpression
-                        ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
-                              .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                          )
-                              .If(_ => ((TypeCandidateExpression) this._left).ElectedType.IsInterface, _ =>
-                                  _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Static))
+                switch (this.DispatchType)
+                {
+                    case DispatchTypes.Constructor:
+                        return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+                    case DispatchTypes.Member:
+                        return String.IsNullOrEmpty(this.Name)
+                            // Default members must be instance properties.
+                            ? this._left.Type.GetDefaultMembers()
+                            : (this._left is TypeCandidateExpression
+                                  ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                                  : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                              ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
+                    case DispatchTypes.Method:
+                        return (this._left is TypeCandidateExpression
+                            ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
+                                  .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                               )
-                              .Where(m => m.Name == this.Name)
-                        : ((IEnumerable<MethodInfo>) this._left.Type
-                              .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                          )
-                              .If(_ => this._left.Type.IsInterface, _ =>
-                                  _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                                  .If(_ => ((TypeCandidateExpression) this._left).ElectedType.IsInterface, _ =>
+                                      _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Static))
+                                  )
+                                  .Where(m => m.Name == this.Name)
+                            : ((IEnumerable<MethodInfo>) this._left.Type
+                                  .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
                               )
-                              .Where(m => m.Name == this.Name)
-                              .Concat(symbols.AllLiterals.Values
-                                  .OfType<TypeCandidateExpression>()
-                                  .SelectMany(e => e.Candidates)
-                                  .Where(t => t.HasExtensionMethods())
-                                  .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
-                                  .Where(m => m.Name == this.Name && m.IsExtensionMethod())
-                              )
+                                  .If(_ => this._left.Type.IsInterface, _ =>
+                                      _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                                  )
+                                  .Where(m => m.Name == this.Name)
+                                  .Concat(symbols.AllLiterals.Values
+                                      .OfType<TypeCandidateExpression>()
+                                      .SelectMany(e => e.Candidates)
+                                      .Where(t => t.HasExtensionMethods())
+                                      .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+                                      .Where(m => m.Name == this.Name && m.IsExtensionMethod())
+                                  )
 #if SILVERLIGHT
                     ).Cast<MemberInfo>();
 #else
-                    );
+);
 #endif
-                default:
-                    throw new NotSupportedException("Dispatcher doesn't support: " + this.DispatchType);
+                    default:
+                        throw new ParseException("Dispatcher doesn't support: " + this.DispatchType);
+                }
+            }
+            catch
+            {
+                return Enumerable.Empty<MemberInfo>();
             }
         }
 
@@ -372,7 +379,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                throw new InvalidOperationException("Dispatch failed: " + this);
+                throw new ParseException("Dispatch failed: " + this);
             }
         }
     }
