@@ -162,6 +162,9 @@
     <Compile Include="..\Yacq\LanguageServices\TokenType.cs">
       <Link>LanguageServices\TokenType.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\ParseException.cs">
+      <Link>ParseException.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Static.cs">
       <Link>Static.cs</Link>
     </Compile>

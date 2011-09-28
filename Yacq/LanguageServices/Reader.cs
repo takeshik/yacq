@@ -48,6 +48,10 @@ namespace XSpect.Yacq.LanguageServices
         {
             get
             {
+                if (_stack.IsEmpty())
+                {
+                    throw new ParseException("Missing open parenthesis.", this._cursor.Value);
+                }
                 return this._stack.Peek();
             }
         }
@@ -86,7 +90,7 @@ namespace XSpect.Yacq.LanguageServices
                 (this._cursor.Value.Type == TokenType.RightBrace && context.Header.Type == TokenType.LeftBrace)
             ))
             {
-                throw new InvalidOperationException("Invalid parenthesis match.");
+                throw new ParseException("Invalid parenthesis match.", this._cursor.Value);
             }
             else
             {
@@ -168,6 +172,10 @@ namespace XSpect.Yacq.LanguageServices
                         break;
                 }
             } while ((this._cursor = this._cursor.Next).Value.Type != TokenType.End);
+            if (this._stack.Count > 1)
+            {
+                throw new ParseException("Missing close parenthesis.", this._cursor.Value);
+            }
             return this._stack.Single().List.ToArray();
         }
     }

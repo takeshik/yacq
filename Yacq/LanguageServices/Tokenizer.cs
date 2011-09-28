@@ -102,7 +102,12 @@ namespace XSpect.Yacq.LanguageServices
 
         private Token CreateToken(TokenType type, String str)
         {
-            return new Token(type, str, this._position, this._line, this._column);
+            var token = new Token(type, str, this._position, this._line, this._column);
+            if (str == null)
+            {
+                throw new ParseException("Failed to tokenize.", token);
+            }
+            return token;
         }
 
         internal Token Peek()
@@ -157,14 +162,9 @@ namespace XSpect.Yacq.LanguageServices
         private String RegexSlice(String pattern)
         {
             var match = Regex.Match(this.Input.Substring(this._position), pattern);
-            if (match.Success)
-            {
-                return this.Input.Substring(this._position, match.Index + match.Length);
-            }
-            else
-            {
-                throw new InvalidOperationException("Failed to tokenize.");
-            }
+            return match.Success
+                ? this.Input.Substring(this._position, match.Index + match.Length)
+                : null;
         }
 
         internal Token Read()

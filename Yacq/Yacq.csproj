@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="Expressions\DispatchExpression.Candidate.cs" />
     <Compile Include="Expressions\LambdaListExpression.cs" />
+    <Compile Include="ParseException.cs" />
     <Compile Include="Static.cs" />
     <Compile Include="SymbolTable.Root.cs" />
     <Compile Include="Expressions\DispatchTypes.cs" />
