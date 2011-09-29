@@ -492,12 +492,16 @@ namespace XSpect.Yacq
                 },
                 {DispatchTypes.Method, "\\", DispatchTypes.Method, "fun"},
                 {DispatchTypes.Method, "alias", (e, s) =>
-                    e.Arguments.Last().Reduce(new SymbolTable(s).Apply(s2 =>
-                        e.Arguments
-                            .SkipLast(1)
-                            .Share(_ => _.Zip(_, (k, v) => Tuple.Create(((IdentifierExpression) k).Name, v.Reduce(s))))
-                            .ForEach(t => s2.Add(t.Item1, t.Item2))
-                    ))
+                    new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
+                        .Share(_ => _.Zip(_, (i, v) => v.Reduce(s_)
+                            .Apply(r => s_.Add(((IdentifierExpression) i).Name, r))
+                        ))
+                        .ToArray()
+                        .Let(_ => e.Arguments.Count > 2
+                            ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
+                            : e.Arguments.Last().Reduce(s_)
+                        )
+                    )
                 },
                 #endregion
                 #region Global Method: Common

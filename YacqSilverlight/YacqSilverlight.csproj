@@ -168,6 +168,12 @@
     <Compile Include="..\Yacq\Static.cs">
       <Link>Static.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\SymbolDefinition.cs">
+      <Link>SymbolDefinition.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\SymbolEntry.cs">
+      <Link>SymbolEntry.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\SymbolTable.cs">
       <Link>SymbolTable.cs</Link>
     </Compile>

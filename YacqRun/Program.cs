@@ -228,7 +228,7 @@ THE SOFTWARE."
                 {
                     heredoc = input.Substring(2);
                 }
-                else
+                else if (!String.IsNullOrWhiteSpace(input))
                 {
                     Run(input, true);
                 }
