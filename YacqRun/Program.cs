@@ -41,8 +41,11 @@ using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Runner
 {
-    internal class Program
+    internal static class Program
     {
+        private static readonly List<Tuple<String, Expression, Object>> _history
+            = new List<Tuple<String, Expression, Object>>();
+
         private static Int32 Main(String[] args)
         {
             if (args.Length == 0)
@@ -103,7 +106,7 @@ Type \help [ENTER] to show help."
             {
                 if (heredoc == null)
                 {
-                    Console.Write("yacq> ");
+                    Console.Write("yacq[{0}]> ", _history.Count);
                 }
                 Console.ForegroundColor = ConsoleColor.White;
                 var input = Console.ReadLine();
@@ -141,6 +144,8 @@ Type \help [ENTER] to show help."
     Show this message.
   \chelp
     Show command-line option help.
+  \shelp
+    Show special symbols only in YacqRun help.
   \man
     Open the reference manual web page.
   \about
@@ -173,6 +178,24 @@ Type \help [ENTER] to show help."
   YacqRun -cl PATH
     Compile script file in PATH to Library DLL.
   NOTE: Specify - in PATH means read script data from standard input."
+                                #endregion
+                            );
+                            break;
+                        case "shelp":
+                            Console.WriteLine(
+                                #region String
+@"Special Symbols only in YacqRun:
+  !C
+    Input code history array
+  !E
+    Reduced expression history array
+  !R
+    Return value history array
+  !H
+    History list (you can modify, such as (Clear))
+  NOTE: The history index for next input is in the prompt; like 'yacq[N]>'
+        One history entry indicates a reduced expressions, not a code input.
+        (one code input may create more than one history entries.)"
                                 #endregion
                             );
                             break;
@@ -240,7 +263,16 @@ THE SOFTWARE."
             try
             {
                 Object ret = null;
-                foreach (var expr in YacqServices.ParseAll(code))
+                foreach (var expr in YacqServices.ParseAll(
+                    new SymbolTable()
+                    {
+                        {"!C", Expression.Constant(_history.Select(t => t.Item1).ToArray())},
+                        {"!E", Expression.Constant(_history.Select(t => t.Item2).ToArray())},
+                        {"!R", Expression.Constant(_history.Select(t => t.Item3).ToArray())},
+                        {"!H", Expression.Constant(_history)},
+                    },
+                    code
+                ))
                 {
                     if (showInfo)
                     {
@@ -262,6 +294,7 @@ THE SOFTWARE."
                         }
                         Console.ResetColor();
                     }
+                    _history.Add(Tuple.Create(code, expr, ret));
                 }
                 return ret;
             }

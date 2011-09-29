@@ -125,11 +125,11 @@ namespace XSpect.Yacq.LanguageServices
                 case ';':
                     return this.CreateToken(TokenType.Comment, this.RegexSlice(@"[\r\n]+|$"));
                 case '\'':
-                    return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"[^\\]'"));
+                    return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"(\\.|[^'])+'"));
                 case '"':
-                    return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"[^\\]"""));
+                    return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"(\\.|[^""])+"""));
                 case '`':
-                    return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"[^\\]`"));
+                    return this.CreateToken(TokenType.StringLiteral, this.RegexSlice(@"(\\.|[^`])+`"));
                 case '(':
                     return this.CreateToken(TokenType.LeftParenthesis, "(");
                 case ')':
@@ -153,7 +153,7 @@ namespace XSpect.Yacq.LanguageServices
                         ? this.CreateToken(TokenType.Colon, ":")
                         : this.CreateToken(TokenType.Identifier, this.RegexSlice(@":+"));
                 default:
-                    return Char.IsNumber(c) || (c == '+' || c == '-') && char.IsDigit(this.PeekChar(1))
+                    return Char.IsNumber(c) || (c == '+' || c == '-') && Char.IsDigit(this.PeekChar(1))
                         ? this.CreateToken(TokenType.NumberLiteral, this.RegexSlice(@"[0-9a-fox+\-._]*[0-9a-f_]"))
                         : this.CreateToken(TokenType.Identifier, this.RegexSlice(@"[^ \t\r\n""#\(\),.:;\[\]`\{\}]+"));
             }
