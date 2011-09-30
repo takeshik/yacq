@@ -28,8 +28,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace XSpect.Yacq.Expressions
 {
@@ -39,6 +43,8 @@ namespace XSpect.Yacq.Expressions
     public class TextExpression
         : YacqExpression
     {
+        private readonly List<String> _codes;
+
         /// <summary>
         /// Gets the character in <see cref="SourceText"/> which is used to quote the string.
         /// </summary>
@@ -76,6 +82,7 @@ namespace XSpect.Yacq.Expressions
         )
             : base(symbols)
         {
+            this._codes = new List<String>();
             this.QuoteChar = quoteChar;
             this.SourceText = sourceText;
             this.Value = this.Parse();
@@ -101,7 +108,17 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
-            return Constant(this.Value);
+            this._codes.ForEach((s, i) => Console.WriteLine(i + " : " + s));
+            return this._codes.Any()
+                ? (Expression) Dispatch(
+                      DispatchTypes.Method,
+                      TypeCandidate(typeof(String)),
+                      "Format",
+                      this._codes
+                          .Select(c => YacqServices.Parse(symbols, c))
+                          .StartWith(Constant(this.Value))
+                  )
+                : Constant(this.Value);
         }
 
         private Object Parse()
@@ -110,11 +127,101 @@ namespace XSpect.Yacq.Expressions
             {
                 return this.SourceText;
             }
-            // TODO: escape sequence
             String text = this.SourceText;
+            if (text.Contains(@"\$("))
+            {
+                text = text
+                    .Replace("{", "{{")
+                    .Replace("}", "}}");
+            }
+            text = Regex.Replace(
+                text,
+                String.Join("|",
+                    @"\\\$\([^\(]*(((?<Open>\()[^\(\)]*)+((?<Close-Open>\))[^\(\)]*)+)*\)(?(Open)(?!))",
+                    @"\\M-\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
+                    @"\\C-\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
+                    @"\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
+                    @"\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
+                    @"\\u[0-9A-Fa-f]{1,4}",
+                    @"\\U[0-9A-Fa-f]{1,8}",
+                    @"\\[0-7]{1,3}",
+                    @"\\x[0-9A-Fa-f]{1,2}",
+                    @"\\."
+                ),
+                m => this.ParseEscapeSequence(m.Value)
+            );
             return this.QuoteChar == '\'' && text.Length == 1
                 ? (Object) text[0]
                 : text;
+        }
+
+        private String ParseEscapeSequence(String str)
+        {
+            if(!str.StartsWith("\\"))
+            {
+                return str;
+            }
+            str = str.Substring(1);
+            Console.WriteLine(str);
+            if (str.StartsWith("$("))
+            {
+                this._codes.Add(str.Substring(1));
+                return "{" + (this._codes.Count - 1) + "}";
+            }
+            else if (str.StartsWith("M-\\C-") || str.StartsWith("C-\\M-"))
+            {
+                return ((Char) (ParseEscapeSequence(str.Substring(4))[0] & 0x9f | 0x80)).ToString();
+            }
+            else if (str.StartsWith("C-"))
+            {
+                return ((Char) (ParseEscapeSequence(str.Substring(2))[0] & 0x9f)).ToString();
+            }
+            else if (str.StartsWith("M-"))
+            {
+                return ((Char) (ParseEscapeSequence(str.Substring(2))[0] & 0xff | 0x80)).ToString();
+            }
+            else if (str[0] == 'u' && str.Length > 1)
+            {
+                return ((Char) System.Convert.ToInt32(str.Substring(1), 16)).ToString();
+            }
+            else if (str[0] == 'U' && str.Length > 1)
+            {
+                return ((Char) System.Convert.ToInt32(str.Substring(1), 16)).ToString();
+            }
+            else if (Char.IsDigit(str, 0))
+            {
+                return ((Char) System.Convert.ToInt32(str, 8)).ToString();
+            }
+            else if (str[0] == 'x' && str.Length > 1)
+            {
+                return ((Char) System.Convert.ToInt32(str.Substring(1), 16)).ToString();
+            }
+            else
+            {
+                switch (str[0])
+                {
+                    case 'a':
+                        return "\a";
+                    case 'b':
+                        return "\b";
+                    case 'e':
+                        return "\x1b";
+                    case 'f':
+                        return "\f";
+                    case 'n':
+                        return "\n";
+                    case 'r':
+                        return "\r";
+                    case 't':
+                        return "\t";
+                    case 'v':
+                        return "\v";
+                    case 'N':
+                        return Environment.NewLine;
+                    default:
+                        return str;
+                }
+            }
         }
     }
 

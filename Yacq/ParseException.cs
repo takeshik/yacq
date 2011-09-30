@@ -33,23 +33,36 @@ using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
 {
-#if !SILVERLIGHT
-    [Serializable()]
-#endif
-    public class ParseException
+    /// <summary>
+    /// The exception that is thrown when the language system encountered errors about parsing.
+    /// </summary>
+    public partial class ParseException
         : Exception
     {
+        /// <summary>
+        /// Gets the token where the error occured.
+        /// </summary>
+        /// <value>The token where the error occured.</value>
         public Token Token
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
         public ParseException(String message)
             : base(message)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="token">The token where the error occured.</param>
         public ParseException(String message, Token token)
             : base(message + String.Format(
                   " ({0} at line {1}, column {2}, position {3})",
@@ -63,10 +76,25 @@ namespace XSpect.Yacq
         }
 
 #if !SILVERLIGHT
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class with serialized data.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
         protected ParseException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
 #endif
     }
+
+#if !SILVERLIGHT
+    // Hack for the XML document comment of ParseException class
+    // (C# compiler doesn't recognize XML document comments for members which
+    // is divided by compiler directive.)
+    [Serializable()]
+    public partial class ParseException
+    {
+    }
+#endif
 }
