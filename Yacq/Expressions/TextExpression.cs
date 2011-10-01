@@ -108,7 +108,6 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
-            this._codes.ForEach((s, i) => Console.WriteLine(i + " : " + s));
             return this._codes.Any()
                 ? (Expression) Dispatch(
                       DispatchTypes.Method,
@@ -134,25 +133,28 @@ namespace XSpect.Yacq.Expressions
                     .Replace("{", "{{")
                     .Replace("}", "}}");
             }
-            text = Regex.Replace(
-                text,
-                String.Join("|",
-                    @"\\\$\([^\(]*(((?<Open>\()[^\(\)]*)+((?<Close-Open>\))[^\(\)]*)+)*\)(?(Open)(?!))",
-                    @"\\M-\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
-                    @"\\C-\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
-                    @"\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
-                    @"\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])",
-                    @"\\u[0-9A-Fa-f]{1,4}",
-                    @"\\U[0-9A-Fa-f]{1,8}",
-                    @"\\[0-7]{1,3}",
-                    @"\\x[0-9A-Fa-f]{1,2}",
-                    @"\\."
-                ),
-                m => this.ParseEscapeSequence(m.Value)
-            );
+            text = this.ParseEscapeSequences(text);
             return this.QuoteChar == '\'' && text.Length == 1
                 ? (Object) text[0]
                 : text;
+        }
+
+        private String ParseEscapeSequences(String str)
+        {
+            return Regex.Replace(
+                str,
+                @"\\\$\([^\(]*(((?<Open>\()[^\(\)]*)+((?<Close-Open>\))[^\(\)]*)+)*\)(?(Open)(?!))"
+                    + @"|\\M-\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
+                    + @"|\\C-\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
+                    + @"|\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
+                    + @"|\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
+                    + @"|\\u[0-9A-Fa-f]{1,4}"
+                    + @"|\\U[0-9A-Fa-f]{1,8}"
+                    + @"|\\[0-7]{1,3}"
+                    + @"|\\x[0-9A-Fa-f]{1,2}"
+                    + @"|\\.",
+                m => this.ParseEscapeSequence(m.Value)
+            );
         }
 
         private String ParseEscapeSequence(String str)
@@ -162,10 +164,9 @@ namespace XSpect.Yacq.Expressions
                 return str;
             }
             str = str.Substring(1);
-            Console.WriteLine(str);
             if (str.StartsWith("$("))
             {
-                this._codes.Add(str.Substring(1));
+                this._codes.Add(ParseEscapeSequences(str.Substring(1)));
                 return "{" + (this._codes.Count - 1) + "}";
             }
             else if (str.StartsWith("M-\\C-") || str.StartsWith("C-\\M-"))
