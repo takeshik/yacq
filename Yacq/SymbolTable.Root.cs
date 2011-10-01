@@ -611,17 +611,20 @@ namespace XSpect.Yacq
                     e.Left.Reduce(s).Let(_ => Expression.Invoke(
                         YacqExpression.AmbiguousLambda(
                             s,
-                            e.Arguments[1],
+                            e.Arguments.Skip(1),
                             YacqExpression.AmbiguousParameter(s, _.Type, ((IdentifierExpression) e.Arguments[0]).Name)
                         ).Reduce(s),
                         _
                     ))
                 },
                 {DispatchTypes.Method, typeof(Object), "alias", (e, s) =>
-                    e.Arguments[1].Reduce(new SymbolTable(s).Apply(s2 => s2.Add(
+                    new SymbolTable(s).Apply(s_ => s_.Add(
                         ((IdentifierExpression) e.Arguments[0]).Name,
                         e.Left.Reduce(s)
-                    )))
+                    )).Let(s_ => e.Arguments.Count > 2
+                        ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
+                        : e.Arguments[1].Reduce(s_)
+                    )
                 },
                 {DispatchTypes.Method, typeof(Object), "cond", (e, s) =>
                     Expression.Condition(
