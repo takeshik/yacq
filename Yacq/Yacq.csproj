@@ -103,6 +103,9 @@
     <Compile Include="Expressions\IdentifierExpression.cs" />
     <Compile Include="Expressions\YacqExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="YacqQbservable.cs" />
+    <Compile Include="YacqQueryable.cs" />
+    <Compile Include="YacqQueryable.Operators.cs" />
     <Compile Include="YacqServices.cs" />
   </ItemGroup>
   <ItemGroup>

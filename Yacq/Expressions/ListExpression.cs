@@ -100,15 +100,21 @@ namespace XSpect.Yacq.Expressions
             else if (value is TypeCandidateExpression)
             {
                 return Dispatch(
+                    symbols,
                     DispatchTypes.Constructor,
                     value,
                     null,
-                    this.Elements.Skip(1).Select(e => e.Reduce(symbols)).ToArray()
+                    this.Elements.Skip(1)
                 );
             }
             else if (this[0] is IdentifierExpression)
             {
-                return Dispatch(DispatchTypes.Method, ((IdentifierExpression) this[0]).Name, this.Elements.Skip(1).ToArray());
+                return Dispatch(
+                    symbols,
+                    DispatchTypes.Method,
+                    ((IdentifierExpression) this[0]).Name,
+                    this.Elements.Skip(1)
+                );
             }
             else if (value is Expression)
             {
@@ -116,7 +122,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                throw new InvalidOperationException("List evaluation failed.");
+                throw new ParseException("List evaluation failed.");
             }
         }
     }

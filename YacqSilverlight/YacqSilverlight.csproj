@@ -180,6 +180,15 @@
     <Compile Include="..\Yacq\SymbolTable.Root.cs">
       <Link>SymbolTable.Root.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\YacqQbservable.cs">
+      <Link>YacqQbservable.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\YacqQueryable.cs">
+      <Link>YacqQueryable.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\YacqQueryable.Operators.cs">
+      <Link>YacqQueryable.Operators.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\YacqServices.cs">
       <Link>YacqServices.cs</Link>
     </Compile>
