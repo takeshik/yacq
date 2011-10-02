@@ -28,9 +28,11 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reactive.Linq;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 
@@ -219,5 +221,79 @@ namespace XSpect.Yacq
         {
             return ParseLambda<T, TReturn>(null, code);
         }
+
+        #region Exension Methods
+
+        public static YacqQueryable Yacq(this IEnumerable source, SymbolTable symbols)
+        {
+            return new YacqQueryable(symbols, source.AsQueryable());
+        }
+
+        public static YacqQueryable<TSource> Yacq<TSource>(this IEnumerable<TSource> source, SymbolTable symbols)
+        {
+            return new YacqQueryable<TSource>(symbols, source.AsQueryable());
+        }
+
+        public static YacqQueryable Yacq(this IQueryable source, SymbolTable symbols)
+        {
+            return new YacqQueryable(symbols, source);
+        }
+
+        public static YacqQueryable<TSource> Yacq<TSource>(this IQueryable<TSource> source, SymbolTable symbols)
+        {
+            return new YacqQueryable<TSource>(symbols, source);
+        }
+
+        public static YacqQbservable<TSource> Yacq<TSource>(this IObservable<TSource> source, SymbolTable symbols)
+        {
+            return new YacqQbservable<TSource>(source.AsQbservable());
+        }
+
+        public static YacqQbservable Yacq(this IQbservable source, SymbolTable symbols)
+        {
+            return new YacqQbservable(source);
+        }
+
+        public static YacqQbservable<TSource> Yacq<TSource>(this IQbservable<TSource> source, SymbolTable symbols)
+        {
+            return new YacqQbservable<TSource>(source);
+        }
+
+        public static YacqQueryable Yacq(this IEnumerable source)
+        {
+            return source.Yacq(null);
+        }
+
+        public static YacqQueryable<TSource> Yacq<TSource>(this IEnumerable<TSource> source)
+        {
+            return source.Yacq(null);
+        }
+
+        public static YacqQueryable Yacq(this IQueryable source)
+        {
+            return source.Yacq(null);
+        }
+
+        public static YacqQueryable<TSource> Yacq<TSource>(this IQueryable<TSource> source)
+        {
+            return source.Yacq(null);
+        }
+
+        public static YacqQbservable<TSource> Yacq<TSource>(this IObservable<TSource> source)
+        {
+            return source.Yacq(null);
+        }
+
+        public static YacqQbservable Yacq(this IQbservable source)
+        {
+            return source.Yacq(null);
+        }
+
+        public static YacqQbservable<TSource> Yacq<TSource>(this IQbservable<TSource> source)
+        {
+            return source.Yacq(null);
+        }
+
+        #endregion
     }
 }
