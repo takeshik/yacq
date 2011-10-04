@@ -34,11 +34,18 @@ using System.Reactive.Linq;
 
 namespace XSpect.Yacq
 {
+    /// <summary>
+    /// Represents an <see cref="IQbservable" /> which is enabled querying with YACQ code strings.
+    /// </summary>
     public partial class YacqQbservable
         : IQbservable
     {
         private readonly IQbservable _source;
 
+        /// <summary>
+        /// Gets the expression tree that is associated with the instance of <see cref="IQbservable"/>.
+        /// </summary>
+        /// <value>The expression tree that is associated with the instance of <see cref="IQbservable"/>.</value>
         public virtual Expression Expression
         {
             get
@@ -47,6 +54,10 @@ namespace XSpect.Yacq
             }
         }
 
+        /// <summary>
+        /// Gets the type of the element(s) that are returned when the expression tree associated with this instance of <see cref="IQbservable"/> is executed.
+        /// </summary>
+        /// <value>The type of the element(s) that are returned when the expression tree associated with this instance of <see cref="IQbservable"/> is executed.</value>
         public virtual Type ElementType
         {
             get
@@ -55,6 +66,10 @@ namespace XSpect.Yacq
             }
         }
 
+        /// <summary>
+        /// Gets the query provider that is associated with this data source.
+        /// </summary>
+        /// <value>The query provider that is associated with this data source.</value>
         public virtual IQbservableProvider Provider
         {
             get
@@ -63,25 +78,45 @@ namespace XSpect.Yacq
             }
         }
 
-        public YacqQbservable(IQbservable source)
+        /// <summary>
+        /// Gets the additional <see cref="SymbolTable"/> for resolve symbols.
+        /// </summary>
+        /// <value>The additional <see cref="SymbolTable"/> for resolve symbols.</value>
+        public SymbolTable Symbols
         {
+            get;
+            private set;
+        }
+
+        internal YacqQbservable(SymbolTable symbols, IQbservable source)
+        {
+            this.Symbols = symbols;
             this._source = source;
         }
     }
 
+    /// <summary>
+    /// Represents an <see cref="IQbservable{TSource}" /> which is enabled querying with YACQ code strings.
+    /// </summary>
+    /// <typeparam name="TSource">The type of element in the source sequence.</typeparam>
     public partial class YacqQbservable<TSource>
         : YacqQbservable,
           IQbservable<TSource>
     {
         private readonly IQbservable<TSource> _source;
 
+        /// <summary>
+        /// Notifies the provider that an observer is to receive notifications.
+        /// </summary>
+        /// <param name="observer">The object that is to receive notifications.</param>
+        /// <returns>The <paramref name="observer"/>'s interface that enables resources to be disposed.</returns>
         public IDisposable Subscribe(IObserver<TSource> observer)
         {
             return this._source.Subscribe(observer);
         }
 
-        public YacqQbservable(IQbservable<TSource> source)
-            : base(source)
+        internal YacqQbservable(SymbolTable symbols, IQbservable<TSource> source)
+            : base(symbols, source)
         {
             this._source = source;
         }

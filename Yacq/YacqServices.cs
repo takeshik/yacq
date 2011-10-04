@@ -224,71 +224,156 @@ namespace XSpect.Yacq
 
         #region Exension Methods
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <param name="source">An <see cref="IEnumerable" /> to convert to a <see cref="YacqQueryable" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQueryable" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable Yacq(this IEnumerable source, SymbolTable symbols)
         {
             return new YacqQueryable(symbols, source.AsQueryable());
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IEnumerable{TSource}" /> to convert to a <see cref="YacqQueryable{TSource}" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQueryable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable<TSource> Yacq<TSource>(this IEnumerable<TSource> source, SymbolTable symbols)
         {
             return new YacqQueryable<TSource>(symbols, source.AsQueryable());
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <param name="source">An <see cref="IQueryable" /> to convert to a <see cref="YacqQueryable" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQueryable" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable Yacq(this IQueryable source, SymbolTable symbols)
         {
             return new YacqQueryable(symbols, source);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IQueryable{TSource}" /> to convert to a <see cref="YacqQueryable{TSource}" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQueryable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable<TSource> Yacq<TSource>(this IQueryable<TSource> source, SymbolTable symbols)
         {
             return new YacqQueryable<TSource>(symbols, source);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IObservable{TSource}" /> to convert to a <see cref="YacqQbservable{TSource}" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQbservable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQbservable<TSource> Yacq<TSource>(this IObservable<TSource> source, SymbolTable symbols)
         {
-            return new YacqQbservable<TSource>(source.AsQbservable());
+            return new YacqQbservable<TSource>(symbols, source.AsQbservable());
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <param name="source">An <see cref="IQbservable" /> to convert to a <see cref="YacqQbservable" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQbservable" /> to access to YACQ query operator methods.</returns>
         public static YacqQbservable Yacq(this IQbservable source, SymbolTable symbols)
         {
-            return new YacqQbservable(source);
+            return new YacqQbservable(symbols, source);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IQbservable{TSource}" /> to convert to a <see cref="YacqQbservable{TSource}" />.</param>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <returns>The source as a <see cref="YacqQbservable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQbservable<TSource> Yacq<TSource>(this IQbservable<TSource> source, SymbolTable symbols)
         {
-            return new YacqQbservable<TSource>(source);
+            return new YacqQbservable<TSource>(symbols, source);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <param name="source">An <see cref="IEnumerable" /> to convert to a <see cref="YacqQueryable" />.</param>
+        /// <returns>The source as a <see cref="YacqQueryable" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable Yacq(this IEnumerable source)
         {
             return source.Yacq(null);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IEnumerable{TSource}" /> to convert to a <see cref="YacqQueryable{TSource}" />.</param>
+        /// <returns>The source as a <see cref="YacqQueryable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable<TSource> Yacq<TSource>(this IEnumerable<TSource> source)
         {
             return source.Yacq(null);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <param name="source">An <see cref="IQueryable" /> to convert to a <see cref="YacqQueryable" />.</param>
+        /// <returns>The source as a <see cref="YacqQueryable" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable Yacq(this IQueryable source)
         {
             return source.Yacq(null);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IQueryable{TSource}" /> to convert to a <see cref="YacqQueryable{TSource}" />.</param>
+        /// <returns>The source as a <see cref="YacqQueryable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQueryable<TSource> Yacq<TSource>(this IQueryable<TSource> source)
         {
             return source.Yacq(null);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IObservable{TSource}" /> to convert to a <see cref="YacqQbservable{TSource}" />.</param>
+        /// <returns>The source as a <see cref="YacqQbservable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQbservable<TSource> Yacq<TSource>(this IObservable<TSource> source)
         {
             return source.Yacq(null);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <param name="source">An <see cref="IQbservable" /> to convert to a <see cref="YacqQbservable" />.</param>
+        /// <returns>The source as a <see cref="YacqQbservable" /> to access to YACQ query operator methods.</returns>
         public static YacqQbservable Yacq(this IQbservable source)
         {
             return source.Yacq(null);
         }
 
+        /// <summary>
+        /// Enables querying with YACQ code strings.
+        /// </summary>
+        /// <typeparam name="TSource">The type of elements of <paramref name="source" />.</typeparam>
+        /// <param name="source">An <see cref="IQbservable{TSource}" /> to convert to a <see cref="YacqQbservable{TSource}" />.</param>
+        /// <returns>The source as a <see cref="YacqQbservable{TSource}" /> to access to YACQ query operator methods.</returns>
         public static YacqQbservable<TSource> Yacq<TSource>(this IQbservable<TSource> source)
         {
             return source.Yacq(null);

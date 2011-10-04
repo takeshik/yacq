@@ -35,11 +35,18 @@ using System.Linq.Expressions;
 
 namespace XSpect.Yacq
 {
+    /// <summary>
+    /// Represents an <see cref="IQueryable" /> which is enabled querying with YACQ code strings.
+    /// </summary>
     public partial class YacqQueryable
         : IQueryable
     {
         private readonly IQueryable _source;
 
+        /// <summary>
+        /// Gets the expression tree that is associated with the instance of <see cref="IQueryable"/>.
+        /// </summary>
+        /// <value>The <see cref="Expression"/> that is associated with this instance of <see cref="IQueryable"/>.</value>
         public virtual Expression Expression
         {
             get
@@ -48,6 +55,10 @@ namespace XSpect.Yacq
             }
         }
 
+        /// <summary>
+        /// Gets the type of the element(s) that are returned when the expression tree associated with this instance of <see cref="IQueryable"/> is executed.
+        /// </summary>
+        /// <value>A <see cref="Type"/> that represents the type of the element(s) that are returned when the expression tree associated with this object is executed.</value>
         public virtual Type ElementType
         {
             get
@@ -56,6 +67,10 @@ namespace XSpect.Yacq
             }
         }
 
+        /// <summary>
+        /// Gets the query provider that is associated with this data source.
+        /// </summary>
+        /// <value>The <see cref="T:System.Linq.IQueryProvider"/> that is associated with this data source.</value>
         public virtual IQueryProvider Provider
         {
             get
@@ -64,62 +79,89 @@ namespace XSpect.Yacq
             }
         }
 
+        /// <summary>
+        /// Gets the additional <see cref="SymbolTable"/> for resolve symbols.
+        /// </summary>
+        /// <value>The additional <see cref="SymbolTable"/> for resolve symbols.</value>
         public SymbolTable Symbols
         {
             get;
             private set;
         }
 
-        public YacqQueryable(SymbolTable symbols, IQueryable source)
+        internal YacqQueryable(SymbolTable symbols, IQueryable source)
         {
             this.Symbols = symbols;
             this._source = source;
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IEnumerator"/> object that can be used to iterate through the collection.
+        /// </returns>
         public IEnumerator GetEnumerator()
         {
             return this._source.GetEnumerator();
         }
     }
 
+    /// <summary>
+    /// Represents an <see cref="IQueryable{TSource}" /> which is enabled querying with YACQ code strings.
+    /// </summary>
+    /// <typeparam name="TSource">The type of element in the source sequence.</typeparam>
     public partial class YacqQueryable<TSource>
         : YacqQueryable,
           IQueryable<TSource>
     {
         private readonly IQueryable<TSource> _source;
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="IEnumerator{TSource}"></see> that can be used to iterate through the collection.
+        /// </returns>
         public new IEnumerator<TSource> GetEnumerator()
         {
             return this._source.GetEnumerator();
         }
 
-        public YacqQueryable(SymbolTable symbols, IQueryable<TSource> source)
+        internal YacqQueryable(SymbolTable symbols, IQueryable<TSource> source)
             : base(symbols, source)
         {
             this._source = source;
         }
     }
 
+    /// <summary>
+    /// Represents an <see cref="IOrderedQueryable" /> which is enabled querying with YACQ code strings.
+    /// </summary>
     public partial class YacqOrderedQueryable
         : YacqQueryable,
           IOrderedQueryable
     {
         private readonly IOrderedQueryable _source;
 
-        public YacqOrderedQueryable(SymbolTable symbols, IOrderedQueryable source)
+        internal YacqOrderedQueryable(SymbolTable symbols, IOrderedQueryable source)
             : base(symbols, source)
         {
             this._source = source;
         }
     }
 
+    /// <summary>
+    /// Represents an <see cref="IOrderedQueryable{TSource}" /> which is enabled querying with YACQ code strings.
+    /// </summary>
+    /// <typeparam name="TSource">The type of element in the source sequence.</typeparam>
     public partial class YacqOrderedQueryable<TSource>
         : YacqQueryable<TSource>,
           IOrderedQueryable<TSource>
     {
         private readonly IOrderedQueryable<TSource> _source;
 
-        public YacqOrderedQueryable(SymbolTable symbols, IOrderedQueryable<TSource> source)
+        internal YacqOrderedQueryable(SymbolTable symbols, IOrderedQueryable<TSource> source)
             : base(symbols, source)
         {
             this._source = source;
