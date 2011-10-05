@@ -1040,5 +1040,51 @@ namespace XSpect.Yacq
                 YacqServices.ParseLambda<Func<TSource, TSecond, TResult>>(this.Symbols, resultSelector, "it", "it2")
             ));
         }
+
+        #region Non-Expression-based methods
+
+        /// <summary>
+        /// Subscribes an element handler to an observable sequence.
+        /// </summary>
+        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element in the observable sequence.</param>
+        /// <returns><see cref="IDisposable"/> object used to unsubscribe from the observable sequence.</returns>
+        public IDisposable Subscribe(String onNext)
+        {
+            return this._source.Subscribe(
+                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it").Compile()
+            );
+        }
+
+        /// <summary>
+        /// Subscribes an element handler and a completion handler to an observable sequence.
+        /// </summary>
+        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element in the observable sequence.</param>
+        /// <param name="onCompleted"><c>() =></c> Action to invoke upon graceful termination of the observable sequence.</param>
+        /// <returns><see cref="IDisposable"/> object used to unsubscribe from the observable sequence.</returns>
+        public IDisposable Subscribe(String onNext, String onCompleted)
+        {
+            return this._source.Subscribe(
+                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it").Compile(),
+                YacqServices.ParseLambda<Action>(this.Symbols, onCompleted, new String[0]).Compile()
+            );
+        }
+
+        /// <summary>
+        /// Subscribes an element handler, an exception handler, and a completion handler to an observable sequence.
+        /// </summary>
+        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element in the observable sequence.</param>
+        /// <param name="onError"><c>(ex) =></c> Action to invoke upon exceptional termination of the observable sequence.</param>
+        /// <param name="onCompleted"><c>() =></c> Action to invoke upon graceful termination of the observable sequence.</param>
+        /// <returns>IDisposable object used to unsubscribe from the observable sequence.</returns>
+        public IDisposable Subscribe(String onNext, String onError, String onCompleted)
+        {
+            return this._source.Subscribe(
+                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it").Compile(),
+                YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onNext, "ex").Compile(),
+                YacqServices.ParseLambda<Action>(this.Symbols, onCompleted, new String[0]).Compile()
+            );
+        }
+
+        #endregion
     }
 }
