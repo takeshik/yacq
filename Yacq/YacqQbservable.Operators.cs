@@ -212,16 +212,16 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Invokes an action for each element in the observable sequence and invokes an action upon graceful termination of the observable sequence.
+        /// Invokes an action for each element in the observable sequence and invokes an action upon exceptional termination of the observable sequence.
         /// </summary>
         /// <param name="onNext"><c>(it) =></c> Action to invoke for each element in the observable sequence.</param>
-        /// <param name="onCompleted"><c>() =></c> Action to invoke upon graceful termination of the observable sequence.</param>
+        /// <param name="onError"><c>(ex) =></c> Action to invoke upon exceptional termination of the observable sequence.</param>
         /// <returns>The source sequence with the side-effecting behavior applied.</returns>
-        public YacqQbservable<TSource> Do(String onNext, String onCompleted)
+        public YacqQbservable<TSource> Do(String onNext, String onError)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Do(
                 YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it"),
-                YacqServices.ParseLambda<Action>(this.Symbols, onNext, new String[0])
+                YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onError, "ex")
             ));
         }
 
@@ -787,7 +787,7 @@ namespace XSpect.Yacq
         public YacqQbservable<TResult> SelectMany<TCollection, TResult>(String collectionSelector, String resultSelector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.SelectMany(
-                YacqServices.ParseLambda<TSource, IEnumerable<TCollection>>(this.Symbols, collectionSelector),
+                YacqServices.ParseLambda<TSource, IObservable<TCollection>>(this.Symbols, collectionSelector),
                 YacqServices.ParseLambda<Func<TSource, TCollection, TResult>>(this.Symbols, resultSelector, "it", "c")
             ));
         }
@@ -1056,16 +1056,16 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Subscribes an element handler and a completion handler to an observable sequence.
+        /// Subscribes an element handler and an exception handler to an observable sequence.
         /// </summary>
         /// <param name="onNext"><c>(it) =></c> Action to invoke for each element in the observable sequence.</param>
-        /// <param name="onCompleted"><c>() =></c> Action to invoke upon graceful termination of the observable sequence.</param>
-        /// <returns><see cref="IDisposable"/> object used to unsubscribe from the observable sequence.</returns>
-        public IDisposable Subscribe(String onNext, String onCompleted)
+        /// <param name="onError"><c>(ex) =></c> Action to invoke upon exceptional termination of the observable sequence.</param>
+        /// <returns>IDisposable object used to unsubscribe from the observable sequence.</returns>
+        public IDisposable Subscribe(String onNext, String onError)
         {
             return this._source.Subscribe(
                 YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it").Compile(),
-                YacqServices.ParseLambda<Action>(this.Symbols, onCompleted, new String[0]).Compile()
+                YacqServices.ParseLambda<Action>(this.Symbols, onError, "ex").Compile()
             );
         }
 
