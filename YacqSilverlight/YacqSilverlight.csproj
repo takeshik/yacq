@@ -34,6 +34,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Yacq.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -64,6 +65,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <NoConfig>true</NoConfig>
+    <DocumentationFile>bin\DebugNoSign\Yacq.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSign|AnyCPU'">
     <OutputPath>bin\ReleaseNoSign\</OutputPath>
@@ -182,6 +184,9 @@
     </Compile>
     <Compile Include="..\Yacq\YacqQbservable.cs">
       <Link>YacqQbservable.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\YacqQbservable.Operators.cs">
+      <Link>YacqQbservable.Operators.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\YacqQueryable.cs">
       <Link>YacqQueryable.cs</Link>
