@@ -2,14 +2,16 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Yacq</id>
-    <version>1.0</version>
+    <version>1.5</version>
     <title>YACQ - Embeddable Querying Language</title>
     <authors>takeshik</authors>
     <owners>takeshik</owners>
     <licenseUrl>https://github.com/takeshik/yacq/blob/master/LICENSE.txt</licenseUrl>
     <projectUrl>https://github.com/takeshik/yacq</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>YACQ (Yet Another Compilable Query) is an embeddable querying language for .NET, based on Expression Trees API, provides dynamic evaluation from strings, complete access to .NET libraries and the LINQ ecosystem.</description>
+    <description>YACQ (Yet Another Compilable Query) is an embeddable querying language for .NET, based on Expression Trees API.
+This provides dynamic evaluation from strings, complete access to .NET libraries and the LINQ ecosystem.
+More details and the usage are in Project site.</description>
     <summary />
     <language>en-US</language>
     <tags>linq expression-tree expressions evaluator</tags>
