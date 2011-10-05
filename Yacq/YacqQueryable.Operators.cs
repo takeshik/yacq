@@ -201,16 +201,16 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Lazily invokes an action for each value in the sequence, and executes an action for successful termination.
+        /// Lazily invokes an action for each value in the sequence, and executes an action upon exceptional termination.
         /// </summary>
         /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <param name="onCompleted"><c>() =></c> Action to invoke on successful termination of the sequence.</param>
+        /// <param name="onError"><c>(ex) =></c> Action to invoke on exceptional termination of the sequence.</param>
         /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public YacqQueryable<TSource> Do(String onNext, String onCompleted)
+        public YacqQueryable<TSource> Do(String onNext, String onError)
         {
             return new YacqQueryable<TSource>(this.Symbols, this._source.Do(
                 YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it"),
-                YacqServices.ParseLambda<Action>(this.Symbols, onCompleted, new String[0])
+                YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onError, "ex")
             ));
         }
 
