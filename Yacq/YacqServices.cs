@@ -80,8 +80,15 @@ namespace XSpect.Yacq
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
         public static LambdaExpression ParseLambda(SymbolTable symbols, String code, params AmbiguousParameterExpression[] parameters)
         {
+            var expressions = new Reader(code).Read();
             return (LambdaExpression) YacqExpression.AmbiguousLambda(
-                new Reader(code).Read().Single(),
+                expressions.Count == 1
+                    ? expressions.Single()
+                    : YacqExpression.List(symbols, expressions
+#if SILVERLIGHT
+                          .Cast<Expression>()
+#endif
+                      ),
                 parameters
             ).Reduce(symbols);
         }
