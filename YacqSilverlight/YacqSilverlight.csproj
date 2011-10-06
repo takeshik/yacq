@@ -102,8 +102,16 @@
     <Reference Include="System.Reactive.Providers, Version=1.1.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Rx_Experimental-Providers.1.1.10621\lib\SL4\System.Reactive.Providers.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Yacq\DocumentRepository.cs">
+      <Link>DocumentRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\DocumentSet.cs">
+      <Link>DocumentSet.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\AmbiguousLambdaExpression.cs">
       <Link>Expressions\AmbiguousLambdaExpression.cs</Link>
     </Compile>
