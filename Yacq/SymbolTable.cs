@@ -30,6 +30,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using XSpect.Yacq.Expressions;
@@ -119,7 +120,7 @@ namespace XSpect.Yacq
             get
             {
                 // Modifying Root SymbolTable is permitted only in static constructor.
-                return this.Parent == null && Root != null;
+                return this.Parents.IsEmpty() && Root != null;
             }
         }
 
@@ -217,23 +218,26 @@ namespace XSpect.Yacq
         /// <value>
         /// The parent <see cref="SymbolTable"/> of this symbol table.
         /// </value>
-        public SymbolTable Parent
+        public ReadOnlyCollection<SymbolTable> Parents
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// Gets the sequence of <see cref="Parent"/> symbols, from this instance to the <see cref="Root"/>.
+        /// Gets the sequence of <see cref="Parents"/>, from this instance to the <see cref="Root"/>.
         /// </summary>
         /// <value>
-        /// The sequence of <see cref="Parent"/> symbols, from this instance to the <see cref="Root"/>.
+        /// The sequence of <see cref="Parents"/>, from this instance to the <see cref="Root"/>.
         /// </value>
         public IEnumerable<SymbolTable> Chain
         {
             get
             {
-                return EnumerableEx.Generate(this, t => t != null, t => t.Parent, _ => _);
+                return this.Parents
+                    .Expand(p => p.Parents)
+                    .Distinct()
+                    .StartWith(this);
             }
         }
 
@@ -368,17 +372,47 @@ namespace XSpect.Yacq
         /// <summary>
         /// Initializes a new instance of the <see cref="SymbolTable"/> class.
         /// </summary>
-        /// <param name="parent">Parent <see cref="SymbolTable"/> of this symbol table.</param>
+        /// <param name="parents">Sequence of parents of this symbol table.</param>
         /// <param name="entries">Initial entries of this symbol table.</param>
-        public SymbolTable(SymbolTable parent = null, IDictionary<SymbolEntry, SymbolDefinition> entries = null)
+        public SymbolTable(IEnumerable<SymbolTable> parents, IDictionary<SymbolEntry, SymbolDefinition> entries)
         {
-            this.Parent = parent ?? Root;
-            this._symbols = entries != null
-                ? entries
-                      .Where(p => !(this.Parent.ExistsKey(p.Key) && this.Parent.Resolve(p.Key) == p.Value))
-                      .ToDictionary(p => p.Key, p => p.Value)
-                : new Dictionary<SymbolEntry, SymbolDefinition>();
+            this.Parents = new ReadOnlyCollection<SymbolTable>(Root != null
+                ? parents
+                      .Where(p => p != null)
+                      .If(ps => ps.IsEmpty(), ps => ps.StartWith(Root))
+                      .ToArray()
+                : new SymbolTable[0]
+            );
+            this._symbols = entries ?? new Dictionary<SymbolEntry, SymbolDefinition>();
             this._hash = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="parents">Sequence of parents of this symbol table.</param>
+        public SymbolTable(IEnumerable<SymbolTable> parents)
+            : this(parents, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="parents">Array of parents of this symbol table.</param>
+        public SymbolTable(params SymbolTable[] parents)
+            : this((IEnumerable<SymbolTable>) parents)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="parent">Parent of this symbol table.</param>
+        /// <param name="entries">Initial entries of this symbol table.</param>
+        public SymbolTable(SymbolTable parent, IDictionary<SymbolEntry, SymbolDefinition> entries)
+            : this(EnumerableEx.Return(parent), entries)
+        {
         }
 
         /// <summary>
