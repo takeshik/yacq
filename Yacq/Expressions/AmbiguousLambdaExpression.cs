@@ -98,6 +98,7 @@ namespace XSpect.Yacq.Expressions
                 : this.Parameters
                       .Select(p => p.Reduce(symbols))
                       .Cast<ParameterExpression>()
+                      .ToArray()
                       .Let(ps =>
                           new SymbolTable(symbols, ps.ToSymbols())
                               .Let(s => this.Bodies.Count == 0

@@ -28,6 +28,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -42,7 +43,7 @@ namespace XSpect.Yacq.Expressions
     {
         private Boolean _canReduce;
 
-        private Expression _reducedExpression;
+        private Dictionary<Int32, Expression> _reducedExpressions;
 
         /// <summary>
         /// Gets the node type of this expression.
@@ -76,12 +77,8 @@ namespace XSpect.Yacq.Expressions
         {
             get
             {
-                if (this._reducedExpression == null && this.CanReduce)
-                {
-                    this.Reduce();
-                }
-                return this._reducedExpression != null && this._reducedExpression != this
-                    ? this._reducedExpression.Type
+                return this.CanReduce || this._reducedExpressions.ContainsKey(new SymbolTable(this.Symbols).AllKeysHash)
+                    ? this.Reduce().Null(e => e.Type)
                     : null;
             }
         }
@@ -105,6 +102,7 @@ namespace XSpect.Yacq.Expressions
         protected YacqExpression(SymbolTable symbols)
         {
             this._canReduce = true;
+            this._reducedExpressions = new Dictionary<Int32, Expression>();
             this.Symbols = symbols ?? new SymbolTable();
         }
 
@@ -127,25 +125,12 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         public Expression Reduce(SymbolTable symbols)
         {
-            symbols = new SymbolTable(this.Symbols.Parent, symbols != null
-                ? this.Symbols
-                      .Except(symbols.Flatten)
-                      .Concat(symbols.Flatten)
-                      .ToDictionary(p => p.Key, p => p.Value)
-                : null
-            );
-            if (symbols.All(p => this.Symbols.ContainsKey(p.Key) && this.Symbols[p.Key] == p.Value))
+            symbols = this.Symbols.Any()
+                ? new SymbolTable(this.Symbols, symbols)
+                : symbols;
+            if (this._reducedExpressions.ContainsKey(symbols.AllKeysHash))
             {
-                if (this._reducedExpression == null && this.CanReduce)
-                {
-                    this._reducedExpression = this.ReduceImpl(symbols) ?? this;
-                    if (this._reducedExpression != this && this._reducedExpression is YacqExpression)
-                    {
-                        this._reducedExpression = this._reducedExpression.Reduce(symbols);
-                    }
-                }
-                this._canReduce = false;
-                return this._reducedExpression;
+                return this._reducedExpressions[symbols.AllKeysHash];
             }
             else
             {
@@ -153,6 +138,11 @@ namespace XSpect.Yacq.Expressions
                 if (expression != this && expression is YacqExpression)
                 {
                     expression = expression.Reduce(symbols);
+                }
+                this._canReduce = false;
+                if (expression != this)
+                {
+                    this._reducedExpressions[symbols.AllKeysHash] = expression;
                 }
                 return expression;
             }
