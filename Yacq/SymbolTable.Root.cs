@@ -390,7 +390,7 @@ namespace XSpect.Yacq
                                   s,
                                   DispatchTypes.Method,
                                   e.Arguments[0],
-                                  ((IdentifierExpression) a1e0l.First()).Name,
+                                  a1e0l.First().Id(),
                                   ((VectorExpression) a1e0l.Last()).Elements
                                       .ReduceAll(s)
                                       .Cast<TypeCandidateExpression>()
@@ -401,7 +401,7 @@ namespace XSpect.Yacq
                                   s,
                                   DispatchTypes.Method,
                                   e.Arguments[0],
-                                  ((IdentifierExpression) a1[0]).Name,
+                                  a1[0].Id(),
                                   a1.Elements.Skip(1)
                               );
                     }
@@ -428,7 +428,7 @@ namespace XSpect.Yacq
                             s,
                             DispatchTypes.Member,
                             e.Arguments[0],
-                            ((IdentifierExpression) e.Arguments[1]).Name
+                            e.Arguments[1].Id()
                         );
                     }
                 }},
@@ -440,7 +440,7 @@ namespace XSpect.Yacq
                                         ? new [] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
                                         : EnumerableEx.Return(_)
                                     ))
-                                    .Share(_ => _.Zip(_, (i, v) => ((IdentifierExpression) i).Name.Let(n =>
+                                    .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
                                         v.Reduce(s_).Apply(r => s_.Add(n, Expression.Variable(r.Type, n)))
                                     )))
                                     .ToArray()
@@ -467,11 +467,11 @@ namespace XSpect.Yacq
                                         _ => YacqExpression.AmbiguousParameter(
                                             s,
                                             ((TypeCandidateExpression) _.Last().Reduce(s)).ElectedType,
-                                            ((IdentifierExpression) _.First()).Name
+                                            _.First().Id()
                                         ),
                                         _ => YacqExpression.AmbiguousParameter(
                                             s,
-                                            ((IdentifierExpression) p).Name
+                                            p.Id()
                                         )
                                     ))
                                     .ToArray()
@@ -483,7 +483,7 @@ namespace XSpect.Yacq
                 {DispatchTypes.Method, "alias", (e, s) =>
                     new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
                         .Share(_ => _.Zip(_, (i, v) => v.Reduce(s_)
-                            .Apply(r => s_.Add(((IdentifierExpression) i).Name, r))
+                            .Apply(r => s_.Add(i.Id(), r))
                         ))
                         .ToArray()
                         .Let(_ => e.Arguments.Count > 2
@@ -555,17 +555,16 @@ namespace XSpect.Yacq
                 #region Global Method: Symbol Handlings
                 {DispatchTypes.Method, "def", (e, s) =>
                     Expression.Empty().Apply(_ =>
-                        ((SymbolTable) ((ConstantExpression) s.Resolve("$")).Value).Add(
-                            ((IdentifierExpression) e.Arguments[0]).Name,
+                        s.Resolve("$").Const<SymbolTable>().Add(
+                            e.Arguments[0].Id(),
                             e.Arguments[1].Reduce(s)
                         )
                     )
                 },
                 {DispatchTypes.Method, "def!", (e, s) =>
                     Expression.Empty().Apply(_ =>
-                        ((SymbolTable) ((ConstantExpression) s.Resolve("$")).Value)
-                            [((IdentifierExpression) e.Arguments[0]).Name]
-                                = e.Arguments[1].Reduce(s)
+                        s.Resolve("$").Const<SymbolTable>()[e.Arguments[0].Id()]
+                            = e.Arguments[1].Reduce(s)
                     )
                 },
                 #endregion
@@ -575,14 +574,14 @@ namespace XSpect.Yacq
                         YacqExpression.AmbiguousLambda(
                             s,
                             e.Arguments.Skip(1),
-                            YacqExpression.AmbiguousParameter(s, _.Type, ((IdentifierExpression) e.Arguments[0]).Name)
+                            YacqExpression.AmbiguousParameter(s, _.Type, e.Arguments[0].Id())
                         ).Reduce(s),
                         _
                     ))
                 },
                 {DispatchTypes.Method, typeof(Object), "alias", (e, s) =>
                     new SymbolTable(s).Apply(s_ => s_.Add(
-                        ((IdentifierExpression) e.Arguments[0]).Name,
+                        e.Arguments[0].Id(),
                         e.Left.Reduce(s)
                     )).Let(s_ => e.Arguments.Count > 2
                         ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
@@ -615,7 +614,7 @@ namespace XSpect.Yacq
                                   .Share(_ => _
                                       .Zip(_, (k, v) => Expression.Bind(
                                           l.Type.GetMember(
-                                              ((IdentifierExpression) k).Name,
+                                              k.Id(),
                                               BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
                                           ).Single(),
                                           v.Reduce(s)
@@ -650,17 +649,16 @@ namespace XSpect.Yacq
                 #region Macro Method: Symbol Handlings
                 {DispatchTypes.Method, typeof(SymbolTable), "def", (e, s) =>
                     Expression.Empty().Apply(_ =>
-                        ((SymbolTable) ((ConstantExpression) e.Left.Reduce(s)).Value).Add(
-                            ((IdentifierExpression) e.Arguments[0]).Name,
+                        e.Left.Reduce(s).Const<SymbolTable>().Add(
+                            e.Arguments[0].Id(),
                             e.Arguments[1].Reduce(s)
                         )
                     )
                 },
                 {DispatchTypes.Method, typeof(SymbolTable), "def!", (e, s) =>
                     Expression.Empty().Apply(_ =>
-                        ((SymbolTable) ((ConstantExpression) e.Left.Reduce(s)).Value)
-                            [((IdentifierExpression) e.Arguments[0]).Name]
-                                = e.Arguments[1].Reduce(s)
+                        e.Left.Reduce(s).Const<SymbolTable>()[e.Arguments[0].Id()]
+                            = e.Arguments[1].Reduce(s)
                     )
                 },
                 #endregion

@@ -84,7 +84,7 @@ namespace XSpect.Yacq.Expressions
                 .Max(e =>
                 {
                     Int32 value = -1;
-                    return e is IdentifierExpression && ((IdentifierExpression) e).Name.Let(s =>
+                    return e is IdentifierExpression && e.Id().Let(s =>
                         s.StartsWith("$") && Int32.TryParse(s.Substring(1), out value)
                     )
                         ? value
