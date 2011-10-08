@@ -73,7 +73,7 @@ namespace XSpect.Yacq
 
             Root = new SymbolTable()
             {
-                #region Global Method: Arithmetic Operator
+                #region Global Method: Arithmetics
                 {DispatchTypes.Method, "=", (e, s) =>
                     Expression.Assign(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
                 },
@@ -215,7 +215,7 @@ namespace XSpect.Yacq
                      Expression.PostDecrementAssign(e.Arguments[0].Reduce(s))
                 },
                 #endregion
-                #region Global Method: Logical Operator
+                #region Global Method: Logicals
                 {DispatchTypes.Method, "!", (e, s) =>
                     Expression.Not(e.Arguments[0].Reduce(s))
                 },
@@ -338,7 +338,7 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Global Method: Null Testing Operator
+                #region Global Method: Null Testings
                 {DispatchTypes.Method, "??", (e, s) =>
                      Expression.Coalesce(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
                          ? e.Arguments[1].Reduce(s)
@@ -364,7 +364,7 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Global Method: Flow Operator
+                #region Global Method: Flowings
                 {DispatchTypes.Method, ".", (e, s) =>
                 {
                     var a0 = e.Arguments[0].Reduce(s);
@@ -432,17 +432,6 @@ namespace XSpect.Yacq
                         );
                     }
                 }},
-                #endregion
-                #region Global Method: Common Operator
-                {DispatchTypes.Method, "...", (e, s) =>
-                {
-                    throw new Exception();
-                }},
-                {DispatchTypes.Method, ">_<", (e, s) =>
-                    Expression.Empty().Apply(_ => Debugger.Break())
-                },
-                #endregion
-                #region Global Method: Flow
                 {DispatchTypes.Method, "let", (e, s) =>
                     e.Arguments.Any()
                         ? e.Arguments[0] is VectorExpression
@@ -504,7 +493,14 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Global Method: Common
+                #region Global Method: Generals
+                {DispatchTypes.Method, "...", (e, s) =>
+                {
+                    throw new Exception();
+                }},
+                {DispatchTypes.Method, ">_<", (e, s) =>
+                    Expression.Empty().Apply(_ => Debugger.Break())
+                },
                 {DispatchTypes.Method, "input", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
@@ -556,7 +552,52 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Macro Method: Type Handling
+                #region Global Method: Symbol Handlings
+                {DispatchTypes.Method, "def", (e, s) =>
+                    Expression.Empty().Apply(_ =>
+                        ((SymbolTable) ((ConstantExpression) s.Resolve("$")).Value).Add(
+                            ((IdentifierExpression) e.Arguments[0]).Name,
+                            e.Arguments[1].Reduce(s)
+                        )
+                    )
+                },
+                {DispatchTypes.Method, "def!", (e, s) =>
+                    Expression.Empty().Apply(_ =>
+                        ((SymbolTable) ((ConstantExpression) s.Resolve("$")).Value)
+                            [((IdentifierExpression) e.Arguments[0]).Name]
+                                = e.Arguments[1].Reduce(s)
+                    )
+                },
+                #endregion
+                #region Macro Method: Flowings
+                {DispatchTypes.Method, typeof(Object), "let", (e, s) =>
+                    e.Left.Reduce(s).Let(_ => Expression.Invoke(
+                        YacqExpression.AmbiguousLambda(
+                            s,
+                            e.Arguments.Skip(1),
+                            YacqExpression.AmbiguousParameter(s, _.Type, ((IdentifierExpression) e.Arguments[0]).Name)
+                        ).Reduce(s),
+                        _
+                    ))
+                },
+                {DispatchTypes.Method, typeof(Object), "alias", (e, s) =>
+                    new SymbolTable(s).Apply(s_ => s_.Add(
+                        ((IdentifierExpression) e.Arguments[0]).Name,
+                        e.Left.Reduce(s)
+                    )).Let(s_ => e.Arguments.Count > 2
+                        ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
+                        : e.Arguments[1].Reduce(s_)
+                    )
+                },
+                {DispatchTypes.Method, typeof(Object), "cond", (e, s) =>
+                    Expression.Condition(
+                        e.Left.Reduce(s),
+                        e.Arguments[0].Reduce(s),
+                        e.Arguments[1].Reduce(s)
+                    )
+                },
+                #endregion
+                #region Macro Method: Type Handlings
                 {DispatchTypes.Method, typeof(Static<Object>), "new", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
@@ -606,35 +647,24 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Macro Method: Flow
-                {DispatchTypes.Method, typeof(Object), "let", (e, s) =>
-                    e.Left.Reduce(s).Let(_ => Expression.Invoke(
-                        YacqExpression.AmbiguousLambda(
-                            s,
-                            e.Arguments.Skip(1),
-                            YacqExpression.AmbiguousParameter(s, _.Type, ((IdentifierExpression) e.Arguments[0]).Name)
-                        ).Reduce(s),
-                        _
-                    ))
-                },
-                {DispatchTypes.Method, typeof(Object), "alias", (e, s) =>
-                    new SymbolTable(s).Apply(s_ => s_.Add(
-                        ((IdentifierExpression) e.Arguments[0]).Name,
-                        e.Left.Reduce(s)
-                    )).Let(s_ => e.Arguments.Count > 2
-                        ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
-                        : e.Arguments[1].Reduce(s_)
+                #region Macro Method: Symbol Handlings
+                {DispatchTypes.Method, typeof(SymbolTable), "def", (e, s) =>
+                    Expression.Empty().Apply(_ =>
+                        ((SymbolTable) ((ConstantExpression) e.Left.Reduce(s)).Value).Add(
+                            ((IdentifierExpression) e.Arguments[0]).Name,
+                            e.Arguments[1].Reduce(s)
+                        )
                     )
                 },
-                {DispatchTypes.Method, typeof(Object), "cond", (e, s) =>
-                    Expression.Condition(
-                        e.Left.Reduce(s),
-                        e.Arguments[0].Reduce(s),
-                        e.Arguments[1].Reduce(s)
+                {DispatchTypes.Method, typeof(SymbolTable), "def!", (e, s) =>
+                    Expression.Empty().Apply(_ =>
+                        ((SymbolTable) ((ConstantExpression) e.Left.Reduce(s)).Value)
+                            [((IdentifierExpression) e.Arguments[0]).Name]
+                                = e.Arguments[1].Reduce(s)
                     )
                 },
                 #endregion
-                #region Global Literal: Keyword
+                #region Global Member: Generals
                 {"...", Expression.Throw(Expression.Constant(new NotImplementedException()))},
                 {"true", Expression.Constant(true)},
                 {"false", Expression.Constant(false)},
@@ -648,7 +678,7 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Global Literal: Type Import
+                #region Global Member: Types
                 // System, Data Types
                 {"Object", YacqExpression.TypeCandidate(typeof(Object))},
                 {"Boolean", YacqExpression.TypeCandidate(typeof(Boolean))},
@@ -744,7 +774,7 @@ namespace XSpect.Yacq
                     typeof(Func<,,,,,,,,,,,,,,,,>)
                 )},
                 #endregion
-                #region Macro Member: Type Handling
+                #region Macro Member: Type Handlings
                 {DispatchTypes.Member, typeof(Static<Object>), "array", (e, s) =>
                     YacqExpression.TypeCandidate(
                         ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType.MakeArrayType()
