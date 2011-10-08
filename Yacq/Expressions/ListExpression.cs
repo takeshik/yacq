@@ -112,7 +112,7 @@ namespace XSpect.Yacq.Expressions
                 return Dispatch(
                     symbols,
                     DispatchTypes.Method,
-                    ((IdentifierExpression) this[0]).Name,
+                    this[0].Id(),
                     this.Elements.Skip(1)
                 );
             }
