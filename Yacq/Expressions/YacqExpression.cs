@@ -43,7 +43,7 @@ namespace XSpect.Yacq.Expressions
     {
         private Boolean _canReduce;
 
-        private Dictionary<Int32, Expression> _reducedExpressions;
+        private readonly Dictionary<Int32, Expression> _reducedExpressions;
 
         /// <summary>
         /// Gets the node type of this expression.
@@ -126,7 +126,9 @@ namespace XSpect.Yacq.Expressions
         public Expression Reduce(SymbolTable symbols)
         {
             symbols = this.Symbols.Any()
-                ? new SymbolTable(this.Symbols, symbols)
+                ? new SymbolTable(this.Symbols, symbols).Apply(
+                      s => s.Add("$", Constant(symbols))
+                  )
                 : symbols;
             if (this._reducedExpressions.ContainsKey(symbols.AllKeysHash))
             {

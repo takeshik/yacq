@@ -56,7 +56,9 @@ namespace XSpect.Yacq
 #if SILVERLIGHT
                 .Cast<Expression>()
 #endif
-                .ReduceAll(symbols)
+                .ReduceAll((symbols ?? new SymbolTable())
+                    .Apply(s => s.Add("$global", Expression.Constant(symbols)))
+                )
                 .ToArray();
         }
 

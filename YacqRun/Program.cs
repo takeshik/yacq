@@ -116,6 +116,7 @@ Type \help [ENTER] to show help."
                     if (input == heredoc)
                     {
                         Run(code, true);
+                        code = "";
                         heredoc = null;
                     }
                     else
@@ -254,6 +255,7 @@ THE SOFTWARE."
                 else if (!String.IsNullOrWhiteSpace(input))
                 {
                     Run(input, true);
+                    code = "";
                 }
             }
         }
