@@ -125,7 +125,7 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Determines whether this symbol table contains an element with the specified symbol key.
+        /// Determines whether the specified symbol is contained in this symbol table.
         /// </summary>
         /// <param name="key">The symbol key to locate in this symbol table.</param>
         /// <returns>
@@ -353,6 +353,24 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Gets or sets the symbol with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>The symbol value with the specified symbol key properties.</returns>
+        public SymbolDefinition this[DispatchTypes dispatchType, String name]
+        {
+            get
+            {
+                return this[dispatchType, null, name];
+            }
+            set
+            {
+                this[dispatchType, null, name] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the literal symbol with the name.
         /// </summary>
         /// <param name="name">The literal's <see cref="SymbolEntry.Name"/>.</param>
@@ -361,11 +379,11 @@ namespace XSpect.Yacq
         {
             get
             {
-                return this[DispatchTypes.Member | DispatchTypes.Literal, null, name](null, null);
+                return this[DispatchTypes.Member | DispatchTypes.Literal, name](null, null);
             }
             set
             {
-                this[DispatchTypes.Member | DispatchTypes.Literal, null, name] = (e, s) => value;
+                this[DispatchTypes.Member | DispatchTypes.Literal, name] = (e, s) => value;
             }
         }
 
@@ -384,7 +402,7 @@ namespace XSpect.Yacq
                 : new SymbolTable[0]
             );
             this._symbols = entries ?? new Dictionary<SymbolEntry, SymbolDefinition>();
-            this._hash = null;
+            this.AddSystemSymbols();
         }
 
         /// <summary>
@@ -501,7 +519,7 @@ namespace XSpect.Yacq
         /// <param name="targetName">The target symbol's <see cref="SymbolEntry.Name"/>.</param>
         public void Add(DispatchTypes dispatchType, Type leftType, String name, DispatchTypes targetDispatchType, String targetName)
         {
-            this.Add(dispatchType, leftType, name, this[targetDispatchType, null, targetName]);
+            this.Add(dispatchType, leftType, name, this[targetDispatchType, targetName]);
         }
 
         /// <summary>
@@ -513,7 +531,7 @@ namespace XSpect.Yacq
         /// <param name="targetName">The target symbol's <see cref="SymbolEntry.Name"/>.</param>
         public void Add(DispatchTypes dispatchType, String name, DispatchTypes targetDispatchType, String targetName)
         {
-            this.Add(dispatchType, name, this[targetDispatchType, null, targetName]);
+            this.Add(dispatchType, name, this[targetDispatchType, targetName]);
         }
 
         /// <summary>
@@ -524,6 +542,39 @@ namespace XSpect.Yacq
         public void Add(String name, String targetName)
         {
             this.Add(name, this[targetName]);
+        }
+
+        /// <summary>
+        /// Determines whether the specified symbol is contained in this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="leftType">The key's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns><c>true</c> if this symbol table contains an element with the symbol key; otherwise, <c>false</c>.</returns>
+        public Boolean ContainsKey(DispatchTypes dispatchType, Type leftType, String name)
+        {
+            return this.ContainsKey(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        /// <summary>
+        /// Determines whether the specified symbol is contained in this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns><c>true</c> if this symbol table contains an element with the symbol key; otherwise, <c>false</c>.</returns>
+        public Boolean ContainsKey(DispatchTypes dispatchType, String name)
+        {
+            return this.ContainsKey(dispatchType, null, name);
+        }
+
+        /// <summary>
+        /// Determines whether the specified literal symbol is contained in this symbol table.
+        /// </summary>
+        /// <param name="name">The literal's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns><c>true</c> if this symbol table contains an element with the symbol key; otherwise, <c>false</c>.</returns>
+        public Boolean ContainsKey(String name)
+        {
+            return this.ContainsKey(DispatchTypes.Member | DispatchTypes.Literal, null, name);
         }
 
         /// <summary>
@@ -549,6 +600,114 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Determines whether the specified symbol key is contained in this symbol table's <see cref="Chain"/>.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns><c>true</c> the specified symbol key is contained in this symbol table's <see cref="Chain"/>; otherwise, <c>false</c>.</returns>
+        public Boolean ExistsKey(DispatchTypes dispatchType, String name)
+        {
+            return this.ExistsKey(dispatchType, null, name);
+        }
+
+        /// <summary>
+        /// Determines whether the specified literal symbol is contained in this symbol table's <see cref="Chain"/>.
+        /// </summary>
+        /// <param name="name">The literal's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns><c>true</c> the specified literal symbol is contained in this symbol table's <see cref="Chain"/>; otherwise, <c>false</c>.</returns>
+        public Boolean ExistsKey(String name)
+        {
+            return this.ExistsKey(DispatchTypes.Member | DispatchTypes.Literal, name);
+        }
+
+        /// <summary>
+        /// Removes the symbol with the specified symbol key from this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="leftType">The key's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>
+        /// <c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the symbol table.
+        /// </returns>
+        public Boolean Remove(DispatchTypes dispatchType, Type leftType, String name)
+        {
+            return this.Remove(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        /// <summary>
+        /// Removes the symbol with the specified symbol key from this symbol table.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>
+        /// <c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the symbol table.
+        /// </returns>
+        public Boolean Remove(DispatchTypes dispatchType, String name)
+        {
+            return this.Remove(dispatchType, null, name);
+        }
+
+        /// <summary>
+        /// Removes the literal symbol with the specified name from this symbol table.
+        /// </summary>
+        /// <param name="name">The literal symbol's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>
+        /// <c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the symbol table.
+        /// </returns>
+        public Boolean Remove(String name)
+        {
+            return this.Remove(DispatchTypes.Member | DispatchTypes.Literal, name);
+        }
+
+        /// <summary>
+        /// Gets the symbol from this symbol table with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="leftType">The key's <see cref="SymbolEntry.LeftType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="value">When this method returns, contains the value associated with the specified symbol key, if the key is found;
+        /// otherwise, <c>null</c>. This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the specified symbol key is contained in this symbol table; otherwise, <c>false</c>.</returns>
+        public Boolean TryGetValue(DispatchTypes dispatchType, Type leftType, String name, out SymbolDefinition value)
+        {
+            return this.TryGetValue(new SymbolEntry(dispatchType, leftType, name), out value);
+        }
+
+        /// <summary>
+        /// Gets the symbol from this symbol table with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="value">When this method returns, contains the value associated with the specified symbol key, if the key is found;
+        /// otherwise, <c>null</c>. This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the specified symbol key is contained in this symbol table; otherwise, <c>false</c>.</returns>
+        public Boolean TryGetValue(DispatchTypes dispatchType, String name, out SymbolDefinition value)
+        {
+            return this.TryGetValue(dispatchType, null, name, out value);
+        }
+
+        /// <summary>
+        /// Gets the literal symbol from this symbol table with the specified name.
+        /// </summary>
+        /// <param name="name">The literal key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="value">When this method returns, contains the value of the specified literal symbol name, if the key is found;
+        /// otherwise, <c>null</c>. This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the specified literal symbol key is contained in this symbol table; otherwise, <c>false</c>.</returns>
+        public Boolean TryGetValue(String name, out Expression value)
+        {
+            if (this.ContainsKey(name))
+            {
+                value = this[name];
+                return true;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the symbol from this symbol table's <see cref="Chain"/> with the specified symbol key.
         /// </summary>
         /// <param name="key">The symbol key to get.</param>
@@ -568,6 +727,17 @@ namespace XSpect.Yacq
         public SymbolDefinition Resolve(DispatchTypes dispatchType, Type leftType, String name)
         {
             return this.Resolve(new SymbolEntry(dispatchType, leftType, name));
+        }
+
+        /// <summary>
+        /// Gets the symbol from this symbol table's <see cref="Chain"/> with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>The symbol value with the specified symbol key properties.</returns>
+        public SymbolDefinition Resolve(DispatchTypes dispatchType, String name)
+        {
+            return this.Resolve(dispatchType, null, name);
         }
 
         /// <summary>
@@ -613,6 +783,19 @@ namespace XSpect.Yacq
         public Boolean TryResolve(DispatchTypes dispatchType, Type leftType, String name, out SymbolDefinition value)
         {
             return this.TryResolve(new SymbolEntry(dispatchType, leftType, name), out value);
+        }
+
+        /// <summary>
+        /// Gets the symbol from this symbol table's <see cref="Chain"/> with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <param name="value">When this method returns, contains the value associated with the specified symbol key properties, if the key is found;
+        /// otherwise, <c>null</c>. This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the specified symbol key is contained in this symbol table's <see cref="Chain"/>; otherwise, <c>false</c>.</returns>
+        public Boolean TryResolve(DispatchTypes dispatchType, String name, out SymbolDefinition value)
+        {
+            return this.TryResolve(dispatchType, null, name, out value);
         }
 
         /// <summary>
@@ -681,6 +864,17 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Gets the most appropriate symbol with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>The symbol value with the most appropriate to the specified symbol key properties.</returns>
+        public SymbolDefinition Match(DispatchTypes dispatchType, String name)
+        {
+            return this.Match(dispatchType, null, name);
+        }
+
+        /// <summary>
         /// Gets the most appropriate symbol with the specified <see cref="DispatchExpression"/>.
         /// </summary>
         /// <param name="expression">The <see cref="DispatchExpression"/> to use as symbol key properties.</param>
@@ -721,6 +915,17 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Gets the most appropriate symbol from this symbol table's <see cref="Chain"/> with the specified symbol key properties.
+        /// </summary>
+        /// <param name="dispatchType">The key's <see cref="SymbolEntry.DispatchType"/>.</param>
+        /// <param name="name">The key's <see cref="SymbolEntry.Name"/>.</param>
+        /// <returns>The symbol value with the most appropriate to the specified symbol key properties.</returns>
+        public SymbolDefinition ResolveMatch(DispatchTypes dispatchType, String name)
+        {
+            return this.ResolveMatch(dispatchType, null, name);
+        }
+
+        /// <summary>
         /// Gets the most appropriate symbol from this symbol table's <see cref="Chain"/> with the specified <see cref="DispatchExpression"/>.
         /// </summary>
         /// <param name="expression">The <see cref="DispatchExpression"/> to use as symbol key properties.</param>
@@ -745,6 +950,12 @@ namespace XSpect.Yacq
                 throw new InvalidOperationException("This SymbolTable is read-only.");
             }
             this._hash = null;
+        }
+
+        private void AddSystemSymbols()
+        {
+            this.Add(".$self", Expression.Constant(this));
+            this.Add(".loadedFiles", Expression.Constant(new List<String>()));
         }
     }
 }

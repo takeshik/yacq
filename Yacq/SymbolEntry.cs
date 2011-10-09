@@ -95,6 +95,25 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="SymbolEntry"/>.
+        /// </summary>
+        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="name">The name of this symbol.</param>
+        public SymbolEntry(DispatchTypes dispatchType, String name)
+            : this(dispatchType, null, name)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SymbolEntry"/> as a literal.
+        /// </summary>
+        /// <param name="name">The name of this symbol as a literal.</param>
+        public SymbolEntry(String name)
+            : this(DispatchTypes.Member | DispatchTypes.Literal, null, name)
+        {
+        }
+
+        /// <summary>
         /// Determines whether the specified <see cref="Object"/> is equal to this instance.
         /// </summary>
         /// <param name="obj">The <see cref="Object"/> to compare with this instance.</param>

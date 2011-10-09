@@ -1,0 +1,21 @@
+;
+; csharp-aliases.yacq - Add C#-compatible alias symbols.
+;
+
+(def object Object)
+(def bool Boolean)
+(def char Char)
+(def string String)
+(def sbyte SByte)
+(def byte Byte)
+(def short Int16)
+(def ushort UInt16)
+(def int Int32)
+(def uint UInt32)
+(def long Int64)
+(def ulong UInt64)
+(def float Single)
+(def double Double)
+(def decimal Decimal)
+
+true
