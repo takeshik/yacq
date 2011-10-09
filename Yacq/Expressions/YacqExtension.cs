@@ -126,7 +126,7 @@ namespace XSpect.Yacq.Expressions
         internal static IDictionary<SymbolEntry, SymbolDefinition> ToSymbols(this IEnumerable<ParameterExpression> parameters)
         {
             return parameters.ToDictionary(
-                p => new SymbolEntry(DispatchTypes.Member | DispatchTypes.Literal, null, p.Name),
+                p => new SymbolEntry(p.Name),
                 p => (SymbolDefinition) ((e, s) => p)
             );
         }

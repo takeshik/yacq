@@ -554,17 +554,39 @@ namespace XSpect.Yacq
                 #endregion
                 #region Global Method: Symbol Handlings
                 {DispatchTypes.Method, "def", (e, s) =>
-                    Expression.Empty().Apply(_ =>
-                        s.Resolve("$").Const<SymbolTable>().Add(
-                            e.Arguments[0].Id(),
-                            e.Arguments[1].Reduce(s)
-                        )
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        s.Resolve("$global"),
+                        "def",
+                        e.Arguments
                     )
                 },
                 {DispatchTypes.Method, "def!", (e, s) =>
-                    Expression.Empty().Apply(_ =>
-                        s.Resolve("$").Const<SymbolTable>()[e.Arguments[0].Id()]
-                            = e.Arguments[1].Reduce(s)
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        s.Resolve("$global"),
+                        "def!",
+                        e.Arguments
+                    )
+                },
+                {DispatchTypes.Method, "undef", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        s.Resolve("$global"),
+                        "undef",
+                        e.Arguments
+                    )
+                },
+                {DispatchTypes.Method, "load", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        s.Resolve("$global"),
+                        "load",
+                        e.Arguments
                     )
                 },
                 #endregion
@@ -661,6 +683,29 @@ namespace XSpect.Yacq
                             = e.Arguments[1].Reduce(s)
                     )
                 },
+                {DispatchTypes.Method, typeof(SymbolTable), "undef", (e, s) =>
+                    Expression.Empty().Apply(_ =>
+                        e.Left.Reduce(s).Const<SymbolTable>().Remove(e.Arguments[0].Id())
+                    )
+                },
+                {DispatchTypes.Method, typeof(SymbolTable), "load", (e, s) =>
+                    Root["*libPath*"].Const<IList<DirectoryInfo>>()
+                        .Where(d => d.Exists)
+                        .SelectMany(d => new [] { ".yacq", "", }
+                            .SelectMany(_ => d.EnumerateFiles(e.Arguments[0].Reduce(s).Const<String>() + _))
+                         )
+                        .First(f => f.Exists)
+                        .Let(f => e.Left.Reduce(s).Const<SymbolTable>().Let(ts =>
+                            ts[".loadedFiles"].Const<IList<String>>().Contains(f.FullName)
+                                ? Expression.Constant(null)
+                                : YacqServices.Parse(
+                                      ts,
+                                      File.ReadAllText(f.FullName
+                                          .Apply(ts[".loadedFiles"].Const<IList<String>>().Add)
+                                      )
+                                  )
+                        ))
+                },
                 #endregion
                 #region Global Member: Generals
                 {"...", Expression.Throw(Expression.Constant(new NotImplementedException()))},
@@ -675,6 +720,16 @@ namespace XSpect.Yacq
                         "Break"
                     )
                 },
+                #endregion
+                #region Global Member: Configurations
+                {"*libPath*", Expression.Constant(new List<DirectoryInfo>()
+                {
+#if !SILVERLIGHT
+                    new DirectoryInfo("yacq_lib"),
+                    new DirectoryInfo("lib"),
+                    new DirectoryInfo("."),
+#endif
+                })},
                 #endregion
                 #region Global Member: Types
                 // System, Data Types
