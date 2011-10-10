@@ -81,8 +81,13 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DocumentRepository.cs" />
-    <Compile Include="DocumentSet.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SystemObjects\DocumentRepository.cs" />
+    <Compile Include="SystemObjects\DocumentSet.cs" />
     <Compile Include="Expressions\DispatchExpression.Candidate.cs" />
     <Compile Include="Expressions\LambdaListExpression.cs" />
     <Compile Include="ParseException.cs" />
@@ -110,6 +115,7 @@
     <Compile Include="Expressions\IdentifierExpression.cs" />
     <Compile Include="Expressions\YacqExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemObjects\LibraryLoader.cs" />
     <Compile Include="YacqQbservable.cs" />
     <Compile Include="YacqQbservable.Operators.cs" />
     <Compile Include="YacqQueryable.cs" />
@@ -117,7 +123,16 @@
     <Compile Include="YacqServices.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\yacq_lib\csharp-aliases.yacq">
+      <Link>Libraries\csharp-aliases.yacq</Link>
+    </EmbeddedResource>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

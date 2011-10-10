@@ -33,7 +33,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.SystemObjects
 {
     /// <summary>
     /// Represents a XML document file to search by its name, member, or expression.
@@ -49,6 +49,27 @@ namespace XSpect.Yacq
         public DocumentSet(FileInfo xmlFile)
         {
             this._xml = XDocument.Load(xmlFile.FullName);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentSet"/> class.
+        /// </summary>
+        /// <param name="stream">The stream to read the XML file.</param>
+        public DocumentSet(Stream stream)
+        {
+            using (stream)
+            {
+                this._xml = XDocument.Load(stream);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentSet"/> class.
+        /// </summary>
+        /// <param name="xml">The XML string to read.</param>
+        public DocumentSet(String xml)
+        {
+            this._xml = XDocument.Parse(xml);
         }
 
         /// <summary>
@@ -68,8 +89,8 @@ namespace XSpect.Yacq
         /// <returns>The document XML elements which is named as <paramref name="name"/>.</returns>
         public XElement[] GetDocument(String name)
         {
-            return this._xml
-                .Descendants("member")
+            return this._xml.Descendants("member")
+                .Concat(this._xml.Descendants("article"))
                 .FirstOrDefault(xm => xm.Attribute("name").Value == name)
                 .Elements()
                 .ToArray();

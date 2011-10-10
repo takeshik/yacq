@@ -106,12 +106,6 @@
     <Reference Include="System.Xml.Linq, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Yacq\DocumentRepository.cs">
-      <Link>DocumentRepository.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\DocumentSet.cs">
-      <Link>DocumentSet.cs</Link>
-    </Compile>
     <Compile Include="..\Yacq\Expressions\AmbiguousLambdaExpression.cs">
       <Link>Expressions\AmbiguousLambdaExpression.cs</Link>
     </Compile>
@@ -190,6 +184,15 @@
     <Compile Include="..\Yacq\SymbolTable.Root.cs">
       <Link>SymbolTable.Root.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\SystemObjects\DocumentRepository.cs">
+      <Link>SystemObjects\DocumentRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\SystemObjects\DocumentSet.cs">
+      <Link>SystemObjects\DocumentSet.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\SystemObjects\LibraryLoader.cs">
+      <Link>SystemObjects\LibraryLoader.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\YacqQbservable.cs">
       <Link>YacqQbservable.cs</Link>
     </Compile>
@@ -208,8 +211,22 @@
     <Compile Include="..\Yacq\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Properties\Resources.Designer.cs">
+      <Link>Properties\Resources.Designer.cs</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\Yacq\Properties\Resources.resx">
+      <Link>Properties\Resources.resx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\yacq_lib\csharp-aliases.yacq">
+      <Link>Libraries\csharp-aliases.yacq</Link>
+    </EmbeddedResource>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
