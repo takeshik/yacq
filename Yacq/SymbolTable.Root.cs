@@ -39,6 +39,7 @@ using XSpect.Yacq.Expressions;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Reactive;
+using XSpect.Yacq.SystemObjects;
 
 namespace XSpect.Yacq
 {
@@ -530,10 +531,10 @@ namespace XSpect.Yacq
                 {DispatchTypes.Method, "typeof", (e, s) =>
                     Expression.Constant(
 #if SILVERLIGHT
-                        Type.GetType((String) ((TextExpression) e.Arguments[0]).Value)
+                        Type.GetType(e.Arguments[0].Reduce(s).Const<String>())
 #else
                         AppDomain.CurrentDomain.GetAssemblies()
-                            .Choose(a => a.GetType(((String) ((TextExpression) e.Arguments[0]).Value)))
+                            .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
                             .First()
 #endif
                     )
@@ -543,10 +544,10 @@ namespace XSpect.Yacq
                 {DispatchTypes.Method, "type", (e, s) =>
                     YacqExpression.TypeCandidate(
 #if SILVERLIGHT
-                        Type.GetType((String) ((TextExpression) e.Arguments[0]).Value)
+                        Type.GetType(e.Arguments[0].Reduce(s).Const<String>())
 #else
                         AppDomain.CurrentDomain.GetAssemblies()
-                            .Choose(a => a.GetType((String) ((TextExpression) e.Arguments[0]).Value))
+                            .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
                             .First()
 #endif
                     )
@@ -689,22 +690,10 @@ namespace XSpect.Yacq
                     )
                 },
                 {DispatchTypes.Method, typeof(SymbolTable), "load", (e, s) =>
-                    Root["*libPath*"].Const<IList<DirectoryInfo>>()
-                        .Where(d => d.Exists)
-                        .SelectMany(d => new [] { ".yacq", "", }
-                            .SelectMany(_ => d.EnumerateFiles(e.Arguments[0].Reduce(s).Const<String>() + _))
-                         )
-                        .First(f => f.Exists)
-                        .Let(f => e.Left.Reduce(s).Const<SymbolTable>().Let(ts =>
-                            ts[".loadedFiles"].Const<IList<String>>().Contains(f.FullName)
-                                ? Expression.Constant(null)
-                                : YacqServices.Parse(
-                                      ts,
-                                      File.ReadAllText(f.FullName
-                                          .Apply(ts[".loadedFiles"].Const<IList<String>>().Add)
-                                      )
-                                  )
-                        ))
+                    Root["*libs*"].Const<LibraryLoader>().Load(
+                        e.Left.Reduce(s).Const<SymbolTable>(),
+                        e.Arguments[0].Reduce(s).Const<String>()
+                    )
                 },
                 #endregion
                 #region Global Member: Generals
@@ -721,15 +710,25 @@ namespace XSpect.Yacq
                     )
                 },
                 #endregion
-                #region Global Member: Configurations
-                {"*libPath*", Expression.Constant(new List<DirectoryInfo>()
-                {
+                #region Global Member: Configurations and System Objects
+                {"*libs*", Expression.Constant(new LibraryLoader(
 #if !SILVERLIGHT
                     new DirectoryInfo("yacq_lib"),
                     new DirectoryInfo("lib"),
-                    new DirectoryInfo("."),
+                    new DirectoryInfo(".")
 #endif
-                })},
+                ))},
+                {"*docs*", Expression.Constant(new DocumentRepository(
+#if !SILVERLIGHT
+                    new DirectoryInfo("yacq_doc"),
+                    new DirectoryInfo("doc"),
+                    new DirectoryInfo(Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                        @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+                    )),
+                    new DirectoryInfo(".")
+#endif
+                ))},
                 #endregion
                 #region Global Member: Types
                 // System, Data Types

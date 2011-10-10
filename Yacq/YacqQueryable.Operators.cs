@@ -885,5 +885,20 @@ namespace XSpect.Yacq
                 comparer
             ));
         }
+
+        #region Non-Expression-based methods
+
+        /// <summary>
+        /// Enumerates the sequence and invokes the given action for each value in the sequence.
+        /// </summary>
+        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
+        public void ForEach(String onNext)
+        {
+            this._source.ForEach(
+                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it").Compile()
+            );
+        }
+
+        #endregion
     }
 }

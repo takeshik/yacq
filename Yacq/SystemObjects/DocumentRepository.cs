@@ -34,8 +34,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
+using XSpect.Yacq.Properties;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.SystemObjects
 {
     /// <summary>
     /// Provides management system for XML document files.
@@ -65,10 +66,33 @@ namespace XSpect.Yacq
         /// <summary>
         /// Initializes a new instance of the <see cref="DocumentRepository"/> class.
         /// </summary>
-        public DocumentRepository()
+        /// <param name="searchPaths">An array which contains search paths for document XML files.</param>
+        public DocumentRepository(params DirectoryInfo[] searchPaths)
         {
             this.DocumentSets = new Dictionary<String, DocumentSet>();
-            this.SearchPaths = new List<DirectoryInfo>();
+            this.SearchPaths = new List<DirectoryInfo>(searchPaths);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentRepository"/> class.
+        /// </summary>
+        public DocumentRepository()
+            : this(new DirectoryInfo[0])
+        {
+        }
+
+        /// <summary>
+        /// Gets the document which has specified name.
+        /// </summary>
+        /// <param name="name">The full name of the document (documentSetName/documentKey).</param>
+        /// <returns>The document XML elements which has specified name.</returns>
+        public XElement[] GetDocument(String name)
+        {
+            return name.Split('/')
+                .Let(_ => this.LoadDocumentSet(_[0])
+                    .Null(s => s.GetDocument(_[1])
+                )
+            );
         }
 
         /// <summary>
@@ -98,18 +122,25 @@ namespace XSpect.Yacq
                             : null;
         }
 
-        private DocumentSet LoadDocumentSet(MemberInfo member)
+        private DocumentSet LoadDocumentSet(String key)
         {
-            var key = member.DeclaringType.Assembly.GetName().Name;
             return this.DocumentSets.ContainsKey(key)
                 ? this.DocumentSets[key]
-                : this.SearchPaths
+                : (this.SearchPaths
+                      .Where(d => d.Exists)
                       .SelectMany(d => d.EnumerateFiles(key + ".xml"))
                       .FirstOrDefault()
-                      .Null(f => new DocumentSet(f)
-                          .Apply(s => this.DocumentSets.Add(key, s))
-                      );
+                      .Null(f => new DocumentSet(f))
+                      ?? new DocumentSet(Resources.ResourceManager.GetString(key))
+                  ).Apply(s => this.DocumentSets.Add(key, s));
+        }
 
+        private DocumentSet LoadDocumentSet(MemberInfo member)
+        {
+            return this.LoadDocumentSet((member is Type
+                ? (Type) member
+                : member.DeclaringType
+            ).Assembly.GetName().Name);
         }
     }
 }
