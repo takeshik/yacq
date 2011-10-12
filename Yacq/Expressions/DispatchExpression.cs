@@ -170,8 +170,8 @@ namespace XSpect.Yacq.Expressions
                                   .ToArray()
                           )
                     )
-                    .Where(c => c.Arguments.Count == c.Parameters.Count
-                        || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1)
+                    .Where(c => (c.Arguments.Count == c.Parameters.Count
+                        || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1))
                         && c.Parameters.Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
                                ? p.ParameterType.GetDelegateSignature().GetParameters().Length
                                : 0

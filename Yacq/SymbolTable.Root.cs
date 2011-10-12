@@ -451,7 +451,10 @@ namespace XSpect.Yacq
                                               e.Arguments
                                                   .Skip(1)
                                                   .ReduceAll(s_)
-                                                  .StartWith(s_.Literals.Values.Zip(_, Expression.Assign).ToArray())
+                                                  .StartWith(s_.Literals.Values
+                                                      .OfType<ParameterExpression>()
+                                                      .Zip(_, Expression.Assign).ToArray()
+                                                  )
                                           )
                                         : (Expression) Expression.Empty()
                                     )
