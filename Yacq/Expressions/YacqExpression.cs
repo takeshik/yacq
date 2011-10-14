@@ -77,7 +77,7 @@ namespace XSpect.Yacq.Expressions
         {
             get
             {
-                return this.CanReduce || this._reducedExpressions.ContainsKey(new SymbolTable(this.Symbols).AllKeysHash)
+                return this.CanReduce || this._reducedExpressions.ContainsKey(new SymbolTable(this.Symbols).AllHash)
                     ? this.Reduce().Null(e => e.Type)
                     : null;
             }
@@ -127,27 +127,39 @@ namespace XSpect.Yacq.Expressions
         {
             symbols = this.Symbols.Any()
                 ? new SymbolTable(this.Symbols, symbols).Apply(
-                      s => s.Add("$", Constant(symbols))
+                      s => s.Add("$", Constant(s))
                   )
                 : symbols;
-            if (this._reducedExpressions.ContainsKey(symbols.AllKeysHash))
+            var hash = symbols.AllHash;
+            if (this._reducedExpressions.ContainsKey(hash))
             {
-                return this._reducedExpressions[symbols.AllKeysHash];
+                return this._reducedExpressions[hash];
             }
             else
             {
-                var expression = this.ReduceImpl(symbols) ?? this;
-                if (expression != this && expression is YacqExpression)
-                {
-                    expression = expression.Reduce(symbols);
-                }
+                var expression = this.ForceReduce(symbols);
                 this._canReduce = false;
                 if (expression != this)
                 {
-                    this._reducedExpressions[symbols.AllKeysHash] = expression;
+                    this._reducedExpressions[hash] = expression;
                 }
                 return expression;
             }
+        }
+
+        internal Expression ForceReduce(SymbolTable symbols)
+        {
+            var expression = this.ReduceImpl(symbols) ?? this;
+            if (expression != this && expression is YacqExpression)
+            {
+                expression = expression.Reduce(symbols);
+            }
+            return expression;
+        }
+
+        internal void ClearCache()
+        {
+            this._reducedExpressions.Clear();
         }
 
         /// <summary>

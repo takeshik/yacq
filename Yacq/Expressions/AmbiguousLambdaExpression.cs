@@ -123,23 +123,39 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
+        /// Create new <see cref="AmbiguousLambdaExpression"/> with specified parameter types.
+        /// </summary>
+        /// <param name="parameters">The types for paramaters of new <see cref="AmbiguousLambdaExpression"/>.</param>
+        /// <returns>The new <see cref="AmbiguousLambdaExpression"/> with specified parameters.</returns>
+        public AmbiguousLambdaExpression ApplyTypeArguments(IEnumerable<AmbiguousParameterExpression> parameters)
+        {
+            return AmbiguousLambda(
+                this.Symbols,
+                // HACK: Clear all cache in Bodies to suppress undefied ParameterExpression errors.
+                this.Bodies.Apply(_ => _
+                    .SelectMany(e => e.GetDescendants())
+                    .OfType<YacqExpression>()
+                    .ForEach(e => e.ClearCache())
+                ),
+                parameters
+            );
+        }
+
+        /// <summary>
         /// Create new <see cref="AmbiguousLambdaExpression"/> with specified type argument map.
         /// </summary>
         /// <param name="typeArgumentMap">The type argument map for parameters of new <see cref="AmbiguousLambdaExpression"/>.</param>
         /// <returns>The new <see cref="AmbiguousLambdaExpression"/> with parameters which is specified type.</returns>
         public AmbiguousLambdaExpression ApplyTypeArguments(IDictionary<Type, Type> typeArgumentMap)
         {
-            return AmbiguousLambda(
-                this.Symbols,
-                this.Bodies,
-                this.Parameters
-                    .Select(p => AmbiguousParameter(
-                        p.Symbols,
-                        p.Type != null && typeArgumentMap.ContainsKey(p.Type)
-                            ? typeArgumentMap[p.Type]
-                            : p.Type,
-                        p.Name
-                    ))
+            return this.ApplyTypeArguments(this.Parameters
+                .Select(p => AmbiguousParameter(
+                    p.Symbols,
+                    p.Type != null && typeArgumentMap.ContainsKey(p.Type)
+                        ? typeArgumentMap[p.Type]
+                        : p.Type,
+                    p.Name
+                ))
             );
         }
 
@@ -150,15 +166,12 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The new <see cref="AmbiguousLambdaExpression"/> with parameters which is specified type.</returns>
         public AmbiguousLambdaExpression ApplyTypeArguments(IEnumerable<Type> types)
         {
-            return AmbiguousLambda(
-                this.Symbols,
-                this.Bodies,
-                this.Parameters
-                    .Zip(types, (p, t) => AmbiguousParameter(
-                        p.Symbols,
-                        t,
-                        p.Name
-                    ))
+            return this.ApplyTypeArguments(this.Parameters
+                .Zip(types, (p, t) => AmbiguousParameter(
+                    p.Symbols,
+                    t,
+                    p.Name
+                ))
             );
         }
 
