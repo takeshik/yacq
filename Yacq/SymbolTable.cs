@@ -316,20 +316,34 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Gets the hash value of <see cref="AllKeys"/>.
+        /// Gets the hash value of this symbol table.
         /// </summary>
         /// <value>
-        /// The hash value of <see cref="AllKeys"/>.
+        /// The hash value of this symbol table.
         /// </value>>
-        public Int32 AllKeysHash
+        public Int32 Hash
         {
             get
             {
-                return this.Chain.Aggregate(0, (sa, s) =>
-                    sa ^ s._hash ?? (Int32) (s._hash = s.Keys.Aggregate(0, (ka, k) =>
-                        ka ^ k.GetHashCode()
-                    ))
-                );
+                return (Int32) (this._hash ?? (this._hash = this.Aggregate(0, (a, e) =>
+                    a ^ e.Key.GetHashCode() ^
+                    e.Value.Method.GetHashCode() ^
+                    (e.Value.Target != null ? e.Value.GetHashCode() : 0)
+                )));
+            }
+        }
+
+        /// <summary>
+        /// Gets the hash value of all symbol tables in <see cref="Chain"/>.
+        /// </summary>
+        /// <value>
+        /// The hash value of all symbol tables in <see cref="Chain"/>.
+        /// </value>>
+        public Int32 AllHash
+        {
+            get
+            {
+                return this.Chain.Aggregate(0, (sa, s) => sa ^ s.Hash);
             }
         }
 
