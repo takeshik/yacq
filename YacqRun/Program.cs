@@ -28,6 +28,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -288,7 +289,37 @@ THE SOFTWARE."
                         Console.ForegroundColor = ConsoleColor.Green;
                         if (ret != null)
                         {
-                            Console.WriteLine("Returned : {0}\n  {1}", ret.GetType(), ret);
+                            Console.Write("Returned : {0}\n  {1}", ret.GetType(), ret);
+                            if (ret is IEnumerable && !(ret is String))
+                            {
+                                var data = ((IEnumerable) ret)
+                                    .Cast<Object>()
+                                    .Select(_ => (_ ?? "(null").ToString())
+                                    .Take(101)
+                                    .ToArray();
+                                if (data.Any(s => s.Length > 40))
+                                {
+                                    Console.WriteLine(String.Join(
+                                        Environment.NewLine,
+                                        data.Select(s => "    " + s)
+                                            .StartWith(" = [")
+                                    ));
+                                    Console.WriteLine(data.Length > 100
+                                        ? "    (more...)\n  ]"
+                                        : "  ]"
+                                    );
+                                }
+                                else
+                                {
+                                    Console.Write(" = [ \n    " + String.Join(" ", data)
+                                        + (data.Length > 100
+                                              ? " (more...)\n  ]"
+                                              : "\n  ]"
+                                          )
+                                    );
+                                }
+                            }
+                            Console.WriteLine();
                         }
                         else
                         {
