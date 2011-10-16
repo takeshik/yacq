@@ -829,6 +829,83 @@ namespace XSpect.Yacq
                     typeof(Func<,,,,,,,,,,,,,,,,>)
                 )},
                 #endregion
+                #region Macro Member: Generals
+                {DispatchTypes.Member, typeof(Object), "?", (e, s) =>
+                    Expression.Constant(
+                        e.Left.Type(s).Let(t =>
+                            t.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                                .Where(m => !(m is ConstructorInfo
+                                    || (m is MethodInfo && m.Name.StartsWith("get_") || m.Name.StartsWith("set_"))))
+                                .Concat(s.AllLiterals.Values
+                                    .OfType<TypeCandidateExpression>()
+                                    .SelectMany(_ => _.Candidates)
+                                    .SelectMany(_ => _.GetExtensionMethods()
+                                        .Where(m => m.GetParameters()[0].ParameterType.IsAppropriate(t))
+                                    )
+#if SILVERLIGHT
+                                    .Cast<MemberInfo>()
+#endif
+                                )
+                                .OrderBy(m => m is MethodInfo
+                                    ? ((MethodInfo) m).IsExtensionMethod()
+                                          ? 2
+                                          : 1
+                                    : 0
+                                )
+                                .ThenBy(m => m.Name)
+                                .Select(m => m is MethodBase
+                                    ? "("+ m.Name + ")"
+                                    : m.Name
+                                )
+                                .Concat(s.AllKeys
+                                    .Where(_ => _.TypeMatch(t))
+                                    .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                        ? 0
+                                        : 1
+                                    )
+                                    .ThenBy(m => m.Name)
+                                    .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                        ? _.Name
+                                        : "(" + _.Name + ")"
+                                    )
+                                )
+                                .Distinct()
+                        )
+                    )
+                },
+                {DispatchTypes.Member, typeof(Static<Object>), "?", (e, s) =>
+                    Expression.Constant(
+                        ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType.Let(t =>
+                            t.GetMembers(BindingFlags.Public | BindingFlags.Static)
+                                .Where(m => !(m is MethodInfo && m.Name.StartsWith("get_") || m.Name.StartsWith("set_")))
+                                .OrderBy(m => m is MethodInfo
+                                    ? ((MethodInfo) m).IsExtensionMethod()
+                                          ? 2
+                                          : 1
+                                    : 0
+                                )
+                                .ThenBy(m => m.Name)
+                                .Select(m => m is MethodBase
+                                    ? "("+ m.Name + ")"
+                                    : m.Name
+                                )
+                                .Concat(s.AllKeys
+                                    .Where(_ => _.TypeMatch(typeof(Static<>).MakeGenericType(t)))
+                                    .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                        ? 0
+                                        : 1
+                                    )
+                                    .ThenBy(m => m.Name)
+                                    .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                        ? _.Name
+                                        : "(" + _.Name + ")"
+                                    )
+                                )
+                                .Distinct()
+                        )
+                    )
+                },
+                #endregion
                 #region Macro Member: Type Handlings
                 {DispatchTypes.Member, typeof(Static<Object>), "array", (e, s) =>
                     YacqExpression.TypeCandidate(

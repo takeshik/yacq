@@ -170,5 +170,36 @@ namespace XSpect.Yacq
                 this.LeftType == other.LeftType &&
                 this.Name == other.Name;
         }
+
+        /// <summary>
+        /// Determines whether the specified type matches with the target type.
+        /// </summary>
+        /// <param name="test">The type to test match.</param>
+        /// <param name="target">The targe type of match.</param>
+        /// <returns><c>true</c> if <paramref name="test"/> matches with <paramref cref="target"/> otherwise, <c>false</c>.</returns>
+        public static Boolean TypeMatch(Type test, Type target)
+        {
+            return
+                (test == target || (test != null && test.IsAssignableFrom(target) &&
+                (test != typeof(Object) || target.TryGetGenericTypeDefinition() != typeof(Static<>)) || (
+                    test.TryGetGenericTypeDefinition() == typeof(Static<>) &&
+                    target.TryGetGenericTypeDefinition() == typeof(Static<>) &&
+                    test.GetGenericArguments()[0].Let(t =>
+                        target.GetGenericArguments()[0].Let(kt =>
+                            t == kt || t.IsAssignableFrom(kt)
+                        )
+                    )
+                )));
+        }
+
+        /// <summary>
+        /// Determines whether <see cref="LeftType"/> matches with the target type.
+        /// </summary>
+        /// <param name="target">The targe type of match.</param>
+        /// <returns><c>true</c> if <see cref="LeftType"/> matches with <paramref cref="target"/>otherwise, <c>false</c>.</returns>
+        public Boolean TypeMatch(Type target)
+        {
+            return TypeMatch(this.LeftType, target);
+        }
     }
 }

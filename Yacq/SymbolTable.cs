@@ -845,15 +845,7 @@ namespace XSpect.Yacq
                 .Where(p =>
                     (p.Key.DispatchType == DispatchTypes.Unknown || p.Key.DispatchType.HasFlag(key.DispatchType)) &&
                     p.Key.Name == key.Name &&
-                    (p.Key.LeftType == null || p.Key.LeftType == key.LeftType || p.Key.LeftType.IsAssignableFrom(key.LeftType) || (
-                        p.Key.LeftType.TryGetGenericTypeDefinition() == typeof(Static<>) &&
-                        key.LeftType.TryGetGenericTypeDefinition() == typeof(Static<>) &&
-                        p.Key.LeftType.GetGenericArguments()[0].Let(t =>
-                            key.LeftType.GetGenericArguments()[0].Let(kt =>
-                                t == kt || t.IsAssignableFrom(kt)
-                            )
-                        )
-                    ))
+                    p.Key.TypeMatch(key.LeftType)
                 )
                 .OrderBy(p => p.Key.LeftType != null
                     ? key.LeftType.GetConvertibleTypes()
