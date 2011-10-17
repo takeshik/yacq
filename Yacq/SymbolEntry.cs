@@ -176,7 +176,7 @@ namespace XSpect.Yacq
         /// </summary>
         /// <param name="test">The type to test match.</param>
         /// <param name="target">The targe type of match.</param>
-        /// <returns><c>true</c> if <paramref name="test"/> matches with <paramref cref="target"/> otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if <paramref name="test"/> matches with <paramref name="target"/>; otherwise, <c>false</c>.</returns>
         public static Boolean TypeMatch(Type test, Type target)
         {
             return
@@ -196,7 +196,7 @@ namespace XSpect.Yacq
         /// Determines whether <see cref="LeftType"/> matches with the target type.
         /// </summary>
         /// <param name="target">The targe type of match.</param>
-        /// <returns><c>true</c> if <see cref="LeftType"/> matches with <paramref cref="target"/>otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if <see cref="LeftType"/> matches with <paramref name="target"/>; otherwise, <c>false</c>.</returns>
         public Boolean TypeMatch(Type target)
         {
             return TypeMatch(this.LeftType, target);

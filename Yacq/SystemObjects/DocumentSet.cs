@@ -111,9 +111,14 @@ namespace XSpect.Yacq.SystemObjects
                                   ? "``" + method.GetGenericArguments().Length
                                   : ""
                               )
-                            + "("
-                            + String.Join(",", method.GetParameters().Select(p => Format(p.ParameterType, false)))
-                            + ")";
+                            + (method.GetParameters().Any()
+                                  ? "("
+                                        + String.Join(",", method.GetParameters()
+                                              .Select(p => Format(p.ParameterType, false))
+                                          )
+                                        + ")"
+                                  : ""
+                              );
                     }
                 case MemberTypes.Event:
                     {
