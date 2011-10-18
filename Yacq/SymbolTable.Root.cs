@@ -505,6 +505,15 @@ namespace XSpect.Yacq
                 {DispatchTypes.Method, ">_<", (e, s) =>
                     Expression.Empty().Apply(_ => Debugger.Break())
                 },
+                {DispatchTypes.Method, "tuple", (e, s) =>
+                    YacqExpression.Dispatch(
+                        s,
+                        DispatchTypes.Method,
+                        YacqExpression.TypeCandidate(typeof(Tuple)),
+                        "Create",
+                        e.Arguments
+                    )
+                },
                 {DispatchTypes.Method, "input", (e, s) =>
                     YacqExpression.Dispatch(
                         s,
@@ -780,7 +789,6 @@ namespace XSpect.Yacq
                 {"Math", YacqExpression.TypeCandidate(typeof(Math))},
                 {"Nullable", YacqExpression.TypeCandidate(typeof(Nullable))},
                 {"Random", YacqExpression.TypeCandidate(typeof(Random))},
-                {"Tuple", YacqExpression.TypeCandidate(typeof(Tuple))},
                 // System.Collections.*
                 {"Dictionary", YacqExpression.TypeCandidate(typeof(Dictionary<,>))},
                 {"HashSet", YacqExpression.TypeCandidate(typeof(HashSet<>))},

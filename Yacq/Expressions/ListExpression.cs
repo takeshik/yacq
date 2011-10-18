@@ -92,6 +92,10 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols)
         {
+            if (this.Elements.IsEmpty())
+            {
+                return Default(typeof(Object));
+            }
             var value = this[0].TryReduce(symbols);
             if (value != null && value.Type.GetDelegateSignature() != null)
             {
@@ -116,13 +120,13 @@ namespace XSpect.Yacq.Expressions
                     this.Elements.Skip(1)
                 );
             }
-            else if (value is Expression)
+            else if (value != null && this.Elements.Count == 1)
             {
                 return value;
             }
             else
             {
-                throw new ParseException("List evaluation failed.");
+                throw new ParseException("List evaluation failed: " + this);
             }
         }
     }

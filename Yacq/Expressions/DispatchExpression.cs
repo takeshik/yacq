@@ -365,8 +365,16 @@ namespace XSpect.Yacq.Expressions
 
         private Expression DispatchMissing(SymbolTable symbols)
         {
-            // Cast Operation
+            // Default constructor of value types
             if (this.DispatchType.HasFlag(DispatchTypes.Constructor)
+                && ((TypeCandidateExpression) this._left).ElectedType.IsValueType
+                && this.Arguments.IsEmpty()
+            )
+            {
+                return Default(((TypeCandidateExpression) this._left).ElectedType);
+            }
+            // Cast Operation
+            else if (this.DispatchType.HasFlag(DispatchTypes.Constructor)
                 && ((TypeCandidateExpression) this._left).ElectedType != null
                 && this.Arguments.Count == 1)
             {
