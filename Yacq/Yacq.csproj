@@ -116,6 +116,7 @@
     <Compile Include="Expressions\YacqExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemObjects\LibraryLoader.cs" />
+    <Compile Include="SystemObjects\TypeGenerator.cs" />
     <Compile Include="YacqQbservable.cs" />
     <Compile Include="YacqQbservable.Operators.cs" />
     <Compile Include="YacqQueryable.cs" />

@@ -193,6 +193,9 @@
     <Compile Include="..\Yacq\SystemObjects\LibraryLoader.cs">
       <Link>SystemObjects\LibraryLoader.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\SystemObjects\TypeGenerator.cs">
+      <Link>SystemObjects\TypeGenerator.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\YacqQbservable.cs">
       <Link>YacqQbservable.cs</Link>
     </Compile>
