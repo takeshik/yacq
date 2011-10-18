@@ -712,6 +712,21 @@ namespace XSpect.Yacq
                         "Break"
                     )
                 },
+                {DispatchTypes.Member, "?", (e, s) =>
+                    Expression.Constant(
+                        s.AllKeys
+                            .Where(_ => _.LeftType == null)
+                            .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                ? 0
+                                : 1
+                            )
+                            .ThenBy(m => m.Name)
+                            .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                ? _.Name
+                                : "(" + _.Name + ")"
+                            )
+                    )
+                },
                 #endregion
                 #region Global Member: Configurations and System Objects
                 {"*libs*", Expression.Constant(new LibraryLoader(
@@ -732,6 +747,9 @@ namespace XSpect.Yacq
                     new DirectoryInfo(".")
 #endif
                 ))},
+                {"*typegen*", Expression.Constant(
+                    new TypeGenerator("YacqGeneratedTypes")
+                )},
                 #endregion
                 #region Global Member: Types
                 // System, Data Types
