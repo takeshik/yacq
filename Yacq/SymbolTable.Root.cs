@@ -623,7 +623,7 @@ namespace XSpect.Yacq
                         : e.Arguments[1].Reduce(s_)
                     )
                 },
-                {DispatchTypes.Method, typeof(Object), "cond", (e, s) =>
+                {DispatchTypes.Method, typeof(Boolean), "cond", (e, s) =>
                     Expression.Condition(
                         e.Left.Reduce(s),
                         e.Arguments[0].Reduce(s),
