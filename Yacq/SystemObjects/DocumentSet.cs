@@ -32,6 +32,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.SystemObjects
 {
@@ -96,7 +97,12 @@ namespace XSpect.Yacq.SystemObjects
                 .ToArray();
         }
 
-        private static String GetXmlDocumentName(MemberInfo member)
+        /// <summary>
+        /// Gets the formatted string which represents specified member in name attribute of XML code documents.
+        /// </summary>
+        /// <param name="member">Member to get the name.</param>
+        /// <returns>The formatted string which represents specified member in name attribute of XML code documents.</returns>
+        public static String GetXmlDocumentName(MemberInfo member)
         {
             switch (member.MemberType)
             {
@@ -151,6 +157,26 @@ namespace XSpect.Yacq.SystemObjects
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Gets the formatted string which represents specified symbol entry in name attribute of XML code documents.
+        /// </summary>
+        /// <param name="key">Symbol entry to get the name.</param>
+        /// <returns>The formatted string which represents specified symbol entry in name attribute of XML code documents.</returns>
+        public static String GetXmlDocumentName(SymbolEntry key)
+        {
+            return "Y:" +
+                (key.LeftType != null
+                    ? key.LeftType.TryGetGenericTypeDefinition() == typeof(Static<>)
+                          ? "[" + GetXmlDocumentName(key.LeftType.GetGenericArguments()[0]).Substring(2) + "]."
+                          : GetXmlDocumentName(key.LeftType).Substring(2) + "."
+                    : ""
+                ) +
+                (key.DispatchType.HasFlag(DispatchTypes.Method)
+                    ? "(" + key.Name + ")"
+                    : key.Name
+                );
         }
 
         private static String Format(Type type, Boolean getDefinition)
