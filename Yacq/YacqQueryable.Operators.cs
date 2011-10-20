@@ -28,10 +28,8 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace XSpect.Yacq
 {
@@ -107,6 +105,46 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Converts a generic <see cref="IEnumerable{TSource}"/> to a generic <see cref="YacqQueryable{TSource}"/>.
+        /// </summary>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that represents the input sequence.</returns>
+        public YacqQueryable<TSource> AsQueryable()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.AsQueryable());
+        }
+
+        /// <summary>
+        /// Generates a sequence of non-overlapping adjacent buffers over the source sequence.
+        /// </summary>
+        /// <param name="count">Number of elements for allocated buffers.</param>
+        /// <returns>Sequence of buffers containing source sequence elements.</returns>
+        public YacqQueryable<IList<TSource>> Buffer(Int32 count)
+        {
+            return new YacqQueryable<IList<TSource>>(this.Symbols, this._source.Buffer(count));
+        }
+
+        /// <summary>
+        /// Generates a sequence of buffers over the source sequence, with specified length and possible overlap.
+        /// </summary>
+        /// <param name="count">Number of elements for allocated buffers.</param>
+        /// <param name="skip">Number of elements to skip between the start of consecutive buffers.</param>
+        /// <returns>Sequence of buffers containing source sequence elements.</returns>
+        public YacqQueryable<IList<TSource>> Buffer(Int32 count, Int32 skip)
+        {
+            return new YacqQueryable<IList<TSource>>(this.Symbols, this._source.Buffer(count, skip));
+        }
+
+        /// <summary>
+        /// Converts the elements of an <see cref="IQueryable"/> to the specified type.
+        /// </summary>
+        /// <typeparam name="TResult">The type to convert the elements of the source to.</typeparam>
+        /// <returns>An <see cref="YacqQueryable{TResult}"/> that contains each element of the source sequence converted to the specified type.</returns>
+        public YacqQueryable<TResult> Cast<TResult>()
+        {
+            return new YacqQueryable<TResult>(this.Symbols, this._source.Cast<TResult>());
+        }
+
+        /// <summary>
         /// Creates a sequence that corresponds to the source sequence, concatenating it with the sequence resulting from calling an exception handler function in case of an error.
         /// </summary>
         /// <typeparam name="TException">Exception type to catch.</typeparam>
@@ -121,6 +159,26 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Creates a sequence that returns the elements of the first sequence, switching to the second in case of an error.
+        /// </summary>
+        /// <param name="second">Second sequence, concatenated to the result in case the first sequence completes exceptionally.</param>
+        /// <returns>The first sequence, followed by the second sequence in case an error is produced.</returns>
+        public YacqQueryable<TSource> Catch(IEnumerable<TSource> second)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Catch(second));
+        }
+
+        /// <summary>
+        /// Concatenates two sequences.
+        /// </summary>
+        /// <param name="source2">The sequence to concatenate to the first sequence.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the concatenated elements of the two input sequences.</returns>
+        public YacqQueryable<TSource> Concat(IEnumerable<TSource> source2)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Concat(source2));
+        }
+
+        /// <summary>
         /// Returns the number of elements in the specified sequence that satisfies a condition.
         /// </summary>
         /// <param name="predicate"><c>(it) =></c> A function to test each element for a condition.</param>
@@ -130,6 +188,25 @@ namespace XSpect.Yacq
             return this._source.Count(
                 YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
             );
+        }
+
+        /// <summary>
+        /// Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
+        /// </summary>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains default value if the source is empty; otherwise, the source.</returns>
+        public YacqQueryable<TSource> DefaultIfEmpty()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.DefaultIfEmpty());
+        }
+
+        /// <summary>
+        /// Returns the elements of the specified sequence or the specified value in a singleton collection if the sequence is empty.
+        /// </summary>
+        /// <param name="defaultValue">The value to return if the sequence is empty.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains <paramref name="defaultValue"/> if the source is empty; otherwise, the source.</returns>
+        public YacqQueryable<TSource> DefaultIfEmpty(TSource defaultValue)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.DefaultIfEmpty(defaultValue));
         }
 
         /// <summary>
@@ -161,6 +238,25 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Returns distinct elements from a sequence by using the default equality comparer to compare values.
+        /// </summary>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains distinct elements from the source.</returns>
+        public YacqQueryable<TSource> Distinct()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Distinct());
+        }
+
+        /// <summary>
+        /// Returns distinct elements from a sequence by using a specified <see cref="IEqualityComparer{TSource}"/> to compare values.
+        /// </summary>
+        /// <param name="comparer">An <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> to compare values.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains distinct elements from the source.</returns>
+        public YacqQueryable<TSource> Distinct(IEqualityComparer<TSource> comparer)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Distinct(comparer));
+        }
+
+        /// <summary>
         /// Returns consecutive distinct elements based on a key value by using the specified equality comparer to compare key values.
         /// </summary>
         /// <typeparam name="TKey">Key type.</typeparam>
@@ -187,6 +283,37 @@ namespace XSpect.Yacq
                 comparer
             ));
         }
+
+        /// <summary>
+        /// Returns consecutive distinct elements by using the default equality comparer to compare values.
+        /// </summary>
+        /// <returns>Sequence without adjacent non-distinct elements.</returns>
+        public YacqQueryable<TSource> DistinctUntilChanged()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.DistinctUntilChanged());
+        }
+
+        /// <summary>
+        /// Returns consecutive distinct elements by using the specified equality comparer to compare values.
+        /// </summary>
+        /// <param name="comparer">Comparer used to compare values.</param>
+        /// <returns>Sequence without adjacent non-distinct elements.</returns>
+        public YacqQueryable<TSource> DistinctUntilChanged(IEqualityComparer<TSource> comparer)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.DistinctUntilChanged(comparer));
+        }
+
+#if !SILVERLIGHT
+        /// <summary>
+        /// Lazily invokes observer methods for each value in the sequence, and upon successful or exceptional termination.
+        /// </summary>
+        /// <param name="observer">Observer to invoke notification calls on.</param>
+        /// <returns>Sequence exhibiting the side-effects of observer method invocation upon enumeration.</returns>
+        public YacqQueryable<TSource> Do(IObserver<TSource> observer)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Do(observer));
+        }
+#endif
 
         /// <summary>
         /// Lazily invokes an action for each value in the sequence.
@@ -240,6 +367,27 @@ namespace XSpect.Yacq
             return new YacqQueryable<TSource>(this.Symbols, this._source.DoWhile(
                 YacqServices.ParseLambda<Boolean>(this.Symbols, condition)
             ));
+        }
+
+        /// <summary>
+        /// Produces the set difference of two sequences by using the default equality comparer to compare values.
+        /// </summary>
+        /// <param name="source2">An <see cref="IEnumerable{TSource}"/> whose elements that also occur in the first sequence will not appear in the returned sequence.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the set difference of the two sequences.</returns>
+        public YacqQueryable<TSource> Except(IEnumerable<TSource> source2)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Except(source2));
+        }
+
+        /// <summary>
+        /// Produces the set difference of two sequences by using the specified <see cref="IEqualityComparer{TSource}"/> to compare values.
+        /// </summary>
+        /// <param name="source2">An <see cref="IEnumerable{TSource}"/> whose elements that also occur in the first sequence will not appear in the returned sequence.</param>
+        /// <param name="comparer">An <see cref="IEqualityComparer{TSource}"/> to compare values.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the set difference of the two sequences.</returns>
+        public YacqQueryable<TSource> Except(IEnumerable<TSource> source2, IEqualityComparer<TSource> comparer)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Except(source2, comparer));
         }
 
         /// <summary>
@@ -437,6 +585,46 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Hides the enumerable sequence object identity.
+        /// </summary>
+        /// <returns>Enumerable sequence with the same behavior as the original, but hiding the source object identity.</returns>
+        /// <remarks>AsQueryable doesn't hide the object identity, and simply acts as a cast to the IQueryable&lt;TSource&gt; interface.</remarks>
+        public YacqQueryable<TSource> Hide()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Hide());
+        }
+
+        /// <summary>
+        /// Ignores all elements in the source sequence.
+        /// </summary>
+        /// <returns>Source sequence without its elements.</returns>
+        public YacqQueryable<TSource> IgnoreElements()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.IgnoreElements());
+        }
+
+        /// <summary>
+        /// Produces the set intersection of two sequences by using the default equality comparer to compare values.
+        /// </summary>
+        /// <param name="source2">A sequence whose distinct elements that also appear in the first sequence are returned.</param>
+        /// <returns>A sequence that contains the set intersection of the two sequences.</returns>
+        public YacqQueryable<TSource> Intersect(IEnumerable<TSource> source2)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Intersect(source2));
+        }
+
+        /// <summary>
+        /// Produces the set intersection of two sequences by using the specified <see cref="IEqualityComparer{TSource}"/> to compare values.
+        /// </summary>
+        /// <param name="source2">An <see cref="IEnumerable{TSource}"/> whose distinct elements that also appear in the first sequence are returned.</param>
+        /// <param name="comparer">An <see cref="IEqualityComparer{TSource}"/> to compare values.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the set intersection of the two sequences.</returns>
+        public YacqQueryable<TSource> Intersect(IEnumerable<TSource> source2, IEqualityComparer<TSource> comparer)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Intersect(source2, comparer));
+        }
+
+        /// <summary>
         /// Correlates the elements of two sequences based on matching keys. The default equality comparer is used to compare keys.
         /// </summary>
         /// <typeparam name="TInner">The type of the elements of the second sequence.</typeparam>
@@ -601,6 +789,26 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Filters the elements of an <see cref="IQueryable"/> based on a specified type.
+        /// </summary>
+        /// <typeparam name="TResult">The type to filter the elements of the sequence on.</typeparam>
+        /// <returns>A collection that contains the elements from the source that have type <typeparamref name="TResult"/>.</returns>
+        public YacqQueryable<TResult> OfType<TResult>()
+        {
+            return new YacqQueryable<TResult>(this.Symbols, this._source.OfType<TResult>());
+        }
+
+        /// <summary>
+        /// Creates a sequence that concatenates both given sequences, regardless of whether an error occurs.
+        /// </summary>
+        /// <param name="second">Second sequence.</param>
+        /// <returns>Sequence concatenating the elements of both sequences, ignoring errors.</returns>
+        public YacqQueryable<TSource> OnErrorResumeNext(IEnumerable<TSource> second)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.OnErrorResumeNext(second));
+        }
+
+        /// <summary>
         /// Sorts the elements of a sequence in ascending order according to a key.
         /// </summary>
         /// <typeparam name="TKey">The type of the key returned by the function that is represented by <paramref name="keySelector"/>.</typeparam>
@@ -670,6 +878,53 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Repeats and concatenates the source sequence infinitely.
+        /// </summary>
+        /// <returns>Sequence obtained by concatenating the source sequence to itself infinitely.</returns>
+        public YacqQueryable<TSource> Repeat()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Repeat());
+        }
+
+        /// <summary>
+        /// Repeats and concatenates the source sequence the given number of times.
+        /// </summary>
+        /// <param name="count">Number of times to repeat the source sequence.</param>
+        /// <returns>Sequence obtained by concatenating the source sequence to itself the specified number of times.</returns>
+        public YacqQueryable<TSource> Repeat(Int32 count)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Repeat(count));
+        }
+
+        /// <summary>
+        /// Creates a sequence that retries enumerating the source sequence as long as an error occurs.
+        /// </summary>
+        /// <returns>Sequence concatenating the results of the source sequence as long as an error occurs.</returns>
+        public YacqQueryable<TSource> Retry()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Retry());
+        }
+
+        /// <summary>
+        /// Creates a sequence that retries enumerating the source sequence as long as an error occurs, with the specified maximum number of retries.
+        /// </summary>
+        /// <param name="retryCount">Maximum number of retries.</param>
+        /// <returns>Sequence concatenating the results of the source sequence as long as an error occurs.</returns>
+        public YacqQueryable<TSource> Retry(Int32 retryCount)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Retry(retryCount));
+        }
+
+        /// <summary>
+        /// Inverts the order of the elements in a sequence.
+        /// </summary>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> whose elements correspond to those of the input sequence in reverse order.</returns>
+        public YacqQueryable<TSource> Reverse()
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Reverse());
+        }
+
+        /// <summary>
         /// Generates a sequence of accumulated values by scanning the source sequence and applying an accumulator function.
         /// </summary>
         /// <typeparam name="TAccumulate">Accumulation type.</typeparam>
@@ -726,6 +981,17 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Projects each element of a sequence to an given sequence and flattens the resulting sequences into one sequence.
+        /// </summary>
+        /// <typeparam name="TOther">Second source sequence element type.</typeparam>
+        /// <param name="other">Inner sequence each source sequenec element is projected onto.</param>
+        /// <returns>Sequence flattening the sequences that result from projecting elements in the source sequence.</returns>
+        public YacqQueryable<TOther> SelectMany<TOther>(IEnumerable<TOther> other)
+        {
+            return new YacqQueryable<TOther>(this.Symbols, this._source.SelectMany(other));
+        }
+
+        /// <summary>
         /// Projects each element of a sequence to an <see cref="IEnumerable{TSource}"/> and combines the resulting sequences into one sequence.
         /// </summary>
         /// <typeparam name="TResult">The type of the elements of the sequence returned by the function represented by <paramref name="selector"/>.</typeparam>
@@ -776,6 +1042,26 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Bypasses a specified number of elements in a sequence and then returns the remaining elements.
+        /// </summary>
+        /// <param name="count">The number of elements to skip before returning the remaining elements.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains elements that occur after the specified index in the input sequence.</returns>
+        public YacqQueryable<TSource> Skip(Int32 count)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Skip(count));
+        }
+
+        /// <summary>
+        /// Bypasses a specified number of contiguous elements from the end of the sequence and returns the remaining elements.
+        /// </summary>
+        /// <param name="count">The number of elements to skip from the end of the sequence before returning the remaining elements.</param>
+        /// <returns>Sequence bypassing the specified number of elements counting from the end of the source sequence.</returns>
+        public YacqQueryable<TSource> SkipLast(Int32 count)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.SkipLast(count));
+        }
+
+        /// <summary>
         /// Bypasses elements in a sequence as long as a specified condition is <c>true</c> and then returns the remaining elements.
         /// </summary>
         /// <param name="predicate"><c>(it) =></c> A function to test each element for a condition.</param>
@@ -788,6 +1074,36 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Returns the source sequence prefixed with the specified value.
+        /// </summary>
+        /// <param name="values">Values to prefix the sequence with.</param>
+        /// <returns>Sequence starting with the specified prefix value, followed by the source sequence.</returns>
+        public YacqQueryable<TSource> StartWith(TSource[] values)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.StartWith(values));
+        }
+
+        /// <summary>
+        /// Returns a specified number of contiguous elements from the start of a sequence.
+        /// </summary>
+        /// <param name="count">The number of elements to return.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the specified number of elements from the start of the source.</returns>
+        public YacqQueryable<TSource> Take(Int32 count)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Take(count));
+        }
+
+        /// <summary>
+        /// Returns a specified number of contiguous elements from the end of the sequence.
+        /// </summary>
+        /// <param name="count">The number of elements to take from the end of the sequence.</param>
+        /// <returns>Sequence with the specified number of elements counting from the end of the source sequence.</returns>
+        public YacqQueryable<TSource> TakeLast(Int32 count)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.TakeLast(count));
+        }
+
+        /// <summary>
         /// Returns elements from a sequence as long as a specified condition is <c>true</c>.
         /// </summary>
         /// <param name="predicate"><c>(it) =></c> A function to test each element for a condition.</param>
@@ -797,6 +1113,27 @@ namespace XSpect.Yacq
             return new YacqQueryable<TSource>(this.Symbols, this._source.TakeWhile(
                 YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
             ));
+        }
+
+        /// <summary>
+        /// Produces the set union of two sequences by using the default equality comparer.
+        /// </summary>
+        /// <param name="source2">A sequence whose distinct elements form the second set for the union operation.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the elements from both input sequences, excluding duplicates.</returns>
+        public YacqQueryable<TSource> Union(IEnumerable<TSource> source2)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Union(source2));
+        }
+
+        /// <summary>
+        /// Produces the set union of two sequences by using a specified <see cref="IEqualityComparer{TSource}"/>.
+        /// </summary>
+        /// <param name="source2">A sequence whose distinct elements form the second set for the union operation.</param>
+        /// <param name="comparer">An <see cref="IEqualityComparer{TSource}"/> to compare values.</param>
+        /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains the elements from both input sequences, excluding duplicates.</returns>
+        public YacqQueryable<TSource> Union(IEnumerable<TSource> source2, IEqualityComparer<TSource> comparer)
+        {
+            return new YacqQueryable<TSource>(this.Symbols, this._source.Union(source2, comparer));
         }
 
         /// <summary>
