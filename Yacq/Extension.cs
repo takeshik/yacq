@@ -310,5 +310,12 @@ namespace XSpect.Yacq
                       : null
             ).Null(t => t.GetMethod("Invoke"));
         }
+
+        internal static Type GetEnumerableElementType(this Type type)
+        {
+            return type
+                .GetInterface("IEnumerable`1", false)
+                .GetGenericArguments()[0];
+        }
     }
 }
