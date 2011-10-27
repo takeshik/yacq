@@ -1634,7 +1634,7 @@ namespace XSpect.Yacq
                 "Do",
                 new[] { this.ElementType, },
                 this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, onNext)
+                YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext)
             )));
         }
 
@@ -1651,8 +1651,8 @@ namespace XSpect.Yacq
                 "Do",
                 new[] { this.ElementType, },
                 this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, onNext),
-                YacqServices.ParseLambda(this.Symbols, onError,
+                YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext),
+                YacqServices.ParseLambda(this.Symbols, typeof(void), onError,
                     YacqExpression.AmbiguousParameter(this.Symbols, typeof(Exception), "ex")
                 )
             )));
@@ -1672,11 +1672,11 @@ namespace XSpect.Yacq
                 "Do",
                 new[] { this.ElementType, },
                 this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, onNext),
-                YacqServices.ParseLambda(this.Symbols, onError,
+                YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext),
+                YacqServices.ParseLambda(this.Symbols, typeof(void), onError,
                     YacqExpression.AmbiguousParameter(this.Symbols, typeof(Exception), "ex")
                 ),
-                YacqServices.ParseLambda(this.Symbols, onCompleted)
+                YacqServices.ParseLambda(this.Symbols, typeof(void), onCompleted)
             )));
         }
 
@@ -1772,7 +1772,7 @@ namespace XSpect.Yacq
                 "Finally",
                 new[] { this.ElementType, },
                 this.Expression,
-                YacqServices.ParseLambda(this.Symbols, finallyAction)
+                YacqServices.ParseLambda(this.Symbols, typeof(void), finallyAction)
             )));
         }
 

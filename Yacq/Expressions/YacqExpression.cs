@@ -122,22 +122,24 @@ namespace XSpect.Yacq.Expressions
         /// Reduces this node to a simpler expression with additional symbol tables. Reducing is continued while the reduced expression is not <see cref="YacqExpression"/>.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        public Expression Reduce(SymbolTable symbols)
+        public Expression Reduce(SymbolTable symbols, Type expectedType)
         {
             symbols = this.Symbols.Any()
                 ? new SymbolTable(this.Symbols, symbols).Apply(
                       s => s.Add("$", Constant(s))
                   )
                 : symbols;
-            var hash = symbols.AllHash;
+            var hash = symbols.AllHash
+                ^ (expectedType != null ? expectedType.GetHashCode() : 0);
             if (this._reducedExpressions.ContainsKey(hash))
             {
                 return this._reducedExpressions[hash];
             }
             else
             {
-                var expression = this.ForceReduce(symbols);
+                var expression = this.ForceReduce(symbols, expectedType);
                 this._canReduce = false;
                 if (expression != this)
                 {
@@ -147,14 +149,16 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
-        internal Expression ForceReduce(SymbolTable symbols)
+        internal Expression ForceReduce(SymbolTable symbols, Type expectedType)
         {
-            var expression = this.ReduceImpl(symbols) ?? this;
-            if (expression != this && expression is YacqExpression)
-            {
-                expression = expression.Reduce(symbols);
-            }
-            return expression;
+            var expression = this.ReduceImpl(symbols, expectedType) ?? this;
+            return expression == this
+                ? expression
+                : expression is YacqExpression
+                      ? ((YacqExpression) expression).Reduce(symbols, expectedType)
+                      : expectedType != null
+                            ? ImplicitConvert(symbols, expression, expectedType)
+                            : expression;
         }
 
         internal void ClearCache()
@@ -166,7 +170,21 @@ namespace XSpect.Yacq.Expressions
         /// When implemented in a derived class, reduces this node to a simpler expression with additional symbol tables.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        protected abstract Expression ReduceImpl(SymbolTable symbols);
+        protected abstract Expression ReduceImpl(SymbolTable symbols, Type expectedType);
+
+        private static Expression ImplicitConvert(SymbolTable symbols, Expression expression, Type expectedType)
+        {
+            if (!expectedType.IsAppropriate(expression.Type))
+            {
+                return null;
+            }
+            if (expression.Type.IsValueType && !expectedType.IsValueType)
+            {
+                return Convert(expression, expectedType);
+            }
+            return expression;
+        }
     }
 }

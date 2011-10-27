@@ -88,8 +88,9 @@ namespace XSpect.Yacq.Expressions
         /// Reduces this node to a simpler expression with additional symbol tables.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        protected override Expression ReduceImpl(SymbolTable symbols)
+        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             return this.Elements.ReduceAll(symbols)
                 .Let(es => es

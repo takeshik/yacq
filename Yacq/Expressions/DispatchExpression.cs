@@ -143,13 +143,14 @@ namespace XSpect.Yacq.Expressions
         /// Reduces this node to a simpler expression with additional symbol tables.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        protected override Expression ReduceImpl(SymbolTable symbols)
+        protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             this._left = this.Left.Reduce(symbols);
             return symbols.ResolveMatch(this).If(
                 d => d != null,
-                d => d(this, symbols),
+                d => d(this, symbols, expectedType),
                 d => this.GetMembers(symbols)
                     .Select(m => m is MethodInfo && ((MethodInfo) m).IsExtensionMethod()
                         ? new Candidate(
@@ -157,8 +158,7 @@ namespace XSpect.Yacq.Expressions
                               m,
                               this.TypeArguments,
                               this.Arguments
-                                  .ReduceAll(symbols)
-                                  .StartWith(this._left)
+                                  .StartWith(this.Left)
                                   .ToArray()
                           )
                         : new Candidate(
@@ -166,21 +166,32 @@ namespace XSpect.Yacq.Expressions
                               m,
                               this.TypeArguments,
                               this.Arguments
-                                  .ReduceAll(symbols)
-                                  .ToArray()
                           )
                     )
                     .Where(c => (c.Arguments.Count == c.Parameters.Count
                         || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1))
-                        && c.Parameters.Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
-                               ? p.ParameterType.GetDelegateSignature().GetParameters().Length
-                               : 0
-                           ).SequenceEqual(c.Arguments.Select(a => a is AmbiguousLambdaExpression
-                               ? ((AmbiguousLambdaExpression) a).Parameters.Count
-                               : a is LambdaExpression
-                                     ? ((LambdaExpression) a).Parameters.Count
-                                     : 0
-                           ))
+                    )
+                    .Select(c => new Candidate(
+                        c.Instance,
+                        c.Member,
+                        c.TypeArguments,
+                        c.ParameterMap
+                            .Select(_ => _.Item2.Reduce(symbols, _.Item1))
+                            .ToArray()
+                    ))
+                    .Where(c => c.Arguments.All(e => e != null) && c.Parameters
+                        .Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
+                            ? p.ParameterType.GetDelegateSignature().GetParameters().Length
+                            : 0
+                        )
+                        .SequenceEqual(c.Arguments
+                            .Select(a => a is AmbiguousLambdaExpression
+                                ? ((AmbiguousLambdaExpression) a).Parameters.Count
+                                : a is LambdaExpression
+                                      ? ((LambdaExpression) a).Parameters.Count
+                                      : 0
+                            )
+                        )
                     )
                     .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
                     .Choose(CheckAndFixArguments)
@@ -278,7 +289,7 @@ namespace XSpect.Yacq.Expressions
                                       ? ((AmbiguousLambdaExpression) _.Item2)
                                             .ApplyTypeArguments(_.Item1)
                                             .ApplyTypeArguments(map)
-                                            .Reduce(symbols)
+                                            .Reduce(symbols, _.Item1.ReplaceGenericArguments(map))
                                       : _.Item2
                                   )
                                   .ToArray()
@@ -334,18 +345,11 @@ namespace XSpect.Yacq.Expressions
         private static Candidate CheckAndFixArguments(Candidate candidate)
         {
             return candidate.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
-                && candidate.ParameterMap.All(_ => _.Item1.IsAppropriate(_.Item2.Type))
                 ? new Candidate(
                       candidate.Instance,
                       candidate.Member,
                       candidate.TypeArgumentMap,
-                      candidate.ParameterMap
-                          .Select(_ => typeof(LambdaExpression).IsAssignableFrom(_.Item1)
-                              ? Quote(_.Item2)
-                              : !_.Item1.IsValueType && _.Item2.Type.IsValueType
-                                    ? Convert(_.Item2, _.Item1)
-                                    : _.Item2
-                          )
+                      candidate.Arguments
                           .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
                               _.Take(candidate.Parameters.Count - 1)
                                   .Concat(EnumerableEx.Return(

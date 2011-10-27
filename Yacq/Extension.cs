@@ -317,5 +317,29 @@ namespace XSpect.Yacq
                 .GetInterface("IEnumerable`1", false)
                 .GetGenericArguments()[0];
         }
+
+        internal static ParameterInfo[] GetParameters(this MemberInfo member)
+        {
+            return member is MethodBase
+                ? ((MethodBase) member).GetParameters()
+                : member is PropertyInfo
+                      ? ((PropertyInfo) member).GetIndexParameters()
+                      : new ParameterInfo[0];
+        }
+
+        internal static Type ReplaceGenericArguments(this Type type, IDictionary<Type, Type> typeArgumentMap)
+        {
+            return type.IsGenericType
+                ? type.GetGenericTypeDefinition()
+                      .MakeGenericType(
+                          type.GetGenericArguments()
+                              .Select(t => (typeArgumentMap.ContainsKey(t)
+                                  ? typeArgumentMap[t]
+                                  : t
+                              ).ReplaceGenericArguments(typeArgumentMap))
+                              .ToArray()
+                      )
+                : type;
+        }
     }
 }
