@@ -44,12 +44,13 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="expr">The reducing expression.</param>
         /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        public static Expression Reduce(this Expression expr, SymbolTable symbols)
+        public static Expression Reduce(this Expression expr, SymbolTable symbols, Type expectedType = null)
         {
             return expr != null
                 ? expr is YacqExpression
-                      ? ((YacqExpression) expr).Reduce(symbols)
+                      ? ((YacqExpression) expr).Reduce(symbols, expectedType)
                       : expr.Reduce()
                 : null;
         }
@@ -59,12 +60,13 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="expr">The reducing expression.</param>
         /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression, or <c>null</c> if reducing was failed.</returns>
-        public static Expression TryReduce(this Expression expr, SymbolTable symbols = null)
+        public static Expression TryReduce(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
         {
             try
             {
-                return expr.Reduce(symbols);
+                return expr.Reduce(symbols, expectedType);
             }
             catch
             {
@@ -76,12 +78,12 @@ namespace XSpect.Yacq.Expressions
         /// Reduces all node in this sequence to a simpler expression, with (if possible) additional symbol tables.
         /// </summary>
         /// <param name="expressions">The sequence which contains reducing expressions.</param>
-        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expressions"/> contains expression which is not
-        /// <see cref="YacqExpression"/>, this parameter is ignored in them.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expressions"/> contains expression which is not <see cref="YacqExpression"/>, this parameter is ignored in them.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The sequence which contains reduced expression.</returns>
-        public static IEnumerable<Expression> ReduceAll(this IEnumerable<Expression> expressions, SymbolTable symbols = null)
+        public static IEnumerable<Expression> ReduceAll(this IEnumerable<Expression> expressions, SymbolTable symbols = null, Type expectedType = null)
         {
-            return expressions.Select(_ => _.Reduce(symbols));
+            return expressions.Select(_ => _.Reduce(symbols, expectedType));
         }
 
         /// <summary>
@@ -89,12 +91,13 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="expr">The expression.</param>
         /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>.</returns>
-        public static Type Type(this Expression expr, SymbolTable symbols)
+        public static Type Type(this Expression expr, SymbolTable symbols, Type expectedType = null)
         {
             return expr != null
                 ? expr is YacqExpression
-                      ? ((YacqExpression) expr).Reduce(symbols).Type
+                      ? ((YacqExpression) expr).Reduce(symbols, expectedType).Type
                       : expr.Reduce().Type
                 : null;
         }
@@ -127,7 +130,7 @@ namespace XSpect.Yacq.Expressions
         {
             return parameters.ToDictionary(
                 p => new SymbolEntry(p.Name),
-                p => (SymbolDefinition) ((e, s) => p)
+                p => (SymbolDefinition) ((e, s, t) => p)
             );
         }
     }

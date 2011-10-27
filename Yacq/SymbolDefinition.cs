@@ -40,6 +40,7 @@ namespace XSpect.Yacq
     /// </summary>
     /// <param name="expression">The <see cref="DispatchExpression"/> which will be reduced by this matched symbol.</param>
     /// <param name="symbols"><see cref="SymbolTable"/> which this matched symbol contains itself.</param>
+    /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
     /// <returns>Reduced expression.</returns>
-    public delegate Expression SymbolDefinition(DispatchExpression expression, SymbolTable symbols);
+    public delegate Expression SymbolDefinition(DispatchExpression expression, SymbolTable symbols, Type expectedType);
 }

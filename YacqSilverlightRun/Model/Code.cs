@@ -143,7 +143,7 @@ namespace XSpect.Yacq.Runner.Model
                     var expr = YacqServices.Parse(
                         new SymbolTable()
                         {
-                            {DispatchTypes.Method, typeof(Object), "print", (e, s) =>
+                            {DispatchTypes.Method, typeof(Object), "print", (e, s, t) =>
                                 YacqExpression.Dispatch(
                                     s,
                                     DispatchTypes.Method,

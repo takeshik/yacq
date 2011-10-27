@@ -281,7 +281,7 @@ namespace XSpect.Yacq
             {
                 return this
                     .Where(p => p.Key.DispatchType.HasFlag(DispatchTypes.Literal))
-                    .ToDictionary(p => p.Key.Name, p => p.Value(null, null));
+                    .ToDictionary(p => p.Key.Name, p => p.Value(null, null, null));
             }
         }
 
@@ -297,7 +297,7 @@ namespace XSpect.Yacq
             {
                 return this.AllKeys
                     .Where(k => k.DispatchType.HasFlag(DispatchTypes.Literal))
-                    .ToDictionary(k => k.Name, k => this.Resolve(k)(null, null));
+                    .ToDictionary(k => k.Name, k => this.Resolve(k)(null, null, null));
             }
         }
 
@@ -393,11 +393,11 @@ namespace XSpect.Yacq
         {
             get
             {
-                return this[DispatchTypes.Member | DispatchTypes.Literal, name](null, null);
+                return this[DispatchTypes.Member | DispatchTypes.Literal, name](null, null, null);
             }
             set
             {
-                this[DispatchTypes.Member | DispatchTypes.Literal, name] = (e, s) => value;
+                this[DispatchTypes.Member | DispatchTypes.Literal, name] = (e, s, t) => value;
             }
         }
 
@@ -493,7 +493,7 @@ namespace XSpect.Yacq
         /// <param name="expression">The symbol's literal value.</param>
         public void Add(String name, Expression expression)
         {
-            this.Add(DispatchTypes.Member | DispatchTypes.Literal, name, (e, s) => expression);
+            this.Add(DispatchTypes.Member | DispatchTypes.Literal, name, (e, s, t) => expression);
         }
 
         /// <summary>
@@ -761,7 +761,7 @@ namespace XSpect.Yacq
         /// <returns>The literal value of the specified name.</returns>
         public Expression Resolve(String name)
         {
-            return this.Resolve(DispatchTypes.Member | DispatchTypes.Literal, null, name)(null, null);
+            return this.Resolve(DispatchTypes.Member | DispatchTypes.Literal, null, name)(null, null, null);
         }
 
         /// <summary>
@@ -824,7 +824,7 @@ namespace XSpect.Yacq
             SymbolDefinition literal;
             if (this.TryResolve(DispatchTypes.Member | DispatchTypes.Literal, null, name, out literal))
             {
-                value = literal(null, null);
+                value = literal(null, null, null);
                 return true;
             }
             else

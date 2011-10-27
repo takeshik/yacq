@@ -78,13 +78,16 @@ namespace XSpect.Yacq
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
         /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameters">Parameters of the function.</param>
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
-        public static LambdaExpression ParseLambda(SymbolTable symbols, String code, params AmbiguousParameterExpression[] parameters)
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, String code, params AmbiguousParameterExpression[] parameters)
         {
             var expressions = new Reader(code).Read();
             return (LambdaExpression) YacqExpression.AmbiguousLambda(
+                symbols,
+                returnType,
                 expressions.Count == 1
                     ? expressions.Single()
                     : YacqExpression.List(symbols, expressions
@@ -93,7 +96,44 @@ namespace XSpect.Yacq
 #endif
                       ),
                 parameters
-            ).Reduce(symbols);
+            ).Reduce();
+        }
+
+        /// <summary>
+        /// Parse code string as the body of the function and generate lambda expression with specified parameters.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="parameters">Parameters of the function.</param>
+        /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
+        public static LambdaExpression ParseLambda(SymbolTable symbols, String code, params AmbiguousParameterExpression[] parameters)
+        {
+            return ParseLambda(symbols, null, code, parameters);
+        }
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="itType">The type of "it" parameter.</param>
+        /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <returns>The lambda expression generated from the code and the parameter.</returns>
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, Type returnType, String code)
+        {
+            return ParseLambda(symbols, returnType, code, YacqExpression.AmbiguousParameter(itType, "it"));
+        }
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="itType">The type of "it" parameter.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <returns>The lambda expression generated from the code and the parameter.</returns>
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, String code)
+        {
+            return ParseLambda(symbols, itType, null, code);
         }
 
         /// <summary>
@@ -108,6 +148,9 @@ namespace XSpect.Yacq
         {
             return (Expression<TDelegate>) ParseLambda(
                 symbols,
+                typeof(TDelegate)
+                    .GetDelegateSignature()
+                    .ReturnType,
                 code,
                 typeof(TDelegate)
                     .GetDelegateSignature()
@@ -119,18 +162,6 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
-        /// </summary>
-        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="itType">The type of "it" parameter.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
-        /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, String code)
-        {
-            return ParseLambda(symbols, code, YacqExpression.AmbiguousParameter(itType, "it"));
-        }
-
-        /// <summary>
         /// Parse code string as the body of function and generate lambda expression with no parameters.
         /// </summary>
         /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
@@ -139,7 +170,7 @@ namespace XSpect.Yacq
         /// <returns>The lambda expression generated from the code.</returns>
         public static Expression<Func<TReturn>> ParseLambda<TReturn>(SymbolTable symbols, String code)
         {
-            return (Expression<Func<TReturn>>) ParseLambda(symbols, code);
+            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code);
         }
 
         /// <summary>
@@ -152,7 +183,7 @@ namespace XSpect.Yacq
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
         public static Expression<Func<T, TReturn>> ParseLambda<T, TReturn>(SymbolTable symbols, String code)
         {
-            return (Expression<Func<T, TReturn>>) ParseLambda(symbols, typeof(T), code);
+            return (Expression<Func<T, TReturn>>) ParseLambda(symbols, typeof(T), typeof(TReturn), code);
         }
 
         /// <summary>
@@ -178,12 +209,47 @@ namespace XSpect.Yacq
         /// <summary>
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
         /// </summary>
+        /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="parameters">Parameters of the function.</param>
+        /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
+        public static LambdaExpression ParseLambda(Type returnType, String code, params AmbiguousParameterExpression[] parameters)
+        {
+            return ParseLambda(null, returnType, code, parameters);
+        }
+
+        /// <summary>
+        /// Parse code string as the body of the function and generate lambda expression with specified parameters.
+        /// </summary>
         /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameters">Parameters of the function.</param>
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
         public static LambdaExpression ParseLambda(String code, params AmbiguousParameterExpression[] parameters)
         {
-            return ParseLambda(null, code, parameters);
+            return ParseLambda(default(Type), code, parameters);
+        }
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
+        /// </summary>
+        /// <param name="itType">The type of "it" parameter.</param>
+        /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <returns>The lambda expression generated from the code and the parameter.</returns>
+        public static LambdaExpression ParseLambda(Type itType, Type returnType, String code)
+        {
+            return ParseLambda(null, itType, returnType, code);
+        }
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
+        /// </summary>
+        /// <param name="itType">The type of "it" parameter.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <returns>The lambda expression generated from the code and the parameter.</returns>
+        public static LambdaExpression ParseLambda(Type itType, String code)
+        {
+            return ParseLambda(itType, null, code);
         }
 
         /// <summary>
@@ -196,17 +262,6 @@ namespace XSpect.Yacq
         public static Expression<TDelegate> ParseLambda<TDelegate>(String code, params String[] parameterNames)
         {
             return ParseLambda<TDelegate>(null, code, parameterNames);
-        }
-
-        /// <summary>
-        /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
-        /// </summary>
-        /// <param name="itType">The type of "it" parameter.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
-        /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static LambdaExpression ParseLambda(Type itType, String code)
-        {
-            return ParseLambda(null, itType, code);
         }
 
         /// <summary>
