@@ -712,7 +712,13 @@ namespace XSpect.Yacq
                 {"...", Expression.Throw(Expression.Constant(new NotImplementedException()))},
                 {"true", Expression.Constant(true)},
                 {"false", Expression.Constant(false)},
-                {"nil", Expression.Constant(null)},
+                {DispatchTypes.Member, "nil", (e, s, t) =>
+                    t == null || t.IsGenericParameter
+                        ? Expression.Constant(null)
+                        : t == typeof(void)
+                              ? (Expression) Expression.Empty()
+                              : Expression.Default(t)
+                },
                 {DispatchTypes.Member, ">_<", (e, s, t) =>
                     YacqExpression.Dispatch(
                         s,
@@ -916,7 +922,7 @@ namespace XSpect.Yacq
                                     : m.Name
                                 )
                                 .Concat(s.AllKeys
-                                    .Where(_ => _.TypeMatch(typeof(Static<>).MakeGenericType(t)))
+                                    .Where(_ => _.TypeMatch(typeof(Static<>).MakeGenericType(lt)))
                                     .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
                                         ? 0
                                         : 1
