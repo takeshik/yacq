@@ -176,15 +176,162 @@ namespace XSpect.Yacq.Expressions
 
         private static Expression ImplicitConvert(SymbolTable symbols, Expression expression, Type expectedType)
         {
-            if (!expectedType.IsAppropriate(expression.Type))
+            if (expectedType.IsGenericParameter)
             {
-                return null;
+                if (!expectedType.IsAppropriate(expression.Type))
+                {
+                    return null;
+                }
             }
-            if (expression.Type.IsValueType && !expectedType.IsValueType)
+            else
             {
-                return Convert(expression, expectedType);
+                if (expression.Type.IsValueType && !expectedType.IsValueType)
+                {
+                    return Convert(expression, expectedType);
+                }
+                if (!expectedType.IsAppropriate(expression.Type))
+                {
+                    if (TestNumericConversion(expression.Type, expectedType))
+                    {
+                        return Convert(expression, expectedType);
+                    }
+                    return null;
+                }
             }
             return expression;
+        }
+
+        private static Boolean TestNumericConversion(Type expressionType, Type expectedType)
+        {
+            switch (Type.GetTypeCode(expressionType))
+            {
+                case TypeCode.Byte:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt64:
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.SByte:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Int16:
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.Char:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.UInt16:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt64:
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.UInt16:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Int16:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt64:
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.Int16:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.UInt32:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.UInt64:
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.Int32:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Int64:
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.UInt64:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.Int64:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Decimal:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                case TypeCode.Single:
+                    switch (Type.GetTypeCode(expectedType))
+                    {
+                        case TypeCode.Double:
+                            return true;
+                        default:
+                            return false;
+                    }
+                default:
+                    return false;
+            }
         }
     }
 }

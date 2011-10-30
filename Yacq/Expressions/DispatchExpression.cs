@@ -152,7 +152,9 @@ namespace XSpect.Yacq.Expressions
                 d => d != null,
                 d => d(this, symbols, expectedType),
                 d => this.GetMembers(symbols)
-                    .Select(m => m is MethodInfo && ((MethodInfo) m).IsExtensionMethod()
+                    .Select(m => m is MethodInfo
+                        && ((MethodInfo) m).IsExtensionMethod()
+                        && !(this._left is TypeCandidateExpression)
                         ? new Candidate(
                               null,
                               m,
@@ -196,6 +198,12 @@ namespace XSpect.Yacq.Expressions
                     .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
                     .Choose(CheckAndFixArguments)
                     .OrderBy(c => c)
+                    .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
+                        a,
+                        _ => _ is UnaryExpression && _.NodeType == ExpressionType.Convert,
+                        _ => ((UnaryExpression) _).Operand,
+                        _ => _
+                    ).Count()))
                     .FirstOrDefault()
                     .Null(c =>
                     {
