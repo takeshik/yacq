@@ -496,6 +496,10 @@ namespace XSpect.Yacq
                         )
                     )
                 },
+                {DispatchTypes.Method, "ignore", (e, s, t) =>
+                    e.Arguments.ReduceAll(s).ToArray().Let(_ => YacqExpression.Ignored(s))
+                },
+                {DispatchTypes.Method, "!-", DispatchTypes.Method, "ignore"},
                 #endregion
                 #region Global Method: Generals
                 {DispatchTypes.Method, "...", (e, s, t) =>
@@ -540,6 +544,19 @@ namespace XSpect.Yacq
                         e.Left
                     )
                 },
+                #endregion
+                #region Global Method: Type Handlings
+                {DispatchTypes.Method, "type", (e, s, t) =>
+                    YacqExpression.TypeCandidate(
+#if SILVERLIGHT
+                        Type.GetType(e.Arguments[0].Reduce(s).Const<String>())
+#else
+                        AppDomain.CurrentDomain.GetAssemblies()
+                            .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
+                            .First()
+#endif
+                    )
+                },
                 {DispatchTypes.Method, "typeof", (e, s, t) =>
                     Expression.Constant(
 #if SILVERLIGHT
@@ -551,16 +568,14 @@ namespace XSpect.Yacq
 #endif
                     )
                 },
-                #endregion
-                #region Global Method: Expressions
-                {DispatchTypes.Method, "type", (e, s, t) =>
-                    YacqExpression.TypeCandidate(
+                {DispatchTypes.Method, "assembly", (e, s, t) =>
+                    Expression.Constant(
 #if SILVERLIGHT
-                        Type.GetType(e.Arguments[0].Reduce(s).Const<String>())
+                        Assembly.Load(e.Arguments[0].Reduce(s).Const<String>())
 #else
-                        AppDomain.CurrentDomain.GetAssemblies()
-                            .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
-                            .First()
+#pragma warning disable 618
+                        Assembly.LoadWithPartialName(e.Arguments[0].Reduce(s).Const<String>())
+#pragma warning restore
 #endif
                     )
                 },

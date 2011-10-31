@@ -126,6 +126,9 @@
     <Compile Include="..\Yacq\Expressions\IdentifierExpression.cs">
       <Link>Expressions\IdentifierExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\IgnoredExpression.cs">
+      <Link>Expressions\IgnoredExpression.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\LambdaListExpression.cs">
       <Link>Expressions\LambdaListExpression.cs</Link>
     </Compile>
