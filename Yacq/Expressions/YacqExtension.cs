@@ -83,7 +83,9 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The sequence which contains reduced expression.</returns>
         public static IEnumerable<Expression> ReduceAll(this IEnumerable<Expression> expressions, SymbolTable symbols = null, Type expectedType = null)
         {
-            return expressions.Select(_ => _.Reduce(symbols, expectedType));
+            return expressions
+                .Select(_ => _.Reduce(symbols, expectedType))
+                .Where(_ => !(_ is IgnoredExpression));
         }
 
         /// <summary>
