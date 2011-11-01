@@ -53,7 +53,7 @@ namespace XSpect.Yacq.SystemObjects
         /// <summary>
         /// Gets the extensions <see cref="LibraryLoader"/> can load.
         /// </summary>
-        public static readonly String[] Extensions = new[]
+        public static readonly String[] Extensions = new []
         {
             ".yacl",
             ".yacb",
