@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Yacq</id>
-    <version>1.5</version>
+    <version>1.6</version>
     <title>YACQ - Embeddable Querying Language</title>
     <authors>takeshik</authors>
     <owners>takeshik</owners>
@@ -18,14 +18,14 @@ More details and the usage are in Project site.</description>
     <dependencies>
       <dependency id="Ix_Experimental-Main" version="1.1.10823" />
       <dependency id="Ix_Experimental-Providers" version="1.1.10823" />
-      <dependency id="Rx_Experimental-Main" version="1.1.10621" />
-      <dependency id="Rx_Experimental-Providers" version="1.1.10621" />
+      <dependency id="Rx_Experimental-Main" version="1.1.11011" />
+      <dependency id="Rx_Experimental-Providers" version="1.1.11011" />
     </dependencies>
   </metadata>
   <files>
-    <file src="Yacq\bin\Release\Yacq.dll" target="lib\net40\Yacq.dll" />
-    <file src="Yacq\bin\Release\Yacq.xml" target="lib\net40\Yacq.xml" />
-    <file src="YacqSilverlight\bin\Release\Yacq.dll" target="lib\sl40\Yacq.dll" />
-    <file src="YacqSilverlight\bin\Release\Yacq.xml" target="lib\sl40\Yacq.xml" />
+    <file src="lib\net40\Yacq.dll" target="lib\net40\Yacq.dll" />
+    <file src="lib\net40\Yacq.xml" target="lib\net40\Yacq.xml" />
+    <file src="lib\sl40\Yacq.dll" target="lib\sl40\Yacq.dll" />
+    <file src="lib\sl40\Yacq.xml" target="lib\sl40\Yacq.xml" />
   </files>
 </package>
