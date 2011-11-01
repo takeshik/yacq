@@ -185,7 +185,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                if (expression.Type.IsValueType && !expectedType.IsValueType)
+                if (expectedType.IsAppropriate(expression.Type) && expression.Type.IsValueType && !expectedType.IsValueType)
                 {
                     return Convert(expression, expectedType);
                 }
