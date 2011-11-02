@@ -137,7 +137,7 @@ namespace XSpect.Yacq
                 this.DispatchType.GetHashCode() ^
                 (this.LeftType != null ? this.LeftType.GetHashCode() : 0) ^
                 (this.Name != null ? this.Name.GetHashCode() : 0)
-                );
+            );
         }
 
         /// <summary>
@@ -148,12 +148,16 @@ namespace XSpect.Yacq
         /// </returns>
         public override String ToString()
         {
-            return (this.DispatchType & DispatchTypes.TargetMask)
-                   + " " + (this.LeftType.Null(t => (t.TryGetGenericTypeDefinition() == typeof(Static<>)
-                                                         ? "[" + t.GetGenericArguments()[0].Name + "]"
-                                                         : t.Name
-                                                    ) + ".") ?? "")
-                   + this.Name;
+            return (this.LeftType
+                .Null(t => (t.TryGetGenericTypeDefinition() == typeof(Static<>)
+                         ? "[" + t.GetGenericArguments()[0].Name + "]"
+                         : t.Name
+                ) + ".")
+                ?? ""
+            ) + (this.DispatchType.HasFlag(DispatchTypes.Method)
+                ? "(" + this.Name + ")"
+                : this.Name
+            );
         }
 
         /// <summary>

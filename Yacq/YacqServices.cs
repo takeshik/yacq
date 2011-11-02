@@ -35,6 +35,7 @@ using System.Linq.Expressions;
 using System.Reactive.Linq;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
+using XSpect.Yacq.Linq;
 
 namespace XSpect.Yacq
 {

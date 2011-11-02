@@ -34,7 +34,7 @@ using System.Linq;
 using XSpect.Yacq.Expressions;
 using Expression = System.Linq.Expressions.Expression;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Linq
 {
     partial class YacqQueryable<TSource>
     {

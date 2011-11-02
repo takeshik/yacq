@@ -37,7 +37,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Linq
 {
     partial class YacqQbservable<TSource>
     {
