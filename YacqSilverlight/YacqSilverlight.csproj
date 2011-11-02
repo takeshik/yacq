@@ -171,6 +171,18 @@
     <Compile Include="..\Yacq\LanguageServices\TokenType.cs">
       <Link>LanguageServices\TokenType.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Linq\YacqQbservable.cs">
+      <Link>Linq\YacqQbservable.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Linq\YacqQbservable.Operators.cs">
+      <Link>Linq\YacqQbservable.Operators.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Linq\YacqQueryable.cs">
+      <Link>Linq\YacqQueryable.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Linq\YacqQueryable.Operators.cs">
+      <Link>Linq\YacqQueryable.Operators.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\ParseException.cs">
       <Link>ParseException.cs</Link>
     </Compile>
@@ -200,18 +212,6 @@
     </Compile>
     <Compile Include="..\Yacq\SystemObjects\TypeGenerator.cs">
       <Link>SystemObjects\TypeGenerator.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\YacqQbservable.cs">
-      <Link>YacqQbservable.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\YacqQbservable.Operators.cs">
-      <Link>YacqQbservable.Operators.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\YacqQueryable.cs">
-      <Link>YacqQueryable.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\YacqQueryable.Operators.cs">
-      <Link>YacqQueryable.Operators.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\YacqServices.cs">
       <Link>YacqServices.cs</Link>

@@ -33,7 +33,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Linq
 {
     /// <summary>
     /// Represents an <see cref="IQueryable" /> which is enabled querying with YACQ code strings.

@@ -32,7 +32,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Linq
 {
     /// <summary>
     /// Represents an <see cref="IQbservable" /> which is enabled querying with YACQ code strings.
