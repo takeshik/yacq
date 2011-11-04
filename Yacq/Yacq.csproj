@@ -118,13 +118,14 @@
     <Compile Include="Expressions\IdentifierExpression.cs" />
     <Compile Include="Expressions\YacqExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SystemObjects\LibraryLoader.cs" />
+    <Compile Include="SystemObjects\ModuleLoader.cs" />
     <Compile Include="SystemObjects\TypeGenerator.cs" />
     <Compile Include="Linq\YacqQbservable.cs" />
     <Compile Include="Linq\YacqQbservable.Operators.cs" />
     <Compile Include="Linq\YacqQueryable.cs" />
     <Compile Include="Linq\YacqQueryable.Operators.cs" />
     <Compile Include="YacqServices.cs" />
+    <Compile Include="YacqSymbolAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\yacq_lib\csharp-aliases.yacq">

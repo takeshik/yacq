@@ -156,9 +156,7 @@ namespace XSpect.Yacq.Expressions
                 ? expression
                 : expression is YacqExpression
                       ? ((YacqExpression) expression).Reduce(symbols, expectedType)
-                      : expectedType != null
-                            ? ImplicitConvert(symbols, expression, expectedType)
-                            : expression;
+                      : ImplicitConvert(expression, expectedType);
         }
 
         internal void ClearCache()
@@ -174,8 +172,12 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected abstract Expression ReduceImpl(SymbolTable symbols, Type expectedType);
 
-        private static Expression ImplicitConvert(SymbolTable symbols, Expression expression, Type expectedType)
+        internal static Expression ImplicitConvert(Expression expression, Type expectedType)
         {
+            if (expectedType == null)
+            {
+                return expression;
+            }
             if (expectedType.IsGenericParameter)
             {
                 if (!expectedType.IsAppropriate(expression.Type))

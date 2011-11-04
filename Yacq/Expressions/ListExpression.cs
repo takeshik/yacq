@@ -94,7 +94,7 @@ namespace XSpect.Yacq.Expressions
         {
             if (this.Elements.IsEmpty())
             {
-                return Default(typeof(Object));
+                return Empty();
             }
             var value = this[0].TryReduce(symbols);
             if (value != null && value.Type.GetDelegateSignature() != null)

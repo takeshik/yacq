@@ -207,8 +207,8 @@
     <Compile Include="..\Yacq\SystemObjects\DocumentSet.cs">
       <Link>SystemObjects\DocumentSet.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SystemObjects\LibraryLoader.cs">
-      <Link>SystemObjects\LibraryLoader.cs</Link>
+    <Compile Include="..\Yacq\SystemObjects\ModuleLoader.cs">
+      <Link>SystemObjects\ModuleLoader.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\SystemObjects\TypeGenerator.cs">
       <Link>SystemObjects\TypeGenerator.cs</Link>
@@ -224,6 +224,9 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\Yacq\YacqSymbolAttribute.cs">
+      <Link>YacqSymbolAttribute.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

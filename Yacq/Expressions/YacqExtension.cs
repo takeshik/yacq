@@ -51,7 +51,7 @@ namespace XSpect.Yacq.Expressions
             return expr != null
                 ? expr is YacqExpression
                       ? ((YacqExpression) expr).Reduce(symbols, expectedType)
-                      : expr.Reduce()
+                      : YacqExpression.ImplicitConvert(expr.Reduce(), expectedType)
                 : null;
         }
 
