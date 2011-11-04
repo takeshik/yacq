@@ -717,7 +717,7 @@ namespace XSpect.Yacq
                     )
                 },
                 {DispatchTypes.Method, typeof(SymbolTable), "load", (e, s, t) =>
-                    Root["*libs*"].Const<LibraryLoader>().Load(
+                    Root["*modules*"].Const<ModuleLoader>().Load(
                         e.Left.Reduce(s).Const<SymbolTable>(),
                         e.Arguments[0].Reduce(s).Const<String>()
                     )
@@ -759,7 +759,7 @@ namespace XSpect.Yacq
                 },
                 #endregion
                 #region Global Member: Configurations and System Objects
-                {"*libs*", Expression.Constant(new LibraryLoader(
+                {"*modules*", Expression.Constant(new ModuleLoader(
 #if !SILVERLIGHT
                     new DirectoryInfo("yacq_lib"),
                     new DirectoryInfo("lib"),

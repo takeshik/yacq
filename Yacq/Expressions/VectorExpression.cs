@@ -107,15 +107,7 @@ namespace XSpect.Yacq.Expressions
                         .Concat(EnumerableEx.Return(typeof(Object)))
                         .First(t => ts.All(t.IsAssignableFrom))
                     )
-                    .Let(t => NewArrayInit(
-                        t,
-                        t.IsValueType
-                            ? es
-                            : es.Select(e => e.Type.IsValueType
-                                  ? Convert(e, t)
-                                  : e
-                              )
-                    ))
+                    .Let(t => NewArrayInit(t, es.Select(e => ImplicitConvert(e, t))))
                 );
         }
     }

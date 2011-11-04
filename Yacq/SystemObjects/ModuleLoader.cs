@@ -42,7 +42,7 @@ namespace XSpect.Yacq.SystemObjects
     /// <summary>
     /// Loads YACQ text scripts, binary scripts, and libraries.
     /// </summary>
-    public class LibraryLoader
+    public class ModuleLoader
     {
         internal const String LoadedFiles = ".loadedFiles";
 
@@ -51,17 +51,16 @@ namespace XSpect.Yacq.SystemObjects
         private readonly Assembly _assembly = typeof(YacqServices).Assembly;
 
         /// <summary>
-        /// Gets the extensions <see cref="LibraryLoader"/> can load.
+        /// Gets the extensions <see cref="ModuleLoader"/> can load.
         /// </summary>
         public static readonly String[] Extensions = new []
         {
-            ".yacl",
+            ".dll",
             ".yacb",
             ".yacq",
             "",
         };
             
-
         /// <summary>
         /// Gets the list to search paths for library file.
         /// </summary>
@@ -73,18 +72,18 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryLoader"/> class.
+        /// Initializes a new instance of the <see cref="ModuleLoader"/> class.
         /// </summary>
         /// <param name="searchPaths">An array which contains search paths for library files.</param>
-        public LibraryLoader(params DirectoryInfo[] searchPaths)
+        public ModuleLoader(params DirectoryInfo[] searchPaths)
         {
             this.SearchPaths = new List<DirectoryInfo>(searchPaths);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryLoader"/> class.
+        /// Initializes a new instance of the <see cref="ModuleLoader"/> class.
         /// </summary>
-        public LibraryLoader()
+        public ModuleLoader()
             : this(new DirectoryInfo[0])
         {
         }
@@ -98,7 +97,7 @@ namespace XSpect.Yacq.SystemObjects
         public Expression Load(SymbolTable symbols, String name)
         {
             return this.Get(symbols, name)
-                .Null(s => this.Load(symbols, s, Path.GetExtension(name)))
+                .Null(s => this.Load(symbols, s.Item1, s.Item2))
                 ?? Expression.Default(typeof(Object));
         }
 
@@ -106,19 +105,25 @@ namespace XSpect.Yacq.SystemObjects
         {
             switch (extension)
             {
-                case ".yacl":
+                case ".dll":
+                    return Expression.Constant(new Byte[stream.Length].Apply(b => stream.Read(b, 0, b.Length))
+                        .Let(Assembly.Load)
+                        .Apply(a => a.GetTypes()
+                            .Where(t => t.IsPublic)
+                            .ForEach(symbols.Import)
+                        )
+                    );
                 case ".yacb":
-                    throw new NotImplementedException("YACQ Binary Code / Library is not implemented.");
+                    throw new NotImplementedException("YACQ Binary code is not implemented.");
                 default:
                     using (var reader = new StreamReader(stream, true))
                     {
                         return YacqServices.Parse(symbols, reader.ReadToEnd());
                     }
-
             }
         }
 
-        private Stream Get(SymbolTable symbols, String name)
+        private Tuple<Stream, String> Get(SymbolTable symbols, String name)
         {
             var l = symbols[LoadedFiles].Const<IList<String>>();
             return this.SearchPaths
@@ -129,8 +134,10 @@ namespace XSpect.Yacq.SystemObjects
                 .FirstOrDefault(f => f.Exists)
                 .Null(f => l.Contains(f.FullName)
                     ? null
-                    : f.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-                          .Apply(_ => l.Add(f.FullName)
+                    : Tuple.Create(
+                          (Stream) f.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                              .Apply(_ => l.Add(f.FullName)),
+                          f.Extension
                       )
                 )
                     ?? _assembly.GetManifestResourceNames()
@@ -140,10 +147,13 @@ namespace XSpect.Yacq.SystemObjects
                             .Let(i => i < 0 ? Int32.MaxValue : i)
                         )
                         .FirstOrDefault()
-                        .Let(n => l.Contains("res:" + n)
+                        .Null(n => l.Contains("res:" + n)
                             ? null
-                            : _assembly.GetManifestResourceStream(_resourcePrefix
-                                  + n.Apply(l.Add)
+                            : Tuple.Create(
+                                  _assembly.GetManifestResourceStream(_resourcePrefix
+                                      + n.Apply(l.Add)
+                                  ),
+                                  Path.GetExtension(n)
                               )
                         );
         }

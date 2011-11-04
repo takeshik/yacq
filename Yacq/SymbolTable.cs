@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq
@@ -556,6 +557,30 @@ namespace XSpect.Yacq
         public void Add(String name, String targetName)
         {
             this.Add(name, this[targetName]);
+        }
+
+        public void Import(Type type)
+        {
+            type.GetMembers(BindingFlags.Public | BindingFlags.Static)
+                .SelectMany(m => m.GetCustomAttributes(typeof(YacqSymbolAttribute), false)
+                    .Select(a => Tuple.Create(m, (YacqSymbolAttribute) a))
+                )
+                .ForEach(_ =>
+                {
+                    if (_.Item1 is MethodInfo)
+                    {
+                        this[_.Item2.DispatchType, _.Item2.LeftType, _.Item2.Name]
+                            = (SymbolDefinition) Delegate.CreateDelegate(
+                                  typeof(SymbolDefinition),
+                                  ((MethodInfo) _.Item1)
+                              );
+                    }
+                    else
+                    {
+                        this[_.Item2.Name]
+                            = (Expression) ((FieldInfo) _.Item1).GetValue(null);
+                    }
+                });
         }
 
         /// <summary>

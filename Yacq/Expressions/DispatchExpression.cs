@@ -196,7 +196,7 @@ namespace XSpect.Yacq.Expressions
                         )
                     )
                     .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
-                    .Choose(CheckAndFixArguments)
+                    .Choose(c => CheckAndFixArguments(symbols, c))
                     .OrderBy(c => c)
                     .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
                         a,
@@ -350,7 +350,7 @@ namespace XSpect.Yacq.Expressions
                   });
         }
 
-        private static Candidate CheckAndFixArguments(Candidate candidate)
+        private static Candidate CheckAndFixArguments(SymbolTable symbols, Candidate candidate)
         {
             return candidate.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
                 ? new Candidate(
@@ -364,10 +364,8 @@ namespace XSpect.Yacq.Expressions
 #if SILVERLIGHT
                                       (Expression)
 #endif
-                                      NewArrayInit(
-                                          candidate.Parameters.Last().ParameterType.GetElementType(),
-                                          _.Skip(candidate.Parameters.Count - 1)
-                                      )
+                                      Vector(symbols, _.Skip(candidate.Parameters.Count - 1))
+                                          .Reduce(symbols, candidate.Parameters.Last().ParameterType)
                                   ))
                           )
                           .ToArray()
