@@ -97,7 +97,7 @@
     <Compile Include="Static.cs" />
     <Compile Include="SymbolDefinition.cs" />
     <Compile Include="SymbolEntry.cs" />
-    <Compile Include="SymbolTable.Root.cs" />
+    <Compile Include="SymbolTable.RootSymbols.cs" />
     <Compile Include="Expressions\DispatchTypes.cs" />
     <Compile Include="Expressions\AmbiguousLambdaExpression.cs" />
     <Compile Include="Expressions\AmbiguousParameterExpression.cs" />

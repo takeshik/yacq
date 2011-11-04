@@ -39,7 +39,7 @@ using XSpect.Yacq.Linq;
 
 namespace XSpect.Yacq
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = true)]
     public sealed class YacqSymbolAttribute
         : Attribute
     {

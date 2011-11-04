@@ -198,8 +198,8 @@
     <Compile Include="..\Yacq\SymbolTable.cs">
       <Link>SymbolTable.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SymbolTable.Root.cs">
-      <Link>SymbolTable.Root.cs</Link>
+    <Compile Include="..\Yacq\SymbolTable.RootSymbols.cs">
+      <Link>SymbolTable.RootSymbols.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\SystemObjects\DocumentRepository.cs">
       <Link>SystemObjects\DocumentRepository.cs</Link>
