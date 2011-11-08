@@ -39,28 +39,58 @@ using XSpect.Yacq.Linq;
 
 namespace XSpect.Yacq
 {
+    /// <summary>
+    /// Indicates that a method or field is exported as symbols with specified <see cref="SymbolEntry"/> keys.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = true)]
     public sealed class YacqSymbolAttribute
         : Attribute
     {
+        /// <summary>
+        /// Gets the target <see cref="Expressions.DispatchTypes"/> of this symbol.
+        /// </summary>
+        /// <value>
+        /// The target <see cref="Expressions.DispatchTypes"/> of this symbol.
+        /// </value>
         public DispatchTypes DispatchType
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the target type of this symbol.
+        /// </summary>
+        /// <value>
+        /// The target type of this symbol.
+        /// </value>
+        /// <remarks>
+        /// If this value is <c>null</c>, this symbol is targeted to non-objective (global) call.
+        /// </remarks>
         public Type LeftType
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the name of this symbol.
+        /// </summary>
+        /// <value>
+        /// The name of this symbol.
+        /// </value>
         public String Name
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="YacqSymbolAttribute"/> class.
+        /// </summary>
+        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="leftType">The target of this symbol.</param>
+        /// <param name="name">The name of this symbol.</param>
         public YacqSymbolAttribute(DispatchTypes dispatchType, Type leftType, String name)
         {
             this.DispatchType = dispatchType;
@@ -68,11 +98,20 @@ namespace XSpect.Yacq
             this.Name = name;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="YacqSymbolAttribute"/> class.
+        /// </summary>
+        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="name">The name of this symbol.</param>
         public YacqSymbolAttribute(DispatchTypes dispatchType, String name)
             : this(dispatchType, null, name)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="YacqSymbolAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name of this symbol as a literal.</param>
         public YacqSymbolAttribute(String name)
             : this(DispatchTypes.Member | DispatchTypes.Literal, name)
         {
