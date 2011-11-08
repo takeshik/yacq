@@ -559,6 +559,10 @@ namespace XSpect.Yacq
             this.Add(name, this[targetName]);
         }
 
+        /// <summary>
+        /// Adds symbols from method and fields, which has <see cref="YacqSymbolAttribute"/>, in specified class.
+        /// </summary>
+        /// <param name="type">The type to add symbols from exported methods and fields.</param>
         public void Import(Type type)
         {
             type.GetMembers(BindingFlags.Public | BindingFlags.Static)

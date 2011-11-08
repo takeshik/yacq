@@ -138,6 +138,9 @@
     <Compile Include="..\Yacq\Expressions\NumberExpression.cs">
       <Link>Expressions\NumberExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\SymbolTableExpression.cs">
+      <Link>Expressions\SymbolTableExpression.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\TextExpression.cs">
       <Link>Expressions\TextExpression.cs</Link>
     </Compile>
