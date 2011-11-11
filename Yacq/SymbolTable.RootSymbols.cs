@@ -516,6 +516,9 @@ namespace XSpect.Yacq
             public static Expression Dot(DispatchExpression e, SymbolTable s, Type t)
             {
                 var a0 = e.Arguments[0].Reduce(s);
+                s = a0 is SymbolTableExpression
+                    ? ((SymbolTableExpression) a0).Symbols
+                    : s.Resolve(DispatchTypes.Member, "$here").Const<SymbolTable>();
                 if (a0 is TypeCandidateExpression && e.Arguments[1] is VectorExpression)
                 {
                     // T.[foo bar]
@@ -732,12 +735,12 @@ namespace XSpect.Yacq
             {
                 return YacqExpression.TypeCandidate(
 #if SILVERLIGHT
-                    Type.GetType(e.Arguments[0].Reduce(s).Const<String>())
+                    ModuleLoader.Assemblies
 #else
                     AppDomain.CurrentDomain.GetAssemblies()
+#endif
                         .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
                         .First()
-#endif
                 );
             }
             
@@ -774,53 +777,65 @@ namespace XSpect.Yacq
             #region Global Method: Symbol Handlings
 
             [YacqSymbol(DispatchTypes.Method, "def")]
-            public static Expression DefineGlobalSymbol(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression Define(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Dispatch(
                     s,
                     DispatchTypes.Method,
-                    s.Resolve("$global"),
+                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t),
                     "def",
                     e.Arguments
                 );
             }
             
             [YacqSymbol(DispatchTypes.Method, "def!")]
-            public static Expression ForceGlobalDefineSymbol(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression ForceDefine(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Dispatch(
                     s,
                     DispatchTypes.Method,
-                    s.Resolve("$global"),
+                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t),
                     "def!",
                     e.Arguments
                 );
             }
             
             [YacqSymbol(DispatchTypes.Method, "undef")]
-            public static Expression UndefineGlobalSymbol(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression Undefine(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Dispatch(
                     s,
                     DispatchTypes.Method,
-                    s.Resolve("$global"),
+                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t),
                     "undef",
                     e.Arguments
                 );
             }
             
             [YacqSymbol(DispatchTypes.Method, "load")]
-            public static Expression LoadToGlobal(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression Load(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Dispatch(
                     s,
                     DispatchTypes.Method,
-                    s.Resolve("$global"),
+                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t),
                     "load",
                     e.Arguments
                 );
             }
-            
+
+            [YacqSymbol(DispatchTypes.Method, "import")]
+            public static Expression Import(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Dispatch(
+                    s,
+                    DispatchTypes.Method,
+                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t),
+                    "import",
+                    e.Arguments
+                );
+            }
+
             #endregion
 
             #region Macro Method: Flowings
@@ -932,7 +947,7 @@ namespace XSpect.Yacq
             #region Macro Method: Symbol Handlings
 
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "def")]
-            public static Expression DefineSymbol(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression DefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
                 return Expression.Empty().Apply(_ =>
                     e.Left.Reduce(s).Const<SymbolTable>().Add(
@@ -943,7 +958,7 @@ namespace XSpect.Yacq
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "def!")]
-            public static Expression ForceDefineSymbol(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression ForceDefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
                 return Expression.Empty().Apply(_ =>
                     e.Left.Reduce(s).Const<SymbolTable>()[e.Arguments[0].Id()]
@@ -952,7 +967,7 @@ namespace XSpect.Yacq
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "undef")]
-            public static Expression UndefineSymbol(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression UndefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
                 return Expression.Empty().Apply(_ =>
                     e.Left.Reduce(s).Const<SymbolTable>().Remove(e.Arguments[0].Id())
@@ -960,14 +975,24 @@ namespace XSpect.Yacq
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "load")]
-            public static Expression Load(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression LoadTo(DispatchExpression e, SymbolTable s, Type t)
             {
                 return Root["*modules*"].Const<ModuleLoader>().Load(
                     e.Left.Reduce(s).Const<SymbolTable>(),
                     e.Arguments[0].Reduce(s).Const<String>()
                 );
             }
-            
+
+            [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "import")]
+            public static Expression ImportTo(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Root["*modules*"].Const<ModuleLoader>().Import(
+                    e.Left.Reduce(s).Const<SymbolTable>(),
+                    e.Arguments[0].Reduce(s).Const<String>(),
+                    e.Arguments[e.Arguments.Count > 1 ? 1 : 0].Reduce(s).Const<String>()
+                );
+            }
+
             #endregion
             
             #region Global Member: Generals
@@ -1023,7 +1048,29 @@ namespace XSpect.Yacq
             }
 
             #endregion
-            
+
+            #region Global Member: Symbol Handlings
+
+            [YacqSymbol(DispatchTypes.Member, "$here")]
+            public static Expression HereSymbol(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return s.Resolve("$global");
+            }
+
+            [YacqSymbol(DispatchTypes.Member, "here")]
+            public static Expression Here(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.SymbolTable(HereSymbol(e, s, t).Const<SymbolTable>());
+            }
+
+            [YacqSymbol(DispatchTypes.Member, "global")]
+            public static Expression Global(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.SymbolTable(s.Resolve("$global").Const<SymbolTable>());
+            }
+
+            #endregion
+
             #region Global Member: Configurations and System Objects
 
             [YacqSymbol("*modules*")]

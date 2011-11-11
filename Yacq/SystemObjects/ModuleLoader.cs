@@ -32,8 +32,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Resources;
+using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
 using XSpect.Yacq.Expressions;
 
@@ -44,11 +47,44 @@ namespace XSpect.Yacq.SystemObjects
     /// </summary>
     public class ModuleLoader
     {
+        /// <summary>
+        /// Represents the prefix to load symbols from the filesystem. This field is constant.
+        /// </summary>
+        public const String FilePrefix = "file:";
+
+        /// <summary>
+        /// Represents the prefix to load symbols from Yacq assembly resources. This field is constant.
+        /// </summary>
+        public const String ResourcePrefix = "res:";
+
+        /// <summary>
+        /// Represents the prefix to load symbols from the CTS (Common Type System) tree (namespace import). This field is constant.
+        /// </summary>
+        public const String CtsPrefix = "cts:";
+
         internal const String LoadedFiles = ".loadedFiles";
 
         private const String _resourcePrefix = "XSpect.Yacq.Libraries.";
 
         private readonly Assembly _assembly = typeof(YacqServices).Assembly;
+
+#if SILVERLIGHT
+        internal static readonly Assembly[] Assemblies = new Type[]
+        {
+            typeof(Object),
+            typeof(Uri),
+            typeof(Enumerable),
+            typeof(EnumerableEx),
+            typeof(QueryableEx),
+            typeof(Observable),
+            typeof(Qbservable),
+            typeof(XmlReader),
+            typeof(XDocument),
+            typeof(YacqServices),
+        }
+            .Select(t => t.Assembly)
+            .ToArray();
+#endif
 
         /// <summary>
         /// Gets the extensions <see cref="ModuleLoader"/> can load.
@@ -58,7 +94,6 @@ namespace XSpect.Yacq.SystemObjects
             ".dll",
             ".yacb",
             ".yacq",
-            "",
         };
             
         /// <summary>
@@ -89,73 +124,168 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Load the script and apply to specified <see cref="SymbolTable"/>.
+        /// Load the file and apply to specified <see cref="SymbolTable"/>.
         /// </summary>
         /// <param name="symbols">The symbol table as the applying target.</param>
-        /// <param name="name">Name of loading script. File extension can be omitted.</param>
-        /// <returns>The return value expression of the loaded script.</returns>
+        /// <param name="name">Name of loading file. File extension can be omitted.</param>
+        /// <returns>The return value expression of the loaded file.</returns>
         public Expression Load(SymbolTable symbols, String name)
         {
             return this.Get(symbols, name)
-                .Null(s => this.Load(symbols, s.Item1, s.Item2))
+                .Null(s => Load(symbols, s.Item1, s.Item2))
                 ?? Expression.Default(typeof(Object));
         }
 
-        private Expression Load(SymbolTable symbols, Stream stream, String extension)
+        /// <summary>
+        /// Load the file, apply to new <see cref="SymbolTable"/> and add the symbol with specified name, which refers to it in specified <see cref="SymbolTable"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table to add the reference to the applied symbols.</param>
+        /// <param name="name">Name of loading file. File extension can be omitted.</param>
+        /// <param name="symbolName">Name of the symbol which refers to the applied symbols.</param>
+        /// <returns>The return value expression of the loaded file.</returns>
+        public Expression Import(SymbolTable symbols, String name, String symbolName)
         {
-            switch (extension)
+            return this.Get(symbols, name)
+                .Null(_ => CreatePathSymbols(
+                    symbols,
+                    (symbolName.Contains(":")
+                        ? symbolName.Substring(symbolName.IndexOf(':') + 1)
+                        : symbolName
+                    ).Split('.')
+                ).Let(s => Load(s, _.Item1, _.Item2)));
+        }
+
+        /// <summary>
+        /// Load the file, apply to new <see cref="SymbolTable"/> and add the symbol named as file name, which refers to it in specified <see cref="SymbolTable"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table to add the reference to the applied symbols.</param>
+        /// <param name="name">Name of loading file. File extension can be omitted.</param>
+        /// <returns>The return value expression of the loaded file.</returns>
+        public Expression Import(SymbolTable symbols, String name)
+        {
+            return this.Import(symbols, name, name);
+        }
+
+        private Tuple<Object, String> Get(SymbolTable symbols, String name)
+        {
+            switch (Regex.Match(name, @"(^[^:]+:)").Value)
             {
-                case ".dll":
-                    return Expression.Constant(new Byte[stream.Length].Apply(b => stream.Read(b, 0, b.Length))
-                        .Let(Assembly.Load)
-                        .Apply(a => a.GetTypes()
-                            .Where(t => t.IsPublic)
-                            .ForEach(symbols.Import)
-                        )
-                    );
-                case ".yacb":
-                    throw new NotImplementedException("YACQ Binary code is not implemented.");
+                case FilePrefix:
+                    return GetFromFile(symbols, name.Substring(5));
+                case ResourcePrefix:
+                    return GetFromResource(symbols, name.Substring(4));
+                case CtsPrefix:
+                    return GetFromNamespace(symbols, name.Substring(4));
                 default:
-                    using (var reader = new StreamReader(stream, true))
-                    {
-                        return YacqServices.Parse(symbols, reader.ReadToEnd());
-                    }
+                    return GetFromFile(symbols, name)
+                        ?? GetFromResource(symbols, name);
             }
         }
 
-        private Tuple<Stream, String> Get(SymbolTable symbols, String name)
+        private Tuple<Object, String> GetFromFile(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedFiles].Const<IList<String>>();
+            var l = symbols[LoadedFiles].Const<ICollection<String>>();
             return this.SearchPaths
                 .Where(d => d.Exists)
                 .SelectMany(d => Extensions
-                    .SelectMany(_ => d.EnumerateFiles(name + _))
+                    .SelectMany(_ => d.EnumerateFiles(name.Replace('.', Path.DirectorySeparatorChar) + _))
                  )
                 .FirstOrDefault(f => f.Exists)
-                .Null(f => l.Contains(f.FullName)
+                .Null(f => l.Contains(FilePrefix + f.FullName)
                     ? null
                     : Tuple.Create(
-                          (Stream) f.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-                              .Apply(_ => l.Add(f.FullName)),
-                          f.Extension
+                          (Object) f.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                          (FilePrefix + f.FullName).Apply(l.Add)
                       )
+                );
+        }
+
+        private Tuple<Object, String> GetFromResource(SymbolTable symbols, String name)
+        {
+            var l = symbols[LoadedFiles].Const<ICollection<String>>();
+            return _assembly.GetManifestResourceNames()
+                .Select(n => n.Substring(_resourcePrefix.Length))
+                .Where(n => Path.GetFileNameWithoutExtension(n) == name)
+                .OrderBy(n => Array.IndexOf(Extensions, Path.GetExtension(n))
+                    .Let(i => i < 0 ? Int32.MaxValue : i)
                 )
-                    ?? _assembly.GetManifestResourceNames()
-                        .Select(n => n.Substring(_resourcePrefix.Length))
-                        .Where(n => Path.GetFileNameWithoutExtension(n) == name)
-                        .OrderBy(n => Array.IndexOf(Extensions, Path.GetExtension(n))
-                            .Let(i => i < 0 ? Int32.MaxValue : i)
-                        )
-                        .FirstOrDefault()
-                        .Null(n => l.Contains("res:" + n)
-                            ? null
-                            : Tuple.Create(
-                                  _assembly.GetManifestResourceStream(_resourcePrefix
-                                      + n.Apply(l.Add)
-                                  ),
-                                  Path.GetExtension(n)
-                              )
+                .FirstOrDefault()
+                .Null(n => l.Contains(ResourcePrefix + n)
+                    ? null
+                    : Tuple.Create(
+                          (Object) _assembly.GetManifestResourceStream(_resourcePrefix + n),
+                          (ResourcePrefix + n).Apply(l.Add)
+                      )
+                );
+        }
+
+        private Tuple<Object, String> GetFromNamespace(SymbolTable symbols, String name)
+        {
+            var l = symbols[LoadedFiles].Const<ICollection<String>>();
+            return Tuple.Create(
+                (Object)
+#if SILVERLIGHT
+                Assemblies
+#else
+                AppDomain.CurrentDomain
+                    .GetAssemblies()
+#endif
+                    .SelectMany(a => a.GetTypes())
+                    .Where(t => t.IsPublic && !t.IsNested && t.Namespace == name)
+                    .GroupBy(t => t.Name.Contains("`")
+                        ? t.Name.Remove(t.Name.IndexOf('`'))
+                        : t.Name
+                    )
+                    .ToArray(),
+                (CtsPrefix + name).Apply(l.Add)
+            );
+        }
+
+        private static Expression Load(SymbolTable symbols, Object obj, String name)
+        {
+            if (name.StartsWith(CtsPrefix))
+            {
+                return Expression.Constant(((IEnumerable<IGrouping<String, Type>>) obj)
+                    .Select(g => g.Key.Apply(k => symbols[k] = YacqExpression.TypeCandidate(symbols, g)))
+                    .ToArray()
+                );
+            }
+            else
+            {
+                var stream = (Stream) obj;
+                switch (Path.GetExtension(name).ToLower())
+                {
+                    case ".dll":
+                        return Expression.Constant(new Byte[stream.Length].Apply(b => stream.Read(b, 0, b.Length))
+                            .Let(Assembly.Load)
+                            .Apply(a => a.GetTypes()
+                                .Where(t => t.IsPublic)
+                                .ForEach(symbols.Import)
+                            )
                         );
+                    case ".yacb":
+                        throw new NotImplementedException("YACQ Binary code is not implemented.");
+                    default:
+                        using (var reader = new StreamReader(stream, true))
+                        {
+                            return YacqServices.Parse(symbols, reader.ReadToEnd());
+                        }
+                }
+            }
+        }
+
+        private static SymbolTable CreatePathSymbols(SymbolTable symbols, IEnumerable<String> fragments)
+        {
+            return ((SymbolTableExpression) EnumerableEx.Generate(
+                Tuple.Create(fragments, symbols),
+                _ => _.Item1.Any(),
+                _ => Tuple.Create(_.Item1.Skip(1), _.Item1.First()
+                    .Let(f => _.Item2.ExistsKey(f) && _.Item2.Resolve(f) is SymbolTableExpression
+                        ? ((SymbolTableExpression) symbols.Resolve(f)).Symbols
+                        : new SymbolTable().Apply(s => _.Item2[f] = YacqExpression.SymbolTable(s))
+                )),
+                _ => _.Item2
+            ).Last().Resolve(fragments.Last())).Symbols;
         }
     }
 }
