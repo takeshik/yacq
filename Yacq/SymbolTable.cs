@@ -878,7 +878,7 @@ namespace XSpect.Yacq
                 )
                 .OrderBy(p => p.Key.LeftType != null
                     ? key.LeftType.GetConvertibleTypes()
-                          .TakeWhile(t => t == p.Key.LeftType)
+                          .TakeWhile(t => t != p.Key.LeftType)
                           .Count()
                     : Int32.MaxValue
                 )
@@ -990,7 +990,7 @@ namespace XSpect.Yacq
         private void AddSystemSymbols()
         {
             this.Add(".$self", Expression.Constant(this));
-            this.Add(".loadedFiles", Expression.Constant(new List<String>()));
+            this.Add(".loadedFiles", Expression.Constant(new HashSet<String>(StringComparer.CurrentCultureIgnoreCase)));
         }
     }
 }

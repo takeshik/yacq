@@ -34,7 +34,7 @@ using System.Linq.Expressions;
 namespace XSpect.Yacq.Expressions
 {
     /// <summary>
-    /// Represents an expression which is an identifier.
+    /// Represents an expression that is ignored in the results.
     /// </summary>
     public class IgnoredExpression
         : YacqExpression

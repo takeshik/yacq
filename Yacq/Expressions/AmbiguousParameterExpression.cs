@@ -34,7 +34,7 @@ using System.Linq.Expressions;
 namespace XSpect.Yacq.Expressions
 {
     /// <summary>
-    /// Represents an ambiguous paranmeter expression, a parameter expression which may be type-unfixed.
+    /// Represents an ambiguous parameter expression, a parameter expression which may be type-unfixed.
     /// </summary>
     public class AmbiguousParameterExpression
         : YacqExpression
