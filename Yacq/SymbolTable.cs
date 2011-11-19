@@ -424,8 +424,19 @@ namespace XSpect.Yacq
         /// Initializes a new instance of the <see cref="SymbolTable"/> class.
         /// </summary>
         /// <param name="parents">Sequence of parents of this symbol table.</param>
+        /// <param name="importingType">The type to add symbols from exported methods and fields.</param>
+        public SymbolTable(IEnumerable<SymbolTable> parents, Type importingType)
+            : this(parents, default(IDictionary<SymbolEntry, SymbolDefinition>))
+        {
+            this.Import(importingType);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="parents">Sequence of parents of this symbol table.</param>
         public SymbolTable(IEnumerable<SymbolTable> parents)
-            : this(parents, null)
+            : this(parents, default(IDictionary<SymbolEntry, SymbolDefinition>))
         {
         }
 
@@ -445,6 +456,34 @@ namespace XSpect.Yacq
         /// <param name="entries">Initial entries of this symbol table.</param>
         public SymbolTable(SymbolTable parent, IDictionary<SymbolEntry, SymbolDefinition> entries)
             : this(EnumerableEx.Return(parent), entries)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="parent">Parent of this symbol table.</param>
+        /// <param name="importingType">The type to add symbols from exported methods and fields.</param>
+        public SymbolTable(SymbolTable parent, Type importingType)
+            : this(EnumerableEx.Return(parent), importingType)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="entries">Initial entries of this symbol table.</param>
+        public SymbolTable(IDictionary<SymbolEntry, SymbolDefinition> entries)
+            : this(default(SymbolTable), entries)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="importingType">The type to add symbols from exported methods and fields.</param>
+        public SymbolTable(Type importingType)
+            : this(default(SymbolTable), importingType)
         {
         }
 

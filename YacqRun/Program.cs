@@ -44,8 +44,9 @@ namespace XSpect.Yacq.Runner
 {
     internal static class Program
     {
-        private static readonly List<Tuple<String, Expression, Object>> _history
-            = new List<Tuple<String, Expression, Object>>();
+        private static SymbolTable _symbols = new SymbolTable(typeof(ReplSymbols));
+
+        private static readonly Stopwatch _stopwatch = new Stopwatch();
 
         private static Int32 Main(String[] args)
         {
@@ -100,14 +101,14 @@ namespace XSpect.Yacq.Runner
             Console.WriteLine(
                 #region String
 @"Yacq Runner (REPL Mode)
-Type \help [ENTER] to show help."
+Type (!help) [ENTER] to show help."
                 #endregion
             );
             while (true)
             {
                 if (heredoc == null)
                 {
-                    Console.Write("yacq[{0}]> ", _history.Count);
+                    Console.Write("yacq[{0}]> ", ReplSymbols.ReplHistory.Count);
                 }
                 Console.ForegroundColor = ConsoleColor.White;
                 var input = Console.ReadLine();
@@ -130,132 +131,17 @@ Type \help [ENTER] to show help."
                 {
                     return;
                 }
-                else if (input.StartsWith("\\"))
-                {
-                    switch (input.Substring(1))
-                    {
-                        case "exit":
-                            return;
-                        case "help":
-                            Console.WriteLine(
-                                #region String
-@"Commands:
-  \exit
-    Exit this program.
-  \help
-    Show this message.
-  \chelp
-    Show command-line option help.
-  \shelp
-    Show special symbols only in YacqRun help.
-  \man
-    Open the reference manual web page.
-  \about
-    Show general and copyright description.
-  \debug
-    Attach the debugger.
-  \gc
-    Run GC manually.
-  (CODE)
-    Run one-line CODE.
-  <<(INPUT) [ENTER] (CODES)
-    Run multi-line CODES while INPUT line was got (heredoc <<EOT).
-  (CODE)
-    Otherwise: Run one-line code."
-                                #endregion
-                            );
-                            break;
-                        case "chelp":
-                            Console.WriteLine(
-                                #region String
-@"Command-line Options:
-  YacqRun
-    Run in REPL mode.
-  YacqRun PATH
-    Run script file in PATH.
-  YacqRun -c PATH
-    Compile script file in PATH to Console Application EXE.
-  YacqRun -cw PATH
-    Compile script file in PATH to Windows Application EXE.
-  YacqRun -cl PATH
-    Compile script file in PATH to Library DLL.
-  NOTE: Specify - in PATH means read script data from standard input."
-                                #endregion
-                            );
-                            break;
-                        case "shelp":
-                            Console.WriteLine(
-                                #region String
-@"Special Symbols only in YacqRun:
-  !C
-    Input code history array
-  !E
-    Reduced expression history array
-  !R
-    Return value history array
-  !H
-    History list (you can modify, such as (Clear))
-  NOTE: The history index for next input is in the prompt; like 'yacq[N]>'
-        One history entry indicates a reduced expressions, not a code input.
-        (one code input may create more than one history entries.)"
-                                #endregion
-                            );
-                            break;
-                        case "man":
-                            Process.Start("https://github.com/takeshik/yacq/wiki");
-                            break;
-                        case "about":
-                            Console.WriteLine(
-                                #region String
-@"YACQ <https://github.com/takeshik/yacq>
-  Yet Another Compilable Query Language, based on Expression Trees API
-  Language service is provided by Yacq.dll, the assembly name is:
-    {0}
-YACQ Runner (YACQRun) is part of YACQ
-  Runner and Compiler of YACQ
-
-Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
-All rights reserved.
-
-YACQ and YACQ Runner are Free Software; licensed under the MIT License.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the ""Software""), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE."
-                                #endregion
-                                , typeof(YacqServices).Assembly.GetName()
-                            );
-                            break;
-                        case "debug":
-                            Debugger.Launch();
-                            break;
-                        case "gc":
-                            Console.WriteLine();
-                            GC.Collect();
-                            break;
-                    }
-                }
                 else if (input.StartsWith("<<"))
                 {
                     heredoc = input.Substring(2);
                 }
                 else if (!String.IsNullOrWhiteSpace(input))
                 {
-                    Run(input, true);
+                    Run(input, ReplSymbols.ReplVerbose);
+                    if (!ReplSymbols.ReplContinuous)
+                    {
+                        _symbols = new SymbolTable(typeof(ReplSymbols));
+                    }
                     code = "";
                 }
             }
@@ -266,44 +152,59 @@ THE SOFTWARE."
             try
             {
                 Object ret = null;
-                foreach (var expr in YacqServices.ParseAll(
-                    new SymbolTable()
-                    {
-                        {"!C", Expression.Constant(_history.Select(t => t.Item1).ToArray())},
-                        {"!E", Expression.Constant(_history.Select(t => t.Item2).ToArray())},
-                        {"!R", Expression.Constant(_history.Select(t => t.Item3).ToArray())},
-                        {"!H", Expression.Constant(_history)},
-                    },
-                    code
-                ))
+                _stopwatch.Restart();
+                var exprs = YacqServices.ParseAll(_symbols, code).ToArray();
+                _stopwatch.Stop();
+                if (showInfo)
                 {
-                    if (showInfo)
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("Parsed Expressions (time: {0}):", _stopwatch.Elapsed);
+                    exprs.ForEach(e =>
                     {
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.Write("  {0} => {1} = ", GetTypeName(e.GetType()), GetTypeName(e.Type));
                         Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine("Expression : {0} => {1}\n  {2}", expr.GetType().Name, expr.Type, expr);
-                        Console.ResetColor();
-                    }
+                        Console.WriteLine(e);
+                    });
+                    Console.ResetColor();
+                }
+                foreach (var expr in YacqServices.ParseAll(_symbols, code))
+                {
                     ret = Expression.Lambda(expr).Compile().DynamicInvoke();
                     if (showInfo)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         if (ret != null)
                         {
-                            Console.Write("Returned : {0}\n  {1}", ret.GetType(), ret);
+                            Console.Write("Returned: ");
+                            Console.ForegroundColor = ConsoleColor.DarkGreen;
+                            Console.Write("{0}", GetTypeName(ret.GetType()));
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            if (ret.GetType().GetMethod("ToString", Type.EmptyTypes).DeclaringType != typeof(Object))
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                                Console.Write(" = ");
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.Write("{0}", ret);
+                            }
                             if (ret is IEnumerable && !(ret is String))
                             {
                                 var data = ((IEnumerable) ret)
                                     .Cast<Object>()
-                                    .Select(_ => (_ ?? "(null").ToString())
+                                    .Select(_ => (_ ?? "(null)").ToString())
                                     .Take(101)
                                     .ToArray();
                                 if (data.Any(s => s.Length > 40))
                                 {
+                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                                    Console.WriteLine(" = [");
+                                    Console.ForegroundColor = ConsoleColor.Green;
                                     Console.WriteLine(String.Join(
                                         Environment.NewLine,
-                                        data.Select(s => "    " + s)
-                                            .StartWith(" = [")
+                                        data.Take(100)
+                                            .Select(s => "    " + s)
                                     ));
+                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
                                     Console.WriteLine(data.Length > 100
                                         ? "    (more...)\n  ]"
                                         : "  ]"
@@ -311,11 +212,14 @@ THE SOFTWARE."
                                 }
                                 else
                                 {
-                                    Console.Write(" = [ \n    " + String.Join(" ", data)
-                                        + (data.Length > 100
-                                              ? " (more...)\n  ]"
-                                              : "\n  ]"
-                                          )
+                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                                    Console.Write(" = [ \n    ");
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.Write(String.Join(" ", data.Take(100)));
+                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                                    Console.Write(data.Length > 100
+                                        ? " (more...)\n  ]"
+                                        : "\n  ]"
                                     );
                                 }
                             }
@@ -323,11 +227,11 @@ THE SOFTWARE."
                         }
                         else
                         {
-                            Console.WriteLine("Returned : null");
+                            Console.WriteLine("Returned: null");
                         }
                         Console.ResetColor();
                     }
-                    _history.Add(Tuple.Create(code, expr, ret));
+                    ReplSymbols.ReplHistory.Add(Tuple.Create(code, expr, ret));
                 }
                 return ret;
             }
@@ -377,6 +281,16 @@ THE SOFTWARE."
                 assembly.SetEntryPoint(method, fileKind);
             }
             assembly.Save(name);
+        }
+
+        private static String GetTypeName(Type type)
+        {
+            return type.IsArray
+                ? GetTypeName(type.GetElementType()) + "[]"
+                : type.IsGenericType && !type.IsGenericTypeDefinition
+                      ? type.Name.Remove(type.Name.LastIndexOf('`'))
+                            + "<" + String.Join(",", type.GetGenericArguments().Select(GetTypeName)) + ">"
+                      : type.Name;
         }
     }
 }
