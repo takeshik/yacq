@@ -62,7 +62,7 @@ namespace XSpect.Yacq.SystemObjects
         /// </summary>
         public const String CtsPrefix = "cts:";
 
-        internal const String LoadedFiles = ".loadedFiles";
+        internal const String LoadedModules = ".loadedModules";
 
         private const String _resourcePrefix = "XSpect.Yacq.Libraries.";
 
@@ -168,6 +168,10 @@ namespace XSpect.Yacq.SystemObjects
 
         private Tuple<Object, String> Get(SymbolTable symbols, String name)
         {
+            if (!symbols.ContainsKey(LoadedModules))
+            {
+                symbols.Add(LoadedModules, Expression.Constant(new HashSet<String>(StringComparer.CurrentCultureIgnoreCase)));
+            }
             switch (Regex.Match(name, @"(^[^:]+:)").Value)
             {
                 case FilePrefix:
@@ -184,7 +188,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private Tuple<Object, String> GetFromFile(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedFiles].Const<ICollection<String>>();
+            var l = symbols[LoadedModules].Const<ICollection<String>>();
             return this.SearchPaths
                 .Where(d => d.Exists)
                 .SelectMany(d => Extensions
@@ -202,7 +206,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private Tuple<Object, String> GetFromResource(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedFiles].Const<ICollection<String>>();
+            var l = symbols[LoadedModules].Const<ICollection<String>>();
             return _assembly.GetManifestResourceNames()
                 .Select(n => n.Substring(_resourcePrefix.Length))
                 .Where(n => Path.GetFileNameWithoutExtension(n) == name)
@@ -221,7 +225,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private Tuple<Object, String> GetFromNamespace(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedFiles].Const<ICollection<String>>();
+            var l = symbols[LoadedModules].Const<ICollection<String>>();
             return Tuple.Create(
                 (Object)
 #if SILVERLIGHT

@@ -168,7 +168,7 @@ Type (!help) [ENTER] to show help."
                     });
                     Console.ResetColor();
                 }
-                foreach (var expr in YacqServices.ParseAll(_symbols, code))
+                foreach (var expr in exprs)
                 {
                     ret = Expression.Lambda(expr).Compile().DynamicInvoke();
                     if (showInfo)
@@ -287,10 +287,16 @@ Type (!help) [ENTER] to show help."
         {
             return type.IsArray
                 ? GetTypeName(type.GetElementType()) + "[]"
-                : type.IsGenericType && !type.IsGenericTypeDefinition
-                      ? type.Name.Remove(type.Name.LastIndexOf('`'))
-                            + "<" + String.Join(",", type.GetGenericArguments().Select(GetTypeName)) + ">"
-                      : type.Name;
+                : (type.IsNested
+                      ? GetTypeName(type.DeclaringType) + "."
+                      : ""
+                  ) + (type.IsGenericType && !type.IsGenericTypeDefinition
+                      ? (type.Name.Contains("`")
+                            ? type.Name.Remove(type.Name.LastIndexOf('`'))
+                            : type.Name
+                        ) + "<" + String.Join(",", type.GetGenericArguments().Select(GetTypeName)) + ">"
+                      : type.Name
+                  );
         }
     }
 }

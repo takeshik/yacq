@@ -160,7 +160,7 @@ namespace XSpect.Yacq.Expressions
                               m,
                               this.TypeArguments,
                               this.Arguments
-                                  .StartWith(this.Left)
+                                  .StartWith(this._left)
                                   .ToArray()
                           )
                         : new Candidate(
