@@ -46,6 +46,8 @@ namespace XSpect.Yacq
     {
         private readonly IDictionary<SymbolEntry, SymbolDefinition> _symbols;
 
+        private readonly Lazy<SymbolTable[]> _chain;
+
         private Nullable<Int32> _hash;
 
         /// <summary>
@@ -235,10 +237,7 @@ namespace XSpect.Yacq
         {
             get
             {
-                return this.Parents
-                    .Expand(p => p.Parents)
-                    .Distinct()
-                    .StartWith(this);
+                return this._chain.Value;
             }
         }
 
@@ -417,7 +416,12 @@ namespace XSpect.Yacq
                 : new SymbolTable[0]
             );
             this._symbols = entries ?? new Dictionary<SymbolEntry, SymbolDefinition>();
-            this.AddSystemSymbols();
+            this._chain = new Lazy<SymbolTable[]>(() => this.Parents
+                .Expand(p => p.Parents)
+                .Distinct()
+                .StartWith(this)
+                .ToArray()
+            );
         }
 
         /// <summary>
@@ -496,7 +500,8 @@ namespace XSpect.Yacq
         public override String ToString()
         {
             return String.Format(
-                "Depth {0}: Count = {1} ({2})",
+                "SymbolTable#{0:x8}[@{1}:{2}/{3}]",
+                this.AllHash,
                 this.Chain.Count() - 1,
                 this.Count,
                 this.AllKeys.Count()
@@ -1024,12 +1029,6 @@ namespace XSpect.Yacq
                 throw new InvalidOperationException("This SymbolTable is read-only.");
             }
             this._hash = null;
-        }
-
-        private void AddSystemSymbols()
-        {
-            this.Add(".$self", Expression.Constant(this));
-            this.Add(".loadedFiles", Expression.Constant(new HashSet<String>(StringComparer.CurrentCultureIgnoreCase)));
         }
     }
 }

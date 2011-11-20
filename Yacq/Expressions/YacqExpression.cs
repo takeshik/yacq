@@ -127,9 +127,7 @@ namespace XSpect.Yacq.Expressions
         public Expression Reduce(SymbolTable symbols, Type expectedType)
         {
             symbols = this.Symbols.Any()
-                ? new SymbolTable(this.Symbols, symbols).Apply(
-                      s => s.Add("$", Constant(s))
-                  )
+                ? new SymbolTable(this.Symbols, symbols)
                 : symbols;
             var hash = symbols.AllHash
                 ^ (expectedType != null ? expectedType.GetHashCode() : 0);
