@@ -96,6 +96,14 @@ namespace XSpect.Yacq.Expressions
                 }
             }
 
+            public EventInfo Event
+            {
+                get
+                {
+                    return this.Member as EventInfo;
+                }
+            }
+
             public MethodBase MethodBase
             {
                 get

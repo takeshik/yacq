@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reactive.Linq;
 using System.Reflection;
 
 namespace XSpect.Yacq.Expressions
@@ -216,7 +217,37 @@ namespace XSpect.Yacq.Expressions
                                     ? c.Arguments.Any()
                                           ? (Expression) Property(c.Instance, c.Property, c.Arguments)
                                           : Property(c.Instance, c.Property)
-                                    : Field(c.Instance, c.Field);
+                                    : c.Field != null
+                                          ? (Expression) Field(c.Instance, c.Field)
+                                          : typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
+                                                typeof(Observable),
+                                                "FromEventPattern",
+                                                new []
+                                                {
+                                                    c.Event.EventHandlerType,
+                                                    c.Event.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType,
+                                                },
+                                                Convert(Call(
+                                                    typeof(Delegate),
+                                                    "CreateDelegate",
+                                                    Type.EmptyTypes,
+                                                    Constant(t),
+                                                    this._left is TypeCandidateExpression
+                                                        ? Default(typeof(Object))
+                                                        : this._left,
+                                                    Constant(c.Event.GetAddMethod())
+                                                ), t),
+                                                Convert(Call(
+                                                    typeof(Delegate),
+                                                    "CreateDelegate",
+                                                    Type.EmptyTypes,
+                                                    Constant(t),
+                                                    this._left is TypeCandidateExpression
+                                                        ? Default(typeof(Object))
+                                                        : this._left,
+                                                    Constant(c.Event.GetRemoveMethod())
+                                                ), t)
+                                            ));
                             default: // case DispatchType.Method:
                                 return Call(c.Instance, c.Method, c.Arguments);
                         }
@@ -239,7 +270,7 @@ namespace XSpect.Yacq.Expressions
                             : (this._left is TypeCandidateExpression
                                   ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                                   : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                              ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property));
+                              ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property | m.MemberType == MemberTypes.Event));
                     case DispatchTypes.Method:
                         return (this._left is TypeCandidateExpression
                             ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
