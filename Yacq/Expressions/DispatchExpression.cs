@@ -32,8 +32,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Reflection;
+#if !__MonoCS__
+using System.Reactive.Linq;
+#endif
 
 namespace XSpect.Yacq.Expressions
 {
@@ -219,6 +221,9 @@ namespace XSpect.Yacq.Expressions
                                           : Property(c.Instance, c.Property)
                                     : c.Field != null
                                           ? (Expression) Field(c.Instance, c.Field)
+#if __MonoCS__
+                                          : null;
+#else
                                           : typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
                                                 typeof(Observable),
                                                 "FromEventPattern",
@@ -248,6 +253,7 @@ namespace XSpect.Yacq.Expressions
                                                     Constant(c.Event.GetRemoveMethod())
                                                 ), t)
                                             ));
+#endif
                             default: // case DispatchType.Method:
                                 return Call(c.Instance, c.Method, c.Arguments);
                         }

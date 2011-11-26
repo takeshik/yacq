@@ -4,14 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-#if WINDOWS_PHONE
-using Microsoft.Phone.Reactive;
-#else
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-#endif
 
 // AsynchronousExtensions, written by neuecc.
 // See: http://neue.cc/2010/11/26_286.html

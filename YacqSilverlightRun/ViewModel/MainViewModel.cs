@@ -27,7 +27,6 @@
  * THE SOFTWARE.
  */
 
-using System.Collections.ObjectModel;
 using GalaSoft.MvvmLight;
 
 namespace XSpect.Yacq.Runner.ViewModel

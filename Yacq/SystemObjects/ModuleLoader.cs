@@ -32,13 +32,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Reflection;
-using System.Resources;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using XSpect.Yacq.Expressions;
+#if !__MonoCS__
+using System.Reactive.Linq;
+#endif
 
 namespace XSpect.Yacq.SystemObjects
 {
