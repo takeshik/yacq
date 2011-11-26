@@ -128,7 +128,7 @@ namespace XSpect.Yacq.Expressions
         {
             symbols = this.Symbols.Any()
                 ? new SymbolTable(this.Symbols, symbols)
-                : symbols;
+                : symbols ?? new SymbolTable();
             var hash = symbols.AllHash
                 ^ (expectedType != null ? expectedType.GetHashCode() : 0);
             if (this._reducedExpressions.ContainsKey(hash))
