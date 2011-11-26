@@ -33,13 +33,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Text;
 using XSpect.Yacq.Expressions;
 using System.Text.RegularExpressions;
 using System.Reflection;
-using System.Reactive;
 using XSpect.Yacq.SystemObjects;
+#if !__MonoCS__
+using System.Reactive;
+using System.Reactive.Linq;
+#endif
 
 namespace XSpect.Yacq
 {
@@ -852,30 +854,6 @@ namespace XSpect.Yacq
                           "ReadLine"
                       );
             }
-
-            [YacqSymbol(DispatchTypes.Method, typeof(Object), "print")]
-            public static Expression Print(DispatchExpression e, SymbolTable s, Type t)
-            {
-                return YacqExpression.Dispatch(
-                    s,
-                    DispatchTypes.Method,
-                    YacqExpression.TypeCandidate(typeof(Console)),
-                    "WriteLine",
-                    e.Left
-                );
-            }
-            
-            [YacqSymbol(DispatchTypes.Method, typeof(Object), "printn")]
-            public static Expression PrintWithoutNewLine(DispatchExpression e, SymbolTable s, Type t)
-            {
-                return YacqExpression.Dispatch(
-                    s,
-                    DispatchTypes.Method,
-                    YacqExpression.TypeCandidate(typeof(Console)),
-                    "Write",
-                    e.Left
-                );
-            }
             
             #endregion
             
@@ -1028,8 +1006,36 @@ namespace XSpect.Yacq
             
             #endregion
 
+            #region Method - Input / Output
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "print")]
+            public static Expression Print(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Dispatch(
+                    s,
+                    DispatchTypes.Method,
+                    YacqExpression.TypeCandidate(typeof(Console)),
+                    "WriteLine",
+                    e.Left
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "printn")]
+            public static Expression PrintWithoutNewLine(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Dispatch(
+                    s,
+                    DispatchTypes.Method,
+                    YacqExpression.TypeCandidate(typeof(Console)),
+                    "Write",
+                    e.Left
+                );
+            }
+
+            #endregion
+
             #region Method - Type Handling
-            
+
             [YacqSymbol(DispatchTypes.Method, typeof(Static<Object>), "new")]
             public static Expression CreateInstance(DispatchExpression e, SymbolTable s, Type t)
             {
@@ -1185,6 +1191,10 @@ namespace XSpect.Yacq
                           : Expression.Default(t);
             }
 
+            #endregion
+
+            #region Variable - Symbol Handling
+
             [YacqSymbol(DispatchTypes.Member, "?")]
             public static Expression GetGlobalSymbols(DispatchExpression e, SymbolTable s, Type t)
             {
@@ -1202,10 +1212,6 @@ namespace XSpect.Yacq
                         )
                 );
             }
-
-            #endregion
-
-            #region Variable - Symbol Handling
 
             [YacqSymbol(DispatchTypes.Member, "$here")]
             public static Expression HereSymbol(DispatchExpression e, SymbolTable s, Type t)
@@ -1404,7 +1410,8 @@ namespace XSpect.Yacq
             
             [YacqSymbol("QueryableEx")]
             public static Expression QueryableExType = YacqExpression.TypeCandidate(typeof(QueryableEx));
-            
+
+#if !__MonoCS__
             [YacqSymbol("Observable")]
             public static Expression ObservableType = YacqExpression.TypeCandidate(typeof(Observable));
             
@@ -1416,6 +1423,7 @@ namespace XSpect.Yacq
             
             [YacqSymbol("Qbservable")]
             public static Expression QbservableType = YacqExpression.TypeCandidate(typeof(Qbservable));
+#endif
             
             // Generic Delegate Types
             
@@ -1463,7 +1471,7 @@ namespace XSpect.Yacq
 
             #endregion
 
-            #region Member - General
+            #region Member - Symbol Handling
 
             [YacqSymbol(DispatchTypes.Member, typeof(Object), "?")]
             public static Expression GetMembersAndSymbols(DispatchExpression e, SymbolTable s, Type t)

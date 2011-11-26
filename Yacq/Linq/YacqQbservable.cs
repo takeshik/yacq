@@ -27,6 +27,7 @@
  * THE SOFTWARE.
  */
 
+#if !__MonoCS__
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -122,3 +123,4 @@ namespace XSpect.Yacq.Linq
         }
     }
 }
+#endif

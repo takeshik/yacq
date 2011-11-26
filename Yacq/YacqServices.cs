@@ -32,10 +32,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 using XSpect.Yacq.Linq;
+#if !__MonoCS__
+using System.Reactive.Linq;
+#endif
 
 namespace XSpect.Yacq
 {
@@ -336,6 +338,7 @@ namespace XSpect.Yacq
             return new YacqQueryable<TSource>(symbols, source);
         }
 
+#if !__MonoCS__
         /// <summary>
         /// Enables querying with YACQ code strings.
         /// </summary>
@@ -370,6 +373,7 @@ namespace XSpect.Yacq
         {
             return new YacqQbservable<TSource>(symbols, source);
         }
+#endif
 
         /// <summary>
         /// Enables querying with YACQ code strings.
@@ -413,6 +417,7 @@ namespace XSpect.Yacq
             return source.Yacq(null);
         }
 
+#if !__MonoCS__
         /// <summary>
         /// Enables querying with YACQ code strings.
         /// </summary>
@@ -444,6 +449,7 @@ namespace XSpect.Yacq
         {
             return source.Yacq(null);
         }
+#endif
 
         #endregion
     }

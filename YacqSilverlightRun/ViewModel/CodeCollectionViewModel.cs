@@ -29,13 +29,8 @@
 
 using System;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Net;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Windows;
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
 using XSpect.Yacq.Runner.Model;
