@@ -228,6 +228,24 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Gets or sets the symbol value of the missing symbol, the failback code if any symbol is matched.
+        /// </summary>
+        /// <returns>the symbol value of the missing symbol.</returns>
+        public SymbolDefinition Missing
+        {
+            get
+            {
+                return this.ExistsKey(SymbolEntry.Missing)
+                    ? this.Resolve(SymbolEntry.Missing)
+                    : DispatchExpression.DefaultMissing;
+            }
+            set
+            {
+                this[SymbolEntry.Missing] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the sequence of <see cref="Parents"/>, from this instance to the <see cref="Root"/>.
         /// </summary>
         /// <value>

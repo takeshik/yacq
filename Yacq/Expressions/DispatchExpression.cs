@@ -151,114 +151,81 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             this._left = this.Left.Reduce(symbols);
-            return symbols.ResolveMatch(this).If(
-                d => d != null,
-                d => d(this, symbols, expectedType),
-                d => this.GetMembers(symbols)
-                    .Select(m => m is MethodInfo
-                        && ((MethodInfo) m).IsExtensionMethod()
-                        && !(this._left is TypeCandidateExpression)
-                        ? new Candidate(
-                              null,
-                              m,
-                              this.TypeArguments,
-                              this.Arguments
-                                  .StartWith(this._left)
-                                  .ToArray()
-                          )
-                        : new Candidate(
-                              this._left is TypeCandidateExpression ? null : this._left,
-                              m,
-                              this.TypeArguments,
-                              this.Arguments
-                          )
+            return symbols.ResolveMatch(this)
+                .If(d => d == null, d => symbols.Missing)
+                (this, symbols, expectedType);
+        }
+
+        /// <summary>
+        /// Default definition method of <see cref="SymbolTable.Missing"/>.
+        /// </summary>
+        /// <param name="e">The expression to be reduced.</param>
+        /// <param name="s">The symbol table which this symbol (value) belongs.</param>
+        /// <param name="t">The expected <see cref="Expression.Type"/> from the caller, or <c>null</c> if any type will be accepted.</param>
+        /// <returns>The reduced expression.</returns>
+        public static Expression DefaultMissing(DispatchExpression e, SymbolTable s, Type t)
+        {
+            return e.DispatchByTypeSystem(s, t);
+        }
+
+        private Expression DispatchByTypeSystem(SymbolTable symbols, Type expectedType)
+        {
+            return this.GetMembers(symbols)
+                .Select(m => m is MethodInfo
+                    && ((MethodInfo) m).IsExtensionMethod()
+                    && !(this._left is TypeCandidateExpression)
+                    ? new Candidate(
+                          null,
+                          m,
+                          this.TypeArguments,
+                          this.Arguments
+                              .StartWith(this._left)
+                              .ToArray()
+                      )
+                    : new Candidate(
+                          this._left is TypeCandidateExpression ? null : this._left,
+                          m,
+                          this.TypeArguments,
+                          this.Arguments
+                      )
+                )
+                .Where(c => (c.Arguments.Count == c.Parameters.Count
+                    || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1))
+                )
+                .Select(c => new Candidate(
+                    c.Instance,
+                    c.Member,
+                    c.TypeArguments,
+                    c.ParameterMap
+                        .Select(_ => _.Item2.Reduce(symbols, _.Item1))
+                        .ToArray()
+                ))
+                .Where(c => c.Arguments.All(e => e != null) && c.Parameters
+                    .Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
+                        ? p.ParameterType.GetDelegateSignature().GetParameters().Length
+                        : 0
                     )
-                    .Where(c => (c.Arguments.Count == c.Parameters.Count
-                        || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1))
-                    )
-                    .Select(c => new Candidate(
-                        c.Instance,
-                        c.Member,
-                        c.TypeArguments,
-                        c.ParameterMap
-                            .Select(_ => _.Item2.Reduce(symbols, _.Item1))
-                            .ToArray()
-                    ))
-                    .Where(c => c.Arguments.All(e => e != null) && c.Parameters
-                        .Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
-                            ? p.ParameterType.GetDelegateSignature().GetParameters().Length
-                            : 0
+                    .SequenceEqual(c.Arguments
+                        .Select(a => a is AmbiguousLambdaExpression
+                            ? ((AmbiguousLambdaExpression) a).Parameters.Count
+                            : a is LambdaExpression
+                                  ? ((LambdaExpression) a).Parameters.Count
+                                  : 0
                         )
-                        .SequenceEqual(c.Arguments
-                            .Select(a => a is AmbiguousLambdaExpression
-                                ? ((AmbiguousLambdaExpression) a).Parameters.Count
-                                : a is LambdaExpression
-                                      ? ((LambdaExpression) a).Parameters.Count
-                                      : 0
-                            )
-                        )
                     )
-                    .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
-                    .Choose(c => CheckAndFixArguments(symbols, c))
-                    .OrderBy(c => c)
-                    .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
-                        a,
-                        _ => _ is UnaryExpression && _.NodeType == ExpressionType.Convert,
-                        _ => ((UnaryExpression) _).Operand,
-                        _ => _
-                    ).Count()))
-                    .FirstOrDefault()
-                    .Null(c =>
-                    {
-                        switch (this.DispatchType)
-                        {
-                            case DispatchTypes.Constructor:
-                                return New(c.Constructor, c.Arguments);
-                            case DispatchTypes.Member:
-                                return c.Property != null
-                                    ? c.Arguments.Any()
-                                          ? (Expression) Property(c.Instance, c.Property, c.Arguments)
-                                          : Property(c.Instance, c.Property)
-                                    : c.Field != null
-                                          ? (Expression) Field(c.Instance, c.Field)
-#if __MonoCS__
-                                          : null;
-#else
-                                          : typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
-                                                typeof(Observable),
-                                                "FromEventPattern",
-                                                new []
-                                                {
-                                                    c.Event.EventHandlerType,
-                                                    c.Event.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType,
-                                                },
-                                                Convert(Call(
-                                                    typeof(Delegate),
-                                                    "CreateDelegate",
-                                                    Type.EmptyTypes,
-                                                    Constant(t),
-                                                    this._left is TypeCandidateExpression
-                                                        ? Default(typeof(Object))
-                                                        : this._left,
-                                                    Constant(c.Event.GetAddMethod())
-                                                ), t),
-                                                Convert(Call(
-                                                    typeof(Delegate),
-                                                    "CreateDelegate",
-                                                    Type.EmptyTypes,
-                                                    Constant(t),
-                                                    this._left is TypeCandidateExpression
-                                                        ? Default(typeof(Object))
-                                                        : this._left,
-                                                    Constant(c.Event.GetRemoveMethod())
-                                                ), t)
-                                            ));
-#endif
-                            default: // case DispatchType.Method:
-                                return Call(c.Instance, c.Method, c.Arguments);
-                        }
-                    })
-            ) ?? this.DispatchMissing(symbols);
+                )
+                .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
+                .Choose(c => CheckAndFixArguments(symbols, c))
+                .OrderBy(c => c)
+                .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
+                    a,
+                    _ => _ is UnaryExpression && _.NodeType == ExpressionType.Convert,
+                    _ => ((UnaryExpression) _).Operand,
+                    _ => _
+                ).Count()))
+                .FirstOrDefault()
+                .Null(c => this.GetResultExpression(c))
+                ?? this.DispatchFailback(symbols);
         }
 
         private IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
@@ -410,7 +377,58 @@ namespace XSpect.Yacq.Expressions
                 : null;
         }
 
-        private Expression DispatchMissing(SymbolTable symbols)
+        private Expression GetResultExpression(Candidate c)
+        {
+            switch (this.DispatchType)
+            {
+                case DispatchTypes.Constructor:
+                    return New(c.Constructor, c.Arguments);
+                case DispatchTypes.Member:
+                    return c.Property != null
+                        ? c.Arguments.Any()
+                              ? (Expression) Property(c.Instance, c.Property, c.Arguments)
+                              : Property(c.Instance, c.Property)
+                        : c.Field != null
+                              ? (Expression) Field(c.Instance, c.Field)
+#if __MonoCS__
+                              : null;
+#else
+                              : typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
+                                    typeof(Observable),
+                                    "FromEventPattern",
+                                    new []
+                                    {
+                                        c.Event.EventHandlerType,
+                                        c.Event.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType,
+                                    },
+                                    Convert(Call(
+                                        typeof(Delegate),
+                                        "CreateDelegate",
+                                        Type.EmptyTypes,
+                                        Constant(t),
+                                        this._left is TypeCandidateExpression
+                                            ? Default(typeof(Object))
+                                            : this._left,
+                                        Constant(c.Event.GetAddMethod())
+                                    ), t),
+                                    Convert(Call(
+                                        typeof(Delegate),
+                                        "CreateDelegate",
+                                        Type.EmptyTypes,
+                                        Constant(t),
+                                        this._left is TypeCandidateExpression
+                                            ? Default(typeof(Object))
+                                            : this._left,
+                                        Constant(c.Event.GetRemoveMethod())
+                                    ), t)
+                                ));
+#endif
+                default: // case DispatchType.Method:
+                    return Call(c.Instance, c.Method, c.Arguments);
+            }
+        }
+
+        private Expression DispatchFailback(SymbolTable symbols)
         {
             // Default constructor of value types
             if (this.DispatchType.HasFlag(DispatchTypes.Constructor)

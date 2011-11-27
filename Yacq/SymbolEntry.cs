@@ -40,6 +40,11 @@ namespace XSpect.Yacq
         : IEquatable<SymbolEntry>
     {
         /// <summary>
+        /// Represents the key of the missing symbol, the failback code if any symbol is matched.
+        /// </summary>
+        public static readonly SymbolEntry Missing = default(SymbolEntry);
+
+        /// <summary>
         /// Gets the target <see cref="Expressions.DispatchTypes"/> of this symbol.
         /// </summary>
         /// <value>
