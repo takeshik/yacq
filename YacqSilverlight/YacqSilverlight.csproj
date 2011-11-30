@@ -96,13 +96,13 @@
     <Reference Include="System.Interactive.Providers, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Ix_Experimental-Providers.1.1.10823\lib\SL4\System.Interactive.Providers.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reactive, Version=1.1.11011.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Reactive, Version=1.1.11111.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx_Experimental-Main.1.1.11011\lib\SL4\System.Reactive.dll</HintPath>
+      <HintPath>..\packages\Rx_Experimental-Main.1.1.11111\lib\SL4\System.Reactive.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reactive.Providers, Version=1.1.11011.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Reactive.Providers, Version=1.1.11111.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx_Experimental-Providers.1.1.11011\lib\SL4\System.Reactive.Providers.dll</HintPath>
+      <HintPath>..\packages\Rx_Experimental-Providers.1.1.11111\lib\SL4\System.Reactive.Providers.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
@@ -241,6 +241,7 @@
     <EmbeddedResource Include="..\yacq_lib\csharp-aliases.yacq">
       <Link>Libraries\csharp-aliases.yacq</Link>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
