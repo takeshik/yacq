@@ -316,6 +316,412 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, TResult>(IObservable<T2> source2, IObservable<T3> source3, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, TResult>>(this.Symbols, resultSelector, "it2", "it3")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="source14">Fourteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13, it14) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, IObservable<T14> source14, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                source14,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13", "it14")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="source14">Fourteenth observable source.</param>
+        /// <param name="source15">Fifteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13, it14, it15) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, IObservable<T14> source14, IObservable<T15> source15, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                source14,
+                source15,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13", "it14", "it15")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="source14">Fourteenth observable source.</param>
+        /// <param name="source15">Fifteenth observable source.</param>
+        /// <param name="source16">Sixteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13, it14, it15, it16) =></c> Function to invoke whenever any of the sources produces an element.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> CombineLatest<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, IObservable<T14> source14, IObservable<T15> source15, IObservable<T16> source16, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.CombineLatest(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                source14,
+                source15,
+                source16,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13", "it14", "it15", "it16")
+            ));
+        }
+
+        /// <summary>
         /// Concatenates two observable sequences.
         /// </summary>
         /// <param name="second">Second observable sequence.</param>
@@ -421,6 +827,52 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Delay(TimeSpan dueTime, IScheduler scheduler)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Delay(dueTime, scheduler));
+        }
+
+        /// <summary>
+        /// Time shifts the observable sequence by delaying the subscription.
+        /// </summary>
+        /// <param name="dueTime">Absolute time to perform the subscription at.</param>
+        /// <returns>Time-shifted sequence.</returns>
+        /// <remarks>This operator is more efficient than <see cref="Delay(DateTimeOffset)">Delay</see> but postpones all side-effects of subscription and affects error propagation timing.</remarks>
+        public YacqQbservable<TSource> DelaySubscription(DateTimeOffset dueTime)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.DelaySubscription(dueTime));
+        }
+
+        /// <summary>
+        /// Time shifts the observable sequence by delaying the subscription.
+        /// </summary>
+        /// <param name="dueTime">Absolute time to perform the subscription at.</param>
+        /// <param name="scheduler">Scheduler to run the subscription delay timer on.</param>
+        /// <returns>Time-shifted sequence.</returns>
+        /// <remarks>This operator is more efficient than <see cref="Delay(DateTimeOffset,IScheduler)">Delay</see> but postpones all side-effects of subscription and affects error propagation timing.</remarks>
+        public YacqQbservable<TSource> DelaySubscription(DateTimeOffset dueTime, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.DelaySubscription(dueTime, scheduler));
+        }
+
+        /// <summary>
+        /// Time shifts the observable sequence by delaying the subscription.
+        /// </summary>
+        /// <param name="dueTime">Relative time shift of the subscription.</param>
+        /// <returns>Time-shifted sequence.</returns>
+        /// <remarks>This operator is more efficient than <see cref="Delay(TimeSpan)">Delay</see> but postpones all side-effects of subscription and affects error propagation timing.</remarks>
+        public YacqQbservable<TSource> DelaySubscription(TimeSpan dueTime)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.DelaySubscription(dueTime));
+        }
+
+        /// <summary>
+        /// Time shifts the observable sequence by delaying the subscription.
+        /// </summary>
+        /// <param name="dueTime">Relative time shift of the subscription.</param>
+        /// <param name="scheduler">Scheduler to run the subscription delay timer on.</param>
+        /// <returns>Time-shifted sequence.</returns>
+        /// <remarks>This operator is more efficient than <see cref="Delay(TimeSpan,IScheduler)">Delay</see> but postpones all side-effects of subscription and affects error propagation timing.</remarks>
+        public YacqQbservable<TSource> DelaySubscription(TimeSpan dueTime, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.DelaySubscription(dueTime, scheduler));
         }
 
         /// <summary>
@@ -2131,6 +2583,412 @@ namespace XSpect.Yacq.Linq
             return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
                 second,
                 YacqServices.ParseLambda<Func<TSource, TSecond, TResult>>(this.Symbols, resultSelector, "it", "it2")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, TResult>(IObservable<T2> source2, IObservable<T3> source3, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, TResult>>(this.Symbols, resultSelector, "it2", "it3")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="source14">Fourteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13, it14) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, IObservable<T14> source14, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                source14,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13", "it14")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="source14">Fourteenth observable source.</param>
+        /// <param name="source15">Fifteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13, it14, it15) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, IObservable<T14> source14, IObservable<T15> source15, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                source14,
+                source15,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13", "it14", "it15")
+            ));
+        }
+
+        /// <summary>
+        /// Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+        /// </summary>
+        /// <param name="source2">Second observable source.</param>
+        /// <param name="source3">Third observable source.</param>
+        /// <param name="source4">Fourth observable source.</param>
+        /// <param name="source5">Fifth observable source.</param>
+        /// <param name="source6">Sixth observable source.</param>
+        /// <param name="source7">Seventh observable source.</param>
+        /// <param name="source8">Eighth observable source.</param>
+        /// <param name="source9">Ninth observable source.</param>
+        /// <param name="source10">Tenth observable source.</param>
+        /// <param name="source11">Eleventh observable source.</param>
+        /// <param name="source12">Twelfth observable source.</param>
+        /// <param name="source13">Thirteenth observable source.</param>
+        /// <param name="source14">Fourteenth observable source.</param>
+        /// <param name="source15">Fifteenth observable source.</param>
+        /// <param name="source16">Sixteenth observable source.</param>
+        /// <param name="resultSelector"><c>(it, it2, it3, it4, it5, it6, it7, it8, it9, it10, it11, it12, it13, it14, it15, it16) =></c> Function to invoke for each series of elements at corresponding indexes in the sources.</param>
+        /// <returns><see cref="YacqQbservable{TSource}"/> containing the result of combining elements of the sources using the specified result selector function.</returns>
+        public YacqQbservable<TResult> Zip<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(IObservable<T2> source2, IObservable<T3> source3, IObservable<T4> source4, IObservable<T5> source5, IObservable<T6> source6, IObservable<T7> source7, IObservable<T8> source8, IObservable<T9> source9, IObservable<T10> source10, IObservable<T11> source11, IObservable<T12> source12, IObservable<T13> source13, IObservable<T14> source14, IObservable<T15> source15, IObservable<T16> source16, String resultSelector)
+        {
+            return new YacqQbservable<TResult>(this.Symbols, this._source.Zip(
+                source2,
+                source3,
+                source4,
+                source5,
+                source6,
+                source7,
+                source8,
+                source9,
+                source10,
+                source11,
+                source12,
+                source13,
+                source14,
+                source15,
+                source16,
+                YacqServices.ParseLambda<Func<TSource, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>>(this.Symbols, resultSelector, "it2", "it3", "it4", "it5", "it6", "it7", "it8", "it9", "it10", "it11", "it12", "it13", "it14", "it15", "it16")
             ));
         }
 
