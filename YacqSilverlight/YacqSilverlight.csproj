@@ -241,7 +241,6 @@
     <EmbeddedResource Include="..\yacq_lib\csharp-aliases.yacq">
       <Link>Libraries\csharp-aliases.yacq</Link>
     </EmbeddedResource>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
