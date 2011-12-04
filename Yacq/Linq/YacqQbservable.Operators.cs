@@ -79,7 +79,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<Boolean> All(String predicate)
         {
             return new YacqQbservable<Boolean>(this.Symbols, this._source.All(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -112,7 +112,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<Boolean> Any(String predicate)
         {
             return new YacqQbservable<Boolean>(this.Symbols, this._source.Any(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -124,7 +124,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IList<TSource>> Buffer<TBufferClosing>(String bufferClosingSelector)
         {
             return new YacqQbservable<IList<TSource>>(this.Symbols, this._source.Buffer(
-                YacqServices.ParseLambda<IObservable<TBufferClosing>>(this.Symbols, bufferClosingSelector)
+                YacqServices.ParseFunc<IObservable<TBufferClosing>>(this.Symbols, bufferClosingSelector)
             ));
         }
 
@@ -138,7 +138,7 @@ namespace XSpect.Yacq.Linq
         {
             return new YacqQbservable<IList<TSource>>(this.Symbols, this._source.Buffer(
                 bufferOpenings,
-                YacqServices.ParseLambda<TBufferOpening, IObservable<TBufferClosing>>(this.Symbols, bufferClosingSelector)
+                YacqServices.ParseFunc<TBufferOpening, IObservable<TBufferClosing>>(this.Symbols, bufferClosingSelector)
             ));
         }
 
@@ -281,9 +281,9 @@ namespace XSpect.Yacq.Linq
         public YacqQueryable<TResult> Collect<TResult>(String getInitialCollector, String merge, String getNewCollector)
         {
             return new YacqQueryable<TResult>(this.Symbols, this._source.Collect(
-                YacqServices.ParseLambda<TResult>(this.Symbols, getInitialCollector),
+                YacqServices.ParseFunc<TResult>(this.Symbols, getInitialCollector),
                 YacqServices.ParseLambda<Func<TResult, TSource, TResult>>(this.Symbols, merge, "it", "s"),
-                YacqServices.ParseLambda<TResult, TResult>(this.Symbols, getNewCollector)
+                YacqServices.ParseFunc<TResult, TResult>(this.Symbols, getNewCollector)
             ));
         }
 
@@ -296,7 +296,7 @@ namespace XSpect.Yacq.Linq
         public YacqQueryable<TResult> Collect<TResult>(String newCollector, String merge)
         {
             return new YacqQueryable<TResult>(this.Symbols, this._source.Collect(
-                YacqServices.ParseLambda<TResult>(this.Symbols, newCollector),
+                YacqServices.ParseFunc<TResult>(this.Symbols, newCollector),
                 YacqServices.ParseLambda<Func<TResult, TSource, TResult>>(this.Symbols, merge, "it", "s")
             ));
         }
@@ -883,7 +883,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Distinct<TKey>(String keySelector)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Distinct(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -896,7 +896,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Distinct<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Distinct(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -928,7 +928,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> DistinctUntilChanged<TKey>(String keySelector)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.DistinctUntilChanged(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -941,7 +941,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> DistinctUntilChanged<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.DistinctUntilChanged(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -983,7 +983,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Do(String onNext)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Do(
-                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it")
+                YacqServices.ParseAction<TSource>(this.Symbols, onNext)
             ));
         }
 
@@ -996,7 +996,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Do(String onNext, String onError)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Do(
-                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it"),
+                YacqServices.ParseAction<TSource>(this.Symbols, onNext),
                 YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onError, "ex")
             ));
         }
@@ -1011,9 +1011,9 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Do(String onNext, String onError, String onCompleted)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Do(
-                YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it"),
+                YacqServices.ParseAction<TSource>(this.Symbols, onNext),
                 YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onNext, "ex"),
-                YacqServices.ParseLambda<Action>(this.Symbols, onNext, new String[0])
+                YacqServices.ParseAction(this.Symbols, onNext)
             ));
         }
 
@@ -1024,7 +1024,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> DoWhile(String condition)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.DoWhile(
-                YacqServices.ParseLambda<Boolean>(this.Symbols, condition)
+                YacqServices.ParseFunc<Boolean>(this.Symbols, condition)
             ));
         }
 
@@ -1056,7 +1056,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Expand(String selector)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Expand(
-                YacqServices.ParseLambda<TSource, IObservable<TSource>>(this.Symbols, selector)
+                YacqServices.ParseFunc<TSource, IObservable<TSource>>(this.Symbols, selector)
             ));
         }
 
@@ -1069,7 +1069,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Expand(String selector, IScheduler scheduler)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Expand(
-                YacqServices.ParseLambda<TSource, IObservable<TSource>>(this.Symbols, selector),
+                YacqServices.ParseFunc<TSource, IObservable<TSource>>(this.Symbols, selector),
                 scheduler
             ));
         }
@@ -1082,7 +1082,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Finally(String finallyAction)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Finally(
-                YacqServices.ParseLambda<Action>(this.Symbols, finallyAction, new String[0])
+                YacqServices.ParseAction(this.Symbols, finallyAction)
             ));
         }
 
@@ -1103,7 +1103,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> FirstAsync(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.FirstAsync(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -1124,7 +1124,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> FirstOrDefaultAsync(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.FirstOrDefaultAsync(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -1151,8 +1151,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TElement>> GroupBy<TKey, TElement>(String keySelector, String elementSelector)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TElement>>(this.Symbols, this._source.GroupBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector)
             ));
         }
 
@@ -1166,8 +1166,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TElement>> GroupBy<TKey, TElement>(String keySelector, String elementSelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TElement>>(this.Symbols, this._source.GroupBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector),
                 comparer
             ));
         }
@@ -1180,7 +1180,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TSource>> GroupBy<TKey>(String keySelector)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TSource>>(this.Symbols, this._source.GroupBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -1193,7 +1193,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TSource>> GroupBy<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TSource>>(this.Symbols, this._source.GroupBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -1211,8 +1211,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TSource>> GroupByUntil<TKey, TDuration>(String keySelector, String durationSelector)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TSource>>(this.Symbols, this._source.GroupByUntil(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<IGroupedObservable<TKey, TSource>, IObservable<TDuration>>(this.Symbols, durationSelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<IGroupedObservable<TKey, TSource>, IObservable<TDuration>>(this.Symbols, durationSelector)
             ));
         }
 
@@ -1230,8 +1230,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TSource>> GroupByUntil<TKey, TDuration>(String keySelector, String durationSelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TSource>>(this.Symbols, this._source.GroupByUntil(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<IGroupedObservable<TKey, TSource>, IObservable<TDuration>>(this.Symbols, durationSelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<IGroupedObservable<TKey, TSource>, IObservable<TDuration>>(this.Symbols, durationSelector),
                 comparer
             ));
         }
@@ -1250,9 +1250,9 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TElement>> GroupByUntil<TKey, TElement, TDuration>(String keySelector, String elementSelector, String durationSelector)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TElement>>(this.Symbols, this._source.GroupByUntil(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector),
-                YacqServices.ParseLambda<IGroupedObservable<TKey, TElement>, IObservable<TDuration>>(this.Symbols, durationSelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector),
+                YacqServices.ParseFunc<IGroupedObservable<TKey, TElement>, IObservable<TDuration>>(this.Symbols, durationSelector)
             ));
         }
 
@@ -1271,9 +1271,9 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IGroupedObservable<TKey, TElement>> GroupByUntil<TKey, TElement, TDuration>(String keySelector, String elementSelector, String durationSelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<IGroupedObservable<TKey, TElement>>(this.Symbols, this._source.GroupByUntil(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector),
-                YacqServices.ParseLambda<IGroupedObservable<TKey, TElement>, IObservable<TDuration>>(this.Symbols, durationSelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector),
+                YacqServices.ParseFunc<IGroupedObservable<TKey, TElement>, IObservable<TDuration>>(this.Symbols, durationSelector),
                 comparer
             ));
         }
@@ -1290,8 +1290,8 @@ namespace XSpect.Yacq.Linq
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.GroupJoin(
                 right,
-                YacqServices.ParseLambda<TSource, IObservable<TLeftDuration>>(this.Symbols, leftDurationSelector),
-                YacqServices.ParseLambda<TRight, IObservable<TRightDuration>>(this.Symbols, rightDurationSelector),
+                YacqServices.ParseFunc<TSource, IObservable<TLeftDuration>>(this.Symbols, leftDurationSelector),
+                YacqServices.ParseFunc<TRight, IObservable<TRightDuration>>(this.Symbols, rightDurationSelector),
                 YacqServices.ParseLambda<Func<TSource, IObservable<TRight>, TResult>>(this.Symbols, resultSelector, "l", "r")
             ));
         }
@@ -1326,8 +1326,8 @@ namespace XSpect.Yacq.Linq
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Join(
                 right,
-                YacqServices.ParseLambda<TSource, IObservable<TLeftDuration>>(this.Symbols, leftDurationSelector),
-                YacqServices.ParseLambda<TRight, IObservable<TRightDuration>>(this.Symbols, rightDurationSelector),
+                YacqServices.ParseFunc<TSource, IObservable<TLeftDuration>>(this.Symbols, leftDurationSelector),
+                YacqServices.ParseFunc<TRight, IObservable<TRightDuration>>(this.Symbols, rightDurationSelector),
                 YacqServices.ParseLambda<Func<TSource, TRight, TResult>>(this.Symbols, rightDurationSelector, "l", "r")
             ));
         }
@@ -1349,7 +1349,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> LastAsync(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.LastAsync(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -1370,7 +1370,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> LastOrDefaultAsync(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.LastOrDefaultAsync(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -1390,7 +1390,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Let<TResult>(String function)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Let(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, function)
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, function)
             ));
         }
 
@@ -1411,7 +1411,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> ManySelect<TResult>(String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.ManySelect(
-                YacqServices.ParseLambda<IObservable<TSource>, TResult>(this.Symbols, selector)
+                YacqServices.ParseFunc<IObservable<TSource>, TResult>(this.Symbols, selector)
             ));
         }
 
@@ -1423,7 +1423,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> ManySelect<TResult>(String selector, IScheduler scheduler)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.ManySelect(
-                YacqServices.ParseLambda<IObservable<TSource>, TResult>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, TResult>(this.Symbols, selector),
                 scheduler
             ));
         }
@@ -1446,7 +1446,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IList<TSource>> MaxBy<TKey>(String keySelector)
         {
             return new YacqQbservable<IList<TSource>>(this.Symbols, this._source.MaxBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -1460,7 +1460,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IList<TSource>> MaxBy<TKey>(String keySelector, IComparer<TKey> comparer)
         {
             return new YacqQbservable<IList<TSource>>(this.Symbols, this._source.MaxBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -1495,7 +1495,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IList<TSource>> MinBy<TKey>(String keySelector)
         {
             return new YacqQbservable<IList<TSource>>(this.Symbols, this._source.MinBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -1509,7 +1509,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IList<TSource>> MinBy<TKey>(String keySelector, IComparer<TKey> comparer)
         {
             return new YacqQbservable<IList<TSource>>(this.Symbols, this._source.MinBy(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -1533,8 +1533,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Multicast<TIntermediate, TResult>(String subjectSelector, String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Multicast(
-                YacqServices.ParseLambda<ISubject<TSource, TIntermediate>>(this.Symbols, subjectSelector),
-                YacqServices.ParseLambda<IObservable<TIntermediate>, IObservable<TResult>>(this.Symbols, selector)
+                YacqServices.ParseFunc<ISubject<TSource, TIntermediate>>(this.Symbols, subjectSelector),
+                YacqServices.ParseFunc<IObservable<TIntermediate>, IObservable<TResult>>(this.Symbols, selector)
             ));
         }
 
@@ -1594,7 +1594,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Publish<TResult>(String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Publish(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector)
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector)
             ));
         }
 
@@ -1608,7 +1608,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Publish<TResult>(String selector, TSource initialValue)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Publish(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 initialValue
             ));
         }
@@ -1621,7 +1621,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> PublishLast<TResult>(String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.PublishLast(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector)
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector)
             ));
         }
 
@@ -1663,7 +1663,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector)
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector)
             ));
         }
 
@@ -1676,7 +1676,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, Int32 bufferSize)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 bufferSize
             ));
         }
@@ -1691,7 +1691,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, Int32 bufferSize, IScheduler scheduler)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 bufferSize,
                 scheduler
             ));
@@ -1707,7 +1707,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, Int32 bufferSize, TimeSpan window)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 bufferSize,
                 window
             ));
@@ -1724,7 +1724,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, Int32 bufferSize, TimeSpan window, IScheduler scheduler)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 bufferSize,
                 window,
                 scheduler
@@ -1740,7 +1740,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, IScheduler scheduler)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 scheduler
             ));
         }
@@ -1754,7 +1754,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, TimeSpan window)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 window
             ));
         }
@@ -1769,7 +1769,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Replay<TResult>(String selector, TimeSpan window, IScheduler scheduler)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Replay(
-                YacqServices.ParseLambda<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
+                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, selector),
                 window,
                 scheduler
             ));
@@ -1859,7 +1859,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> Select<TResult>(String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.Select(
-                YacqServices.ParseLambda<TSource, TResult>(this.Symbols, selector)
+                YacqServices.ParseFunc<TSource, TResult>(this.Symbols, selector)
             ));
         }
 
@@ -1872,7 +1872,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> SelectMany<TCollection, TResult>(String collectionSelector, String resultSelector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.SelectMany(
-                YacqServices.ParseLambda<TSource, IObservable<TCollection>>(this.Symbols, collectionSelector),
+                YacqServices.ParseFunc<TSource, IObservable<TCollection>>(this.Symbols, collectionSelector),
                 YacqServices.ParseLambda<Func<TSource, TCollection, TResult>>(this.Symbols, resultSelector, "it", "c")
             ));
         }
@@ -1897,9 +1897,9 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> SelectMany<TResult>(String onNext, String onError, String onCompleted)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.SelectMany(
-                YacqServices.ParseLambda<TSource, IObservable<TResult>>(this.Symbols, onNext),
+                YacqServices.ParseFunc<TSource, IObservable<TResult>>(this.Symbols, onNext),
                 YacqServices.ParseLambda<Func<Exception, IObservable<TResult>>>(this.Symbols, onError, "ex"),
-                YacqServices.ParseLambda<IObservable<TResult>>(onCompleted)
+                YacqServices.ParseFunc<IObservable<TResult>>(onCompleted)
             ));
         }
 
@@ -1911,7 +1911,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TResult> SelectMany<TResult>(String selector)
         {
             return new YacqQbservable<TResult>(this.Symbols, this._source.SelectMany(
-                YacqServices.ParseLambda<TSource, IObservable<TResult>>(this.Symbols, selector)
+                YacqServices.ParseFunc<TSource, IObservable<TResult>>(this.Symbols, selector)
             ));
         }
 
@@ -1956,7 +1956,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> SingleAsync(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.SingleAsync(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -1977,7 +1977,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> SingleOrDefaultAsync(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.SingleOrDefaultAsync(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -2019,7 +2019,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> SkipWhile(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.SkipWhile(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -2121,7 +2121,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> TakeWhile(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.TakeWhile(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -2132,7 +2132,7 @@ namespace XSpect.Yacq.Linq
         public QueryablePlan<TResult> Then<TResult>(String selector)
         {
             return this._source.Then(
-                YacqServices.ParseLambda<TSource, TResult>(this.Symbols, selector)
+                YacqServices.ParseFunc<TSource, TResult>(this.Symbols, selector)
             );
         }
 
@@ -2303,8 +2303,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IDictionary<TKey, TElement>> ToDictionary<TKey, TElement>(String keySelector, String elementSelector)
         {
             return new YacqQbservable<IDictionary<TKey, TElement>>(this.Symbols, this._source.ToDictionary(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector)
             ));
         }
 
@@ -2319,8 +2319,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IDictionary<TKey, TElement>> ToDictionary<TKey, TElement>(String keySelector, String elementSelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<IDictionary<TKey, TElement>>(this.Symbols, this._source.ToDictionary(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector),
                 comparer
             ));
         }
@@ -2334,7 +2334,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IDictionary<TKey, TSource>> ToDictionary<TKey>(String keySelector)
         {
             return new YacqQbservable<IDictionary<TKey, TSource>>(this.Symbols, this._source.ToDictionary(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -2348,7 +2348,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IDictionary<TKey, TSource>> ToDictionary<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<IDictionary<TKey, TSource>>(this.Symbols, this._source.ToDictionary(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -2373,8 +2373,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<ILookup<TKey, TElement>> ToLookup<TKey, TElement>(String keySelector, String elementSelector)
         {
             return new YacqQbservable<ILookup<TKey, TElement>>(this.Symbols, this._source.ToLookup(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector)
             ));
         }
 
@@ -2389,8 +2389,8 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<ILookup<TKey, TElement>> ToLookup<TKey, TElement>(String keySelector, String elementSelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<ILookup<TKey, TElement>>(this.Symbols, this._source.ToLookup(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
-                YacqServices.ParseLambda<TSource, TElement>(this.Symbols, elementSelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TElement>(this.Symbols, elementSelector),
                 comparer
             ));
         }
@@ -2404,7 +2404,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<ILookup<TKey, TSource>> ToLookup<TKey>(String keySelector)
         {
             return new YacqQbservable<ILookup<TKey, TSource>>(this.Symbols, this._source.ToLookup(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector)
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
             ));
         }
 
@@ -2418,7 +2418,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<ILookup<TKey, TSource>> ToLookup<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
         {
             return new YacqQbservable<ILookup<TKey, TSource>>(this.Symbols, this._source.ToLookup(
-                YacqServices.ParseLambda<TSource, TKey>(this.Symbols, keySelector),
+                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
                 comparer
             ));
         }
@@ -2440,7 +2440,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Where(String predicate)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Where(
-                YacqServices.ParseLambda<TSource, Boolean>(this.Symbols, predicate)
+                YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
             ));
         }
 
@@ -2452,7 +2452,7 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<IObservable<TSource>> Window<TWindowClosing>(String windowClosingSelector)
         {
             return new YacqQbservable<IObservable<TSource>>(this.Symbols, this._source.Window(
-                YacqServices.ParseLambda<IObservable<TWindowClosing>>(this.Symbols, windowClosingSelector)
+                YacqServices.ParseFunc<IObservable<TWindowClosing>>(this.Symbols, windowClosingSelector)
             ));
         }
 
@@ -2466,7 +2466,7 @@ namespace XSpect.Yacq.Linq
         {
             return new YacqQbservable<IObservable<TSource>>(this.Symbols, this._source.Window(
                 windowOpenings,
-                YacqServices.ParseLambda<TWindowOpening, IObservable<TWindowClosing>>(this.Symbols, windowClosingSelector)
+                YacqServices.ParseFunc<TWindowOpening, IObservable<TWindowClosing>>(this.Symbols, windowClosingSelector)
             ));
         }
 

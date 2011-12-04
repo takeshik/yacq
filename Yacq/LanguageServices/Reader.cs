@@ -67,15 +67,6 @@ namespace XSpect.Yacq.LanguageServices
             this.EnterScope();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Reader"/> class.
-        /// </summary>
-        /// <param name="code">The reading code string.</param>
-        public Reader(String code)
-            : this(new Tokenizer(code))
-        {
-        }
-
         private void EnterScope()
         {
             this._stack.Push(new Scope(this._cursor.Value));
