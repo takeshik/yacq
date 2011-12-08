@@ -93,7 +93,7 @@ namespace XSpect.Yacq.LanguageServices
         /// Read the token sequence and generate expressions.
         /// </summary>
         /// <returns>Generated expressions.</returns>
-        public ICollection<YacqExpression> Read()
+        public YacqExpression[] Read()
         {
             do
             {

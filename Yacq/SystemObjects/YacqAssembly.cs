@@ -35,9 +35,9 @@ using System.Reflection.Emit;
 namespace XSpect.Yacq.SystemObjects
 {
     /// <summary>
-    /// Provides the foundations of dynamic type declaring and generating feature.
+    /// Defines and represents a dynamic assembly with YACQ codes.
     /// </summary>
-    public class TypeGenerator
+    public class YacqAssembly
     {
         private readonly Lazy<AssemblyBuilder> _assembly;
 
@@ -68,22 +68,48 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeGenerator"/> class.
+        /// Initializes a new instance of the <see cref="YacqAssembly"/> class.
         /// </summary>
         /// <param name="name">Name of dynamic assembly which contains generated types.</param>
-        public TypeGenerator(String name)
+        /// <param name="fileKind">The type of the assembly executable being built.</param>
+        public YacqAssembly(String name, PEFileKinds fileKind = PEFileKinds.Dll)
         {
             this._assembly = new Lazy<AssemblyBuilder>(
                 () => AppDomain.CurrentDomain.DefineDynamicAssembly(
                     new AssemblyName(name),
+#if SILVERLIGHT
                     AssemblyBuilderAccess.Run
-                ),
+#else
+                    AssemblyBuilderAccess.RunAndSave
+#endif
+),
                 true
             );
             this._module = new Lazy<ModuleBuilder>(
-                () => this.Assembly.DefineDynamicModule(name + ".dll"),
+                () => this.Assembly.DefineDynamicModule(name + (fileKind == PEFileKinds.Dll ? ".dll" : ".exe")),
                 true
             );
         }
+
+        /// <summary>
+        /// Constructs a <see cref="YacqType"/> in this <see cref="YacqAssembly"/>.
+        /// </summary>
+        /// <param name="name">The full path of the type. name cannot contain embedded nulls.</param>
+        /// <param name="baseTypes">The list of the deriving type and interfaces that the type implements. The deriving type must be first in the list.</param>
+        /// <returns>A constructed <see cref="YacqType"/>.</returns>
+        public YacqType DefineType(String name, params Type[] baseTypes)
+        {
+            return new YacqType(this.Module, name, baseTypes);
+        }
+
+#if !SILVERLIGHT
+        /// <summary>
+        /// Saves this <see cref="YacqAssembly"/> to disk.
+        /// </summary>
+        public void Save()
+        {
+            this.Assembly.Save(this.Module.ScopeName);
+        }
+#endif
     }
 }
