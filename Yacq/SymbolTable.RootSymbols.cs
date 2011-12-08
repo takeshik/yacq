@@ -1259,9 +1259,9 @@ namespace XSpect.Yacq
 #endif
                   ));
 
-            [YacqSymbol("*typegen*")]
-            public static Expression TypeGenerator
-                = Expression.Constant(new TypeGenerator("YacqGeneratedTypes"));
+            [YacqSymbol("*assembly*")]
+            public static Expression TargetAssembly
+                = Expression.Constant(new YacqAssembly("YacqGeneratedTypes"));
 
             #endregion
 

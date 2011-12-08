@@ -213,8 +213,11 @@
     <Compile Include="..\Yacq\SystemObjects\ModuleLoader.cs">
       <Link>SystemObjects\ModuleLoader.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SystemObjects\TypeGenerator.cs">
-      <Link>SystemObjects\TypeGenerator.cs</Link>
+    <Compile Include="..\Yacq\SystemObjects\YacqAssembly.cs">
+      <Link>SystemObjects\YacqAssembly.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\SystemObjects\YacqType.cs">
+      <Link>SystemObjects\YacqType.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\YacqServices.cs">
       <Link>YacqServices.cs</Link>

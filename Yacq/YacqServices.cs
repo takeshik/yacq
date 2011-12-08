@@ -51,9 +51,19 @@ namespace XSpect.Yacq
         /// </summary>
         /// <param name="code">Code string to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
-        public static ICollection<YacqExpression> Read(String code)
+        public static YacqExpression[] ReadAll(String code)
         {
             return new Reader(new Tokenizer(code)).Read();
+        }
+
+        /// <summary>
+        /// Read code string and generate expressions without reducing.
+        /// </summary>
+        /// <param name="code">Code string to read.</param>
+        /// <returns>All expressions without reducing, generated from the code.</returns>
+        public static YacqExpression Read(String code)
+        {
+            return ReadAll(code).Last();
         }
 
         /// <summary>
@@ -64,7 +74,7 @@ namespace XSpect.Yacq
         /// <returns>All expressions generated from the code.</returns>
         public static Expression[] ParseAll(SymbolTable symbols, String code)
         {
-            return Read(code)
+            return ReadAll(code)
 #if SILVERLIGHT
                 .Cast<Expression>()
 #endif
@@ -96,11 +106,11 @@ namespace XSpect.Yacq
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
         public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, String code, params AmbiguousParameterExpression[] parameters)
         {
-            var expressions = Read(code);
+            var expressions = ReadAll(code);
             return (LambdaExpression) YacqExpression.AmbiguousLambda(
                 symbols,
                 returnType,
-                expressions.Count == 1
+                expressions.Length == 1
                     ? expressions.Single()
                     : YacqExpression.List(symbols, expressions
 #if SILVERLIGHT
