@@ -650,7 +650,7 @@ namespace XSpect.Yacq
                 var a0 = e.Arguments[0].Reduce(s);
                 s = a0 is SymbolTableExpression
                     ? ((SymbolTableExpression) a0).Symbols
-                    : s.Resolve(DispatchTypes.Member, "$here").Const<SymbolTable>();
+                    : s;
                 if (a0 is TypeCandidateExpression && e.Arguments[1] is VectorExpression)
                 {
                     // T.[foo bar]
@@ -1001,6 +1001,91 @@ namespace XSpect.Yacq
                     e.Left.Reduce(s),
                     e.Arguments[0].Reduce(s),
                     e.Arguments[1].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "if")]
+            public static Expression If(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.IfThenElse(
+                    e.Left.Reduce(s),
+                    e.Arguments[0].Reduce(s),
+                    e.Arguments[1].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "unless")]
+            public static Expression Unless(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.IfThenElse(
+                    e.Left.Reduce(s),
+                    e.Arguments[1].Reduce(s),
+                    e.Arguments[0].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "then")]
+            public static Expression Then(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.IfThen(
+                    e.Left.Reduce(s),
+                    e.Arguments.Count > 1
+                        ? Expression.Block(e.Arguments.ReduceAll(s))
+                        : e.Arguments[0].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "else")]
+            public static Expression Else(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.IfThen(
+                    Expression.Not(e.Left.Reduce(s)),
+                    e.Arguments.Count > 1
+                        ? Expression.Block(e.Arguments.ReduceAll(s))
+                        : e.Arguments[0].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "case")]
+            public static Expression Switch(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.Switch(
+                    e.Left.Reduce(s),
+                    e.Arguments.Count % 2 == 1
+                        ? e.Arguments.Last().Reduce(s)
+                        : null,
+                    null,
+                    e.Arguments
+                        .SkipLast(e.Arguments.Count % 2)
+                        .Buffer(2)
+                        .Select(_ => Expression.SwitchCase(
+                            _[1].Reduce(s),
+                            _[0] is VectorExpression
+                                ? ((VectorExpression) _[0]).Elements.ReduceAll(s)
+                                : EnumerableEx.Return(_[0].Reduce(s))
+                        ))
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "switch")]
+            public static Expression SwitchVoid(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.Switch(
+                    typeof(void),
+                    e.Left.Reduce(s),
+                    e.Arguments.Count % 2 == 1
+                        ? e.Arguments.Last().Reduce(s)
+                        : null,
+                    null,
+                    e.Arguments
+                        .SkipLast(e.Arguments.Count % 2)
+                        .Buffer(2)
+                        .Select(_ => Expression.SwitchCase(
+                            _[1].Reduce(s),
+                            _[0] is VectorExpression
+                                ? ((VectorExpression) _[0]).Elements.ReduceAll(s)
+                                : EnumerableEx.Return(_[0].Reduce(s))
+                        ))
                 );
             }
             
