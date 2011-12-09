@@ -201,7 +201,7 @@ namespace XSpect.Yacq.Expressions
             return expression;
         }
 
-        private static Boolean TestNumericConversion(Type expressionType, Type expectedType)
+        internal static Boolean TestNumericConversion(Type expressionType, Type expectedType)
         {
             switch (Type.GetTypeCode(expressionType))
             {
