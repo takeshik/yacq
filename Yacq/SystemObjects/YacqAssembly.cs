@@ -28,9 +28,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Security.Cryptography;
+using System.Text;
+using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.SystemObjects
 {
@@ -39,15 +44,20 @@ namespace XSpect.Yacq.SystemObjects
     /// </summary>
     public class YacqAssembly
     {
+        private static readonly SHA1 _sha
+#if SILVERLIGHT
+            = new SHA1Managed();
+#else
+            = new SHA1Cng();
+#endif
+
         private readonly Lazy<AssemblyBuilder> _assembly;
 
         private readonly Lazy<ModuleBuilder> _module;
 
-        /// <summary>
-        /// Gets the assembly of generated types.
-        /// </summary>
-        /// <value>The assembly of generated types.</value>
-        public AssemblyBuilder Assembly
+        private readonly Dictionary<String, YacqType> _types; 
+
+        private AssemblyBuilder Assembly
         {
             get
             {
@@ -55,11 +65,7 @@ namespace XSpect.Yacq.SystemObjects
             }
         }
 
-        /// <summary>
-        /// Gets the module of generated types.
-        /// </summary>
-        /// <value>The module of generated types.</value>
-        public ModuleBuilder Module
+        private ModuleBuilder Module
         {
             get
             {
@@ -89,6 +95,28 @@ namespace XSpect.Yacq.SystemObjects
                 () => this.Assembly.DefineDynamicModule(name + (fileKind == PEFileKinds.Dll ? ".dll" : ".exe")),
                 true
             );
+            this._types = new Dictionary<String, YacqType>();
+        }
+
+        private YacqType DefineType(String name, IEnumerable<Type> baseTypes, Boolean throwIfExists)
+        {
+            var type = this.GetType(name);
+            if (type != null)
+            {
+                if (throwIfExists)
+                {
+                    throw new InvalidOperationException("Type '" + name + "' is already exists in this assembly.");
+                }
+                else
+                {
+                    return type;
+                }
+            }
+            else
+            {
+                return this.GetType(name) ?? new YacqType(this.Module, name, baseTypes)
+                    .Apply(t => this._types.Add(name, t));
+            }
         }
 
         /// <summary>
@@ -99,7 +127,118 @@ namespace XSpect.Yacq.SystemObjects
         /// <returns>A constructed <see cref="YacqType"/>.</returns>
         public YacqType DefineType(String name, params Type[] baseTypes)
         {
-            return new YacqType(this.Module, name, baseTypes);
+            return this.DefineType(name, baseTypes, true);
+        }
+
+        /// <summary>
+        /// Constructs or gets a <see cref="YacqType"/> in this <see cref="YacqAssembly"/>.
+        /// </summary>
+        /// <param name="name">The full path of the type. name cannot contain embedded nulls.</param>
+        /// <param name="baseTypes">The list of the deriving type and interfaces that the type implements. The deriving type must be first in the list.</param>
+        /// <returns>A constructed <see cref="YacqType"/>, or already constructed object if <paramref name="name"/> type is already exists.</returns>
+        public YacqType TryDefineType(String name, params Type[] baseTypes)
+        {
+            return this.DefineType(name, baseTypes, false);
+        }
+
+        private YacqType DefineType(IDictionary<String, Type> members, Boolean throwIfExists)
+        {
+            var name =  ":Anonymous:" + Convert.ToBase64String(_sha.ComputeHash(Encoding.Unicode.GetBytes(
+                String.Concat(members.Select(_ => "<" + _.Key + ":" + _.Value.AssemblyQualifiedName + ">"))
+            )))
+                .Substring(0, 27)
+                .Replace('+', '-')
+                .Replace('/', '_');
+            var type = this.GetType(name);
+            if (type != null)
+            {
+                if (throwIfExists)
+                {
+                    throw new InvalidOperationException("Anonymous type which has specified members is already exists in this assembly.");
+                }
+                else
+                {
+                    return type;
+                }
+            }
+            else
+            {
+                return this.DefineType(name)
+                    .Apply(
+                        t => members.ForEach(p => t.DefineProperty(p.Key, p.Value)),
+                        t => t.DefineConstructor(
+                            members.Values.ToArray(),
+                            members
+                                .Select(p => YacqExpression.AmbiguousParameter(p.Key))
+                                .StartWith(YacqExpression.AmbiguousParameter("self"))
+                                .ToArray()
+                                .Let(ps => YacqExpression.AmbiguousLambda(
+                                    typeof(void),
+                                    ps
+                                        .Skip(1)
+                                        .Select(p => YacqExpression.Dispatch(
+                                            DispatchTypes.Method,
+                                            "=",
+                                            YacqExpression.Dispatch(
+                                                DispatchTypes.Method,
+                                                ".",
+                                                YacqExpression.Identifier("self"),
+                                                YacqExpression.Identifier(p.Name)
+                                            ),
+                                            YacqExpression.Identifier(p.Name)
+                                        ))
+#if SILVERLIGHT
+                                        .Cast<Expression>()
+#endif
+                                        ,
+                                    ps
+                                ))
+                        )
+                        // TODO: Define Boolean Equals(Object)
+                        // TODO: Define Int32 GetHashCode()
+                    );
+            }
+        }
+
+        /// <summary>
+        /// Constructs an anonymous <see cref="YacqType"/> in this <see cref="YacqAssembly"/>.
+        /// </summary>
+        /// <param name="members">The dictionary which contains pairs of the name and its type of member property.</param>
+        /// <returns>A constructed <see cref="YacqType"/>.</returns>
+        public YacqType DefineType(IDictionary<String, Type> members)
+        {
+            return this.DefineType(members, true);
+        }
+
+        /// <summary>
+        /// Constructs or gets an anonymous <see cref="YacqType"/> in this <see cref="YacqAssembly"/>.
+        /// </summary>
+        /// <param name="members">The dictionary which contains pairs of the name and its type of member property.</param>
+        /// <returns>A constructed <see cref="YacqType"/>, or already constructed object if the type with specified members is already exists.</returns>
+        public YacqType TryDefineType(IDictionary<String, Type> members)
+        {
+            return this.DefineType(members, false);
+        }
+
+        /// <summary>
+        /// Gets the types defined in this assembly.
+        /// </summary>
+        /// <returns>A sequence that contains all the types that are defined in this assembly.</returns>
+        public IEnumerable<YacqType> GetTypes()
+        {
+            return this._types.Values;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Type"/> object with the specified name in this assembly.
+        /// </summary>
+        /// <param name="name">The full name of the type. </param>
+        /// <returns>An object that represents the specified type, or <c>null</c> if the type is not found.</returns>
+        public YacqType GetType(String name)
+        {
+            return this._types.ContainsKey(name)
+                ? this._types[name]
+                : null;
         }
 
 #if !SILVERLIGHT

@@ -53,7 +53,17 @@ namespace XSpect.Yacq.SystemObjects
 
         private readonly List<MemberInfo> _members;
 
-        private readonly Queue<Tuple<MethodBuilder, YacqExpression, Type>> _initializers;
+        private readonly Queue<Tuple<MethodBuilder, Expression, Type>> _initializers;
+
+        /// <summary>
+        /// Gets a value indicating whether this type is created.
+        /// </summary>
+        /// <value><c>true</c> if this type is created; otherwise, <c>false</c>.</value>
+        public Boolean IsCreated
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="YacqType"/> class.
@@ -64,14 +74,14 @@ namespace XSpect.Yacq.SystemObjects
         public YacqType(
             ModuleBuilder module,
             String name,
-            params Type[] baseTypes
+            IEnumerable<Type> baseTypes
         )
         {
             this._type = module.DefineType(
                 name,
                 TypeAttributes.Public,
                 baseTypes.Any()
-                    ? baseTypes[0]
+                    ? baseTypes.First()
                     : typeof(Object),
                 baseTypes.Skip(1).ToArray()
             );
@@ -88,14 +98,15 @@ namespace XSpect.Yacq.SystemObjects
                 this._typeArray
             );
             this._members = new List<MemberInfo>();
-            this._initializers = new Queue<Tuple<MethodBuilder, YacqExpression, Type>>();
+            this._initializers = new Queue<Tuple<MethodBuilder, Expression, Type>>();
+            this.IsCreated = false;
         }
 
         private FieldBuilder DefineField(
             String name,
             Type type,
             FieldAttributes attributes,
-            YacqExpression initializer = null
+            Expression initializer = null
         )
         {
             return this._type.DefineField(
@@ -132,7 +143,7 @@ namespace XSpect.Yacq.SystemObjects
         public FieldBuilder DefineField(
             String name,
             Type type,
-            YacqExpression initializer = null
+            Expression initializer = null
         )
         {
             return this.DefineField(
@@ -148,7 +159,7 @@ namespace XSpect.Yacq.SystemObjects
             MethodAttributes attributes,
             Type returnType,
             IList<Type> parameterTypes,
-            YacqExpression body = null
+            Expression body = null
         )
         {
             return this._type.DefineMethod(
@@ -232,7 +243,7 @@ namespace XSpect.Yacq.SystemObjects
             String name,
             Type returnType,
             IList<Type> parameterTypes,
-            YacqExpression body = null
+            Expression body = null
         )
         {
             return this.DefineMethod(
@@ -247,7 +258,7 @@ namespace XSpect.Yacq.SystemObjects
         private ConstructorBuilder DefineConstructor(
             MethodAttributes attributes,
             IList<Type> parameterTypes,
-            YacqExpression body = null
+            Expression body = null
         )
         {
             return this._type.DefineConstructor(
@@ -265,15 +276,16 @@ namespace XSpect.Yacq.SystemObjects
                     )
                     .Apply(
                         _ => c.GetILGenerator().Apply(
-                            g => LoadArgs(g, 0, 0),
+                            g => LoadArgs(g, 0),
                             g => g.Emit(OpCodes.Call, this._type.BaseType.GetConstructor(
                                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                                 null,
                                 Type.EmptyTypes,
                                 null
                             )),
+                            g => LoadArgs(g, 0),
                             g => g.Emit(OpCodes.Call, this._prologue),
-                            g => LoadArgs(g, parameterTypes.Count),
+                            g => LoadArgs(g, Enumerable.Range(0, parameterTypes.Count + 1)),
                             g => g.Emit(OpCodes.Call, _),
                             g => g.Emit(OpCodes.Ret)
                         ),
@@ -302,7 +314,7 @@ namespace XSpect.Yacq.SystemObjects
         /// <returns>The defined constructor.</returns>
         public ConstructorBuilder DefineConstructor(
             IList<Type> parameterTypes,
-            YacqExpression body = null
+            Expression body = null
         )
         {
             return this.DefineConstructor(
@@ -316,9 +328,9 @@ namespace XSpect.Yacq.SystemObjects
             String name,
             PropertyAttributes attributes,
             Type type,
-            YacqExpression initializer = null,
-            YacqExpression getter = null,
-            YacqExpression setter = null
+            Expression initializer = null,
+            Expression getter = null,
+            Expression setter = null
         )
         {
             return this._type.DefineProperty(name, attributes, type, Type.EmptyTypes)
@@ -349,7 +361,7 @@ namespace XSpect.Yacq.SystemObjects
                                   "get_" + name,
                                   MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   type,
-                                  this._typeArray
+                                  Type.EmptyTypes
                               )
                               .Apply(
                                   m => m.GetILGenerator().Apply(
@@ -365,14 +377,14 @@ namespace XSpect.Yacq.SystemObjects
                                   "set_" + name,
                                   MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   typeof(void),
-                                  new [] { this._type, type, },
+                                  new [] { type, },
                                   setter
                               )
                             : this._type.DefineMethod(
                                   "set_" + name,
                                   MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   typeof(void),
-                                  new [] { this._type, type, }
+                                  new [] { type, }
                               )
                               .Apply(
                                   m => m.GetILGenerator().Apply(
@@ -400,9 +412,9 @@ namespace XSpect.Yacq.SystemObjects
         public PropertyBuilder DefineProperty(
             String name,
             Type type,
-            YacqExpression initializer = null,
-            YacqExpression getter = null,
-            YacqExpression setter = null
+            Expression initializer = null,
+            Expression getter = null,
+            Expression setter = null
         )
         {
             return this.DefineProperty(
@@ -422,6 +434,10 @@ namespace XSpect.Yacq.SystemObjects
         /// <returns>The new Type object for this type.</returns>
         public Type CreateType(SymbolTable symbols = null)
         {
+            if (this.IsCreated)
+            {
+                return this._type.CreateType();
+            }
             if (this.GetConstructors().IsEmpty())
             {
                 this.DefineConstructor(Type.EmptyTypes);
@@ -429,17 +445,25 @@ namespace XSpect.Yacq.SystemObjects
             return this._type.CreateType()
                 .Apply(
                     t => this._initializers.ForEach(_ =>
-                        _.Item2.Reduce(
-                            new SymbolTable(symbols)
-                            {
-                                {"this", YacqExpression.TypeCandidate(t)},
-                            },
-                            _.Item3
+                        new SymbolTable(symbols)
+                        {
+                            {"this", YacqExpression.TypeCandidate(t)},
+                        }
+                            .Let(s => _.Item2.Reduce(s, _.Item3.ReplaceGenericArguments(
+                                new Dictionary<Type, Type>()
+                                {
+                                    {this._type, t},
+                                }
+                            ))
+                            .Apply(e => (e != null
+                                ? (LambdaExpression) e
+                                : Expression.Lambda(_.Item2.Reduce(s))
+                            ).CompileToMethod(_.Item1))
                         )
-                        .Apply(e => ((LambdaExpression) e).CompileToMethod(_.Item1))
                     ),
                     t => this._prologue.GetILGenerator().Emit(OpCodes.Ret),
-                    t => this._implType.CreateType()
+                    t => this._implType.CreateType(),
+                    t => this.IsCreated = true
                 );
         }
 
@@ -488,7 +512,7 @@ namespace XSpect.Yacq.SystemObjects
             return this._members.OfType<PropertyBuilder>();
         }
 
-        private void RequestInitializing(MethodBuilder method, YacqExpression expression, Type returnType, params Type[] parameterTypes)
+        private void RequestInitializing(MethodBuilder method, Expression expression, Type returnType, params Type[] parameterTypes)
         {
             this._initializers.Enqueue(Tuple.Create(
                 method,
