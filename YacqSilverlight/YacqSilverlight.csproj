@@ -153,11 +153,11 @@
     <Compile Include="..\Yacq\Expressions\YacqExpression.cs">
       <Link>Expressions\YacqExpression.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\Expressions\YacqExtension.cs">
-      <Link>Expressions\YacqExtension.cs</Link>
+    <Compile Include="..\Yacq\Expressions\YacqExtensions.cs">
+      <Link>Expressions\YacqExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\Extension.cs">
-      <Link>Extension.cs</Link>
+    <Compile Include="..\Yacq\Extensions.cs">
+      <Link>Extensions.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>

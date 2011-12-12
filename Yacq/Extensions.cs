@@ -36,7 +36,7 @@ using System.Runtime.CompilerServices;
 
 namespace XSpect.Yacq
 {
-    internal static class Extension
+    internal static class Extensions
     {
         internal static Boolean If<TReceiver>(this TReceiver self, Func<TReceiver, Boolean> predicate)
         {
