@@ -812,7 +812,7 @@ namespace XSpect.Yacq
             #region Function - General
 
             [YacqSymbol(DispatchTypes.Method, "tuple")]
-            public static Expression Tuple(DispatchExpression e, SymbolTable s, Type t)
+            public static Expression CreateTuple(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Dispatch(
                     s,
@@ -899,6 +899,25 @@ namespace XSpect.Yacq
 #pragma warning restore
 #endif
                 );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, "new")]
+            public static Expression CreateAnonymousInstance(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return e.Arguments
+                    .Share(_ => _.Zip(_, (i, v) => Tuple.Create(i.Id(), v.Reduce(s))))
+                    .Let(ms => Root["*assembly*"].Const<YacqAssembly>()
+                        .TryDefineType(ms.ToDictionary(_ => _.Item1, _ => _.Item2.Type))
+                        .CreateType(s)
+                        .Let(nt => Expression.New(
+                            nt.GetConstructors()[0],
+                            ms.Select(_ => _.Item2),
+                            ms.Select(_ => nt.GetProperty(_.Item1))
+#if SILVERLIGHT
+                                .Cast<MemberInfo>()
+#endif
+                        ))
+                    );
             }
             
             #endregion
