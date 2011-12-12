@@ -191,7 +191,7 @@ namespace XSpect.Yacq
         /// <returns>The lambda expression generated from the code.</returns>
         public static Expression<Action> ParseAction(SymbolTable symbols, String code)
         {
-            return (Expression<Action>) ParseLambda(symbols, typeof(void), code);
+            return (Expression<Action>) ParseLambda(symbols, typeof(void), code, new AmbiguousParameterExpression[0]);
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace XSpect.Yacq
         /// <returns>The lambda expression generated from the code.</returns>
         public static Expression<Func<TReturn>> ParseFunc<TReturn>(SymbolTable symbols, String code)
         {
-            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code);
+            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code, new AmbiguousParameterExpression[0]);
         }
 
         /// <summary>

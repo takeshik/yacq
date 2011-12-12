@@ -37,7 +37,7 @@ namespace XSpect.Yacq.Expressions
     /// <summary>
     /// Provides a set of static methods for working with specific kinds of <see cref="YacqExpression"/> and other instances.
     /// </summary>
-    public static class YacqExtension
+    public static class YacqExtensions
     {
         /// <summary>
         /// Reduces this node to a simpler expression, with (if possible) additional symbol tables.

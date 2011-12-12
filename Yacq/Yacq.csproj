@@ -103,10 +103,10 @@
     <Compile Include="Expressions\AmbiguousLambdaExpression.cs" />
     <Compile Include="Expressions\AmbiguousParameterExpression.cs" />
     <Compile Include="SymbolTable.cs" />
-    <Compile Include="Expressions\YacqExtension.cs" />
+    <Compile Include="Expressions\YacqExtensions.cs" />
     <Compile Include="Expressions\DispatchExpression.cs" />
     <Compile Include="Expressions\TypeCandidateExpression.cs" />
-    <Compile Include="Extension.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="LanguageServices\Reader.Scope.cs" />
     <Compile Include="LanguageServices\Reader.cs" />
     <Compile Include="LanguageServices\Tokenizer.cs" />
