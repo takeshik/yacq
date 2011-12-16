@@ -205,18 +205,12 @@ namespace XSpect.Yacq.Expressions
                         ? p.ParameterType.GetDelegateSignature().GetParameters().Length
                         : 0
                     )
-                    .SequenceEqual(c.Arguments
-                        .Select(a => a is AmbiguousLambdaExpression
-                            ? ((AmbiguousLambdaExpression) a).Parameters.Count
-                            : a is LambdaExpression
-                                  ? ((LambdaExpression) a).Parameters.Count
-                                  : 0
-                        )
-                    )
+                    .SequenceEqual(c.Arguments.Select(a => a.GetParameterCount()))
                 )
                 .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
                 .Choose(c => CheckAndFixArguments(symbols, c))
                 .OrderBy(c => c)
+                .ThenBy(c => c.Arguments.Sum(e => e.GetParameterCount()))
                 .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
                     a,
                     _ => _ is UnaryExpression && _.NodeType == ExpressionType.Convert,

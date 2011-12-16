@@ -111,7 +111,7 @@ namespace XSpect.Yacq.Expressions
                     this.Elements.Skip(1)
                 );
             }
-            else if (this[0] is IdentifierExpression)
+            else if (this[0] is IdentifierExpression && symbols.ExistsKey(DispatchTypes.Method, this[0].Id()))
             {
                 return Dispatch(
                     symbols,
