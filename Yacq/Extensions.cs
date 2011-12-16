@@ -33,6 +33,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq
 {
@@ -340,6 +341,15 @@ namespace XSpect.Yacq
                               .ToArray()
                       )
                 : type;
+        }
+
+        internal static Int32 GetParameterCount(this Expression expr)
+        {
+            return expr is AmbiguousLambdaExpression
+                ? ((AmbiguousLambdaExpression) expr).Parameters.Count
+                : expr is LambdaExpression
+                      ? ((LambdaExpression) expr).Parameters.Count
+                      : 0;
         }
     }
 }

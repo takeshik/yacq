@@ -80,18 +80,20 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return Enumerable.Range(0, this.Elements
-                .SelectMany(e => e.GetDescendants())
-                .Max(e =>
-                {
-                    Int32 value = -1;
-                    return e is IdentifierExpression && e.Id().Let(s =>
-                        s.StartsWith("$") && Int32.TryParse(s.Substring(1), out value)
-                    )
-                        ? value
-                        : -1;
-                }) + 1
-            )
+            return Enumerable.Range(0, Math.Max(
+                this.Elements
+                    .SelectMany(e => e.GetDescendants())
+                    .Max(e =>
+                    {
+                        Int32 value = -1;
+                        return e is IdentifierExpression && e.Id().Let(s =>
+                            s.StartsWith("$") && Int32.TryParse(s.Substring(1), out value)
+                        )
+                            ? value
+                            : -1;
+                    }) + 1,
+                    expectedType.GetDelegateSignature().Null(m => m.GetParameters().Length, 0)
+            ))
                 .Select(i => AmbiguousParameter(symbols, "$" + i))
                 .ToArray()
                 .Let(ps => AmbiguousLambda(symbols, List(symbols, this.Elements), ps));
