@@ -36,6 +36,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using XSpect.Yacq.SystemObjects;
 
 namespace XSpect.Yacq.Runner
 {
@@ -243,41 +244,24 @@ Type (!help) [ENTER] to show help."
 
         private static void Compile(String code, String name, PEFileKinds fileKind)
         {
-            name += fileKind == PEFileKinds.Dll
-                ? ".dll"
-                : ".exe";
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(
-                new AssemblyName()
-                {
-                    Name = name,
-                    Version = new Version(0, 0, 0, 0),
-                    CultureInfo = CultureInfo.InvariantCulture,
-                },
-                AssemblyBuilderAccess.RunAndSave
-            );
-            var type = assembly
-                .DefineDynamicModule(name)
-                .DefineType(
-                    "Program",
-                    TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed
-                );
+            var assembly = new YacqAssembly(name, fileKind);
+            var type = assembly.DefineType(":Program");
+            var expressions = YacqServices.ParseAll(new SymbolTable()
+            {
+                {"*assembly*", Expression.Constant(assembly)},
+            }, code);
             var method = type.DefineMethod(
                 "Main",
-                MethodAttributes.Public | MethodAttributes.Static,
+                MethodAttributes.Static,
                 typeof(void),
-                Type.EmptyTypes
+                Type.EmptyTypes,
+                Expression.Lambda<Action>(expressions.Length == 1
+                    ? expressions.Single()
+                    : Expression.Block(expressions)
+                )
             );
-            var expressions = YacqServices.ParseAll(code);
-            Expression.Lambda<Action>(expressions.Length == 1
-                ? expressions.Single()
-                : Expression.Block(expressions)
-            ).CompileToMethod(method);
-            type.CreateType();
-            if (fileKind != PEFileKinds.Dll)
-            {
-                assembly.SetEntryPoint(method, fileKind);
-            }
-            assembly.Save(name);
+            type.Create();
+            assembly.Save(method);
         }
 
         private static String GetTypeName(Type type)

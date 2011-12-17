@@ -51,6 +51,8 @@ namespace XSpect.Yacq.SystemObjects
 
         private readonly MethodBuilder _prologue;
 
+        private ConstructorBuilder _cctor;
+
         private readonly List<MemberInfo> _members;
 
         private readonly Queue<Tuple<MethodBuilder, Expression, Type>> _initializers;
@@ -102,13 +104,22 @@ namespace XSpect.Yacq.SystemObjects
             this.IsCreated = false;
         }
 
-        private FieldBuilder DefineField(
+        /// <summary>
+        /// Defines a new field to the type.
+        /// </summary>
+        /// <param name="name">The name of the field. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the field/</param>
+        /// <param name="attributes">A bitwise combination of the field attributes.</param>
+        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
+        /// <returns>The defined field.</returns>
+        public FieldBuilder DefineField(
             String name,
             Type type,
-            FieldAttributes attributes,
+            FieldAttributes attributes = FieldAttributes.Public,
             Expression initializer = null
         )
         {
+            var isStatic = attributes.HasFlag(FieldAttributes.Static);
             return this._type.DefineField(
                 name,
                 type,
@@ -119,52 +130,54 @@ namespace XSpect.Yacq.SystemObjects
                         GetName(f, "Init"),
                         MethodAttributes.Assembly | MethodAttributes.Static,
                         type,
-                        this._typeArray
+                        isStatic ? Type.EmptyTypes : this._typeArray
                     )
                     .Apply(
-                        _ => this._prologue.GetILGenerator().Apply(
-                            g => LoadArgs(g, 0, 0),
-                            g => g.Emit(OpCodes.Call, _),
-                            g => g.Emit(OpCodes.Stfld, f)
+                        i =>
+                            (isStatic
+                                ? (this._cctor ?? (this._cctor = this._type.DefineTypeInitializer())).GetILGenerator()
+                                : this._prologue.GetILGenerator()
+                            )
+                            .Apply(
+                            g => g.If(_ => !isStatic, _ => LoadArgs(g, 0, 0)),
+                            g => g.Emit(OpCodes.Call, i),
+                            g => g.Emit(isStatic ? OpCodes.Stsfld : OpCodes.Stfld, f)
                         ),
-                        _ => this.RequestInitializing(_, initializer, type, this._typeArray)
+                        i => this.RequestInitializing(i, initializer, type, isStatic ? this._typeArray : Type.EmptyTypes)
                     )
                 )
                 .Apply(this._members.Add);
         }
 
         /// <summary>
-        /// Defines a new field to the type.
+        /// Defines a new method to the type.
         /// </summary>
-        /// <param name="name">The name of the field. <paramref name="name"/> cannot contain embedded nulls.</param>
-        /// <param name="type">The type of the field/</param>
-        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
-        /// <returns>The defined field.</returns>
-        public FieldBuilder DefineField(
+        /// <param name="name">The name of the method. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="attributes">A bitwise combination of the method attributes.</param>
+        /// <param name="returnType">The return type of the method.</param>
+        /// <param name="parameterTypes">The types of the parameters of the method.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the method, with parameters for "this" instance and all method parameters, returns <paramref name="returnType"/> value.</param>
+        /// <returns>The defined method.</returns>
+        public MethodBuilder DefineMethod(
             String name,
-            Type type,
-            Expression initializer = null
-        )
-        {
-            return this.DefineField(
-                name,
-                type,
-                FieldAttributes.Public,
-                initializer
-            );
-        }
-
-        private MethodBuilder DefineMethod(
-            String name,
-            MethodAttributes attributes,
-            Type returnType,
-            IList<Type> parameterTypes,
+            MethodAttributes attributes = MethodAttributes.Public,
+            Type returnType = null,
+            IList<Type> parameterTypes = null,
             Expression body = null
         )
         {
+            var isStatic = attributes.HasFlag(MethodAttributes.Static);
+            if (returnType == null)
+            {
+                returnType = typeof(void);
+            }
+            if (parameterTypes == null)
+            {
+                parameterTypes = Type.EmptyTypes;
+            }
             return this._type.DefineMethod(
                 name,
-                attributes,
+                attributes | MethodAttributes.HideBySig,
                 returnType,
                 parameterTypes.ToArray()
             )
@@ -174,15 +187,25 @@ namespace XSpect.Yacq.SystemObjects
                         GetName(m, "Impl"),
                         MethodAttributes.Assembly | MethodAttributes.Static,
                         returnType,
-                        parameterTypes.StartWith(_type).ToArray()
+                        (isStatic
+                            ? parameterTypes
+                            : parameterTypes.StartWith(_type)
+                        ).ToArray()
                     )
                     .Apply(
-                        _ => m.GetILGenerator().Apply(
-                            g => LoadArgs(g, Enumerable.Range(0, parameterTypes.Count + 1)),
-                            g => g.Emit(OpCodes.Call, _),
+                        i => m.GetILGenerator().Apply(
+                            g => LoadArgs(g, Enumerable.Range(0, parameterTypes.Count + (isStatic ? 0 : 1))),
+                            g => g.Emit(OpCodes.Call, i),
                             g => g.Emit(OpCodes.Ret)
                         ),
-                        _ => RequestInitializing(_, body, returnType, parameterTypes.StartWith(_type).ToArray())
+                        i => RequestInitializing(
+                            i,
+                            body,
+                            returnType,
+                            isStatic
+                                ? parameterTypes
+                                : parameterTypes.StartWith(_type)
+                        )
                     ),
                     m => m.GetILGenerator().Apply(
                         g =>
@@ -232,37 +255,24 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Defines a new method to the type.
+        /// Defines a new constructor to the type.
         /// </summary>
-        /// <param name="name">The name of the method. <paramref name="name"/> cannot contain embedded nulls.</param>
-        /// <param name="returnType">The return type of the method.</param>
-        /// <param name="parameterTypes">The types of the parameters of the method.</param>
-        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the method, with parameters for "this" instance and all method parameters, returns <paramref name="returnType"/> value.</param>
-        /// <returns>The defined method.</returns>
-        public MethodBuilder DefineMethod(
-            String name,
-            Type returnType,
-            IList<Type> parameterTypes,
+        /// <param name="attributes">A bitwise combination of the constructor attributes.</param>
+        /// <param name="parameterTypes">The types of the parameters of the constructor.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the constructor, with parameters for "this" instance and all method parameters, returns no value.</param>
+        /// <returns>The defined constructor.</returns>
+        public ConstructorBuilder DefineConstructor(
+            MethodAttributes attributes = MethodAttributes.Public,
+            IList<Type> parameterTypes = null,
             Expression body = null
         )
         {
-            return this.DefineMethod(
-                name,
-                MethodAttributes.Public | MethodAttributes.HideBySig,
-                returnType,
-                parameterTypes,
-                body
-            );
-        }
-
-        private ConstructorBuilder DefineConstructor(
-            MethodAttributes attributes,
-            IList<Type> parameterTypes,
-            Expression body = null
-        )
-        {
+            if (parameterTypes == null)
+            {
+                parameterTypes = Type.EmptyTypes;
+            }
             return this._type.DefineConstructor(
-                attributes,
+                attributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
                 CallingConventions.Standard,
                 parameterTypes.ToArray()
             )
@@ -275,7 +285,7 @@ namespace XSpect.Yacq.SystemObjects
                         parameterTypes.StartWith(_type).ToArray()
                     )
                     .Apply(
-                        _ => c.GetILGenerator().Apply(
+                        i => c.GetILGenerator().Apply(
                             g => LoadArgs(g, 0),
                             g => g.Emit(OpCodes.Call, this._type.BaseType.GetConstructor(
                                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
@@ -286,19 +296,20 @@ namespace XSpect.Yacq.SystemObjects
                             g => LoadArgs(g, 0),
                             g => g.Emit(OpCodes.Call, this._prologue),
                             g => LoadArgs(g, Enumerable.Range(0, parameterTypes.Count + 1)),
-                            g => g.Emit(OpCodes.Call, _),
+                            g => g.Emit(OpCodes.Call, i),
                             g => g.Emit(OpCodes.Ret)
                         ),
-                        _ => RequestInitializing(_, body, typeof(void), parameterTypes.StartWith(_type).ToArray())
+                        i => RequestInitializing(i, body, typeof(void), parameterTypes.StartWith(_type))
                     ),
                     c => c.GetILGenerator().Apply(
-                        g => LoadArgs(g, 0, 0),
+                        g => LoadArgs(g, 0),
                         g => g.Emit(OpCodes.Call, this._type.BaseType.GetConstructor(
                             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                             null,
                             Type.EmptyTypes,
                             null
                         )),
+                        g => LoadArgs(g, 0),
                         g => g.Emit(OpCodes.Call, this._prologue),
                         g => g.Emit(OpCodes.Ret)
                     )
@@ -307,39 +318,37 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Defines a new constructor to the type.
+        /// Defines a new property to the type.
         /// </summary>
-        /// <param name="parameterTypes">The types of the parameters of the constructor.</param>
-        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the constructor, with parameters for "this" instance and all method parameters, returns no value.</param>
-        /// <returns>The defined constructor.</returns>
-        public ConstructorBuilder DefineConstructor(
-            IList<Type> parameterTypes,
-            Expression body = null
-        )
-        {
-            return this.DefineConstructor(
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                parameterTypes,
-                body
-            );
-        }
-
-        private PropertyBuilder DefineProperty(
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="methodAttributes">A bitwise combination of the accessor method attributes.</param>
+        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the backing field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
+        /// <param name="getter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the getter of the property, with parameters for "this" instance, returns <paramref name="type"/> value, or <c>null</c> if the getter accesses to the backing field.</param>
+        /// <param name="setter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the setter of the property, with parameters for "this" instance and <paramref name="type"/> value, returns no value, or <c>null</c> if the setter accesses to the backing field.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
             String name,
-            PropertyAttributes attributes,
             Type type,
+            MethodAttributes methodAttributes = MethodAttributes.Public,
             Expression initializer = null,
             Expression getter = null,
             Expression setter = null
         )
         {
-            return this._type.DefineProperty(name, attributes, type, Type.EmptyTypes)
+            var isStatic = methodAttributes.HasFlag(MethodAttributes.Static);
+            return this._type.DefineProperty(
+                name,
+                PropertyAttributes.HasDefault,
+                type,
+                Type.EmptyTypes
+            )
                 .Apply(p =>
                     (getter == null || setter == null
                         ? this.DefineField(
                               GetName(p, "Field"),
                               type,
-                              FieldAttributes.Private,
+                              FieldAttributes.Private | (isStatic ? FieldAttributes.Static : 0),
                               initializer
                           )
                           .Apply(f => f.SetCustomAttribute(new CustomAttributeBuilder(
@@ -352,21 +361,21 @@ namespace XSpect.Yacq.SystemObjects
                         f => p.SetGetMethod(getter != null
                             ? this.DefineMethod(
                                   "get_" + name,
-                                  MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   type,
                                   Type.EmptyTypes,
                                   getter
                               )
                             : this._type.DefineMethod(
                                   "get_" + name,
-                                  MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   type,
                                   Type.EmptyTypes
                               )
                               .Apply(
                                   m => m.GetILGenerator().Apply(
-                                      g => LoadArgs(g, 0),
-                                      g => g.Emit(OpCodes.Ldfld, f),
+                                      g => g.If(_ => !isStatic, _ => LoadArgs(g, 0)),
+                                      g => g.Emit(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, f),
                                       g => g.Emit(OpCodes.Ret)
                                   ),
                                   this._members.Add
@@ -375,21 +384,22 @@ namespace XSpect.Yacq.SystemObjects
                         f => p.SetSetMethod(setter != null
                             ? this.DefineMethod(
                                   "set_" + name,
-                                  MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   typeof(void),
                                   new [] { type, },
                                   setter
                               )
                             : this._type.DefineMethod(
                                   "set_" + name,
-                                  MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                   typeof(void),
                                   new [] { type, }
                               )
                               .Apply(
                                   m => m.GetILGenerator().Apply(
-                                      g => LoadArgs(g, 0, 1),
-                                      g => g.Emit(OpCodes.Stfld, f),
+                                      g => LoadArgs(g, 0),
+                                      g => g.If(_ => !isStatic, _ => LoadArgs(g, 1)),
+                                      g => g.Emit(isStatic ? OpCodes.Stsfld : OpCodes.Stfld, f),
                                       g => g.Emit(OpCodes.Ret)
                                   ),
                                   this._members.Add
@@ -401,38 +411,11 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Defines a new property to the type.
-        /// </summary>
-        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
-        /// <param name="type">The type of the property.</param>
-        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the backing field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
-        /// <param name="getter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the getter of the property, with parameters for "this" instance, returns <paramref name="type"/> value, or <c>null</c> if the getter accesses to the backing field.</param>
-        /// <param name="setter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the setter of the property, with parameters for "this" instance and <paramref name="type"/> value, returns no value, or <c>null</c> if the setter accesses to the backing field.</param>
-        /// <returns>The defined property.</returns>
-        public PropertyBuilder DefineProperty(
-            String name,
-            Type type,
-            Expression initializer = null,
-            Expression getter = null,
-            Expression setter = null
-        )
-        {
-            return this.DefineProperty(
-                name,
-                PropertyAttributes.HasDefault,
-                type,
-                initializer,
-                getter,
-                setter
-            );
-        }
-
-        /// <summary>
         /// Creates a <see cref="Type"/> object for the type. After defining members on the type, this method is called in order to load its Type object.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>
         /// <returns>The new Type object for this type.</returns>
-        public Type CreateType(SymbolTable symbols = null)
+        public Type Create(SymbolTable symbols = null)
         {
             if (this.IsCreated)
             {
@@ -440,7 +423,11 @@ namespace XSpect.Yacq.SystemObjects
             }
             if (this.GetConstructors().IsEmpty())
             {
-                this.DefineConstructor(Type.EmptyTypes);
+                this.DefineConstructor(MethodAttributes.Public, Type.EmptyTypes);
+            }
+            if (this._cctor != null)
+            {
+                this._cctor.Null(c => c.GetILGenerator().Emit(OpCodes.Ret));
             }
             return this._type.CreateType()
                 .Apply(
@@ -512,7 +499,7 @@ namespace XSpect.Yacq.SystemObjects
             return this._members.OfType<PropertyBuilder>();
         }
 
-        private void RequestInitializing(MethodBuilder method, Expression expression, Type returnType, params Type[] parameterTypes)
+        private void RequestInitializing(MethodBuilder method, Expression expression, Type returnType, IEnumerable<Type> parameterTypes)
         {
             this._initializers.Enqueue(Tuple.Create(
                 method,
