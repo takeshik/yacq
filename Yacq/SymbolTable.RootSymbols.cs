@@ -906,9 +906,9 @@ namespace XSpect.Yacq
             {
                 return e.Arguments
                     .Share(_ => _.Zip(_, (i, v) => Tuple.Create(i.Id(), v.Reduce(s))))
-                    .Let(ms => Root["*assembly*"].Const<YacqAssembly>()
+                    .Let(ms => s.Resolve("*assembly*").Const<YacqAssembly>()
                         .TryDefineType(ms.ToDictionary(_ => _.Item1, _ => _.Item2.Type))
-                        .CreateType(s)
+                        .Create(s)
                         .Let(nt => Expression.New(
                             nt.GetConstructors()[0],
                             ms.Select(_ => _.Item2),
@@ -1362,10 +1362,6 @@ namespace XSpect.Yacq
                       new DirectoryInfo(".")
 #endif
                   ));
-
-            [YacqSymbol("*assembly*")]
-            public static Expression TargetAssembly
-                = Expression.Constant(new YacqAssembly("YacqGeneratedTypes"));
 
             #endregion
 

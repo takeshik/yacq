@@ -37,6 +37,8 @@ using XSpect.Yacq.LanguageServices;
 using XSpect.Yacq.Linq;
 #if !__MonoCS__
 using System.Reactive.Linq;
+using XSpect.Yacq.SystemObjects;
+
 #endif
 
 namespace XSpect.Yacq
@@ -46,6 +48,18 @@ namespace XSpect.Yacq
     /// </summary>
     public static class YacqServices
     {
+        /// <summary>
+        /// Gets the version of this YACQ library.
+        /// </summary>
+        /// <returns>The version of this YACQ library.</returns>
+        public static Version Version
+        {
+            get
+            {
+                return typeof(YacqServices).Assembly.GetName().Version;
+            }
+        }
+
         /// <summary>
         /// Read code string and generate expressions without reducing.
         /// </summary>
@@ -78,10 +92,14 @@ namespace XSpect.Yacq
 #if SILVERLIGHT
                 .Cast<Expression>()
 #endif
-                .ReduceAll((symbols ?? new SymbolTable()).If(
-                    s => !s.ExistsKey("$global"),
-                    s => s.Add("$global", Expression.Constant(symbols))
-                ))
+                .ReduceAll((symbols ?? new SymbolTable())
+                    .If(s => !s.ExistsKey("$global"),
+                        s => s.Add("$global", Expression.Constant(symbols))
+                    )
+                    .If(s => !s.ExistsKey("*assembly*"),
+                        s => s.Add("*assembly*", Expression.Constant(new YacqAssembly("YacqGeneratedTypes")))
+                    )
+                )
                 .ToArray();
         }
 

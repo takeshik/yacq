@@ -55,6 +55,8 @@ namespace XSpect.Yacq.SystemObjects
 
         private readonly Lazy<ModuleBuilder> _module;
 
+        private readonly PEFileKinds _fileKind;
+
         private readonly Dictionary<String, YacqType> _types; 
 
         private AssemblyBuilder Assembly
@@ -95,6 +97,7 @@ namespace XSpect.Yacq.SystemObjects
                 () => this.Assembly.DefineDynamicModule(name + (fileKind == PEFileKinds.Dll ? ".dll" : ".exe")),
                 true
             );
+            this._fileKind = fileKind;
             this._types = new Dictionary<String, YacqType>();
         }
 
@@ -167,6 +170,7 @@ namespace XSpect.Yacq.SystemObjects
                     .Apply(
                         t => members.ForEach(p => t.DefineProperty(p.Key, p.Value)),
                         t => t.DefineConstructor(
+                            MethodAttributes.Public,
                             members.Values.ToArray(),
                             members
                                 .Select(p => YacqExpression.AmbiguousParameter(p.Key))
@@ -245,8 +249,22 @@ namespace XSpect.Yacq.SystemObjects
         /// <summary>
         /// Saves this <see cref="YacqAssembly"/> to disk.
         /// </summary>
-        public void Save()
+        /// <param name="entryMethod">A reference to the method that represents the entry point for this <see cref="YacqAssembly"/>, or <c>null</c> if the entry point is automatically searched.</param>
+        public void Save(MethodInfo entryMethod = null)
         {
+            if (this._fileKind != PEFileKinds.Dll)
+            {
+                this.Assembly.SetEntryPoint(
+                    entryMethod ?? this.GetTypes()
+                        .SelectMany(t => t.GetMethods())
+                        .Single(m =>
+                            m.IsStatic &&
+                            m.Name == "Main" &&
+                            (m.ReturnType == typeof(void) || m.ReturnType == typeof(Int32))
+                        ),
+                    this._fileKind
+                );
+            }
             this.Assembly.Save(this.Module.ScopeName);
         }
 #endif
