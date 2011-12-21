@@ -180,11 +180,9 @@ namespace XSpect.Yacq.SystemObjects
                                     typeof(void),
                                     ps
                                         .Skip(1)
-                                        .Select(p => YacqExpression.Dispatch(
-                                            DispatchTypes.Method,
+                                        .Select(p => YacqExpression.Function(
                                             "=",
-                                            YacqExpression.Dispatch(
-                                                DispatchTypes.Method,
+                                            YacqExpression.Function(
                                                 ".",
                                                 YacqExpression.Identifier("self"),
                                                 YacqExpression.Identifier(p.Name)

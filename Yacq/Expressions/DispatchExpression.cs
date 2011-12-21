@@ -459,6 +459,8 @@ namespace XSpect.Yacq.Expressions
 
     partial class YacqExpression
     {
+        #region Dispatch
+
         /// <summary>
         /// Creates a <see cref="DispatchExpression"/> that represents the dispatching, member reference or method calls.
         /// </summary>
@@ -769,5 +771,101 @@ namespace XSpect.Yacq.Expressions
         {
             return Dispatch(null, dispatchType, name, arguments);
         }
+
+        #endregion
+
+        #region Variable
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the member-reference dispatching, without the receiver.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <returns>A variable-reference <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Variable(
+            SymbolTable symbols,
+            String name
+        )
+        {
+            return Dispatch(symbols, DispatchTypes.Member, name);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the member-reference dispatching, without the receiver.
+        /// </summary>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <returns>A variable-reference <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Variable(
+            String name
+        )
+        {
+            return Dispatch(DispatchTypes.Member, name);
+        }
+
+        #endregion
+
+        #region Function
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the function-call dispatching, without the receiver.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A function-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Function(
+            SymbolTable symbols,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(symbols, DispatchTypes.Method, name, arguments);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the function-call dispatching, without the receiver.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A function-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Function(
+            SymbolTable symbols,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(symbols, DispatchTypes.Method, name, arguments);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the function-call dispatching, without the receiver.
+        /// </summary>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A function-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Function(
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return Dispatch(DispatchTypes.Method, name, arguments);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the function-call dispatching, without the receiver.
+        /// </summary>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A function-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Function(
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return Dispatch(DispatchTypes.Method, name, arguments);
+        }
+
+        #endregion
     }
 }
