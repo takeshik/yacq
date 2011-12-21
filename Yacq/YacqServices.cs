@@ -92,14 +92,7 @@ namespace XSpect.Yacq
 #if SILVERLIGHT
                 .Cast<Expression>()
 #endif
-                .ReduceAll((symbols ?? new SymbolTable())
-                    .If(s => !s.ExistsKey("$global"),
-                        s => s.Add("$global", Expression.Constant(symbols))
-                    )
-                    .If(s => !s.ExistsKey("*assembly*"),
-                        s => s.Add("*assembly*", Expression.Constant(new YacqAssembly("YacqGeneratedTypes")))
-                    )
-                )
+                .ReduceAll(CreateSymbolTable(symbols))
                 .ToArray();
         }
 
@@ -125,6 +118,7 @@ namespace XSpect.Yacq
         public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, String code, params AmbiguousParameterExpression[] parameters)
         {
             var expressions = ReadAll(code);
+            symbols = CreateSymbolTable(symbols);
             return (LambdaExpression) YacqExpression.AmbiguousLambda(
                 symbols,
                 returnType,
@@ -533,5 +527,16 @@ namespace XSpect.Yacq
 #endif
 
         #endregion
+
+        private static SymbolTable CreateSymbolTable(SymbolTable symbols)
+        {
+            return (symbols ?? new SymbolTable())
+                .If(s => !s.ExistsKey("$global"),
+                    s => s.Add("$global", Expression.Constant(symbols))
+                )
+                .If(s => !s.ExistsKey("*assembly*"),
+                    s => s.Add("*assembly*", Expression.Constant(new YacqAssembly("YacqGeneratedTypes")))
+                );
+        }
     }
 }
