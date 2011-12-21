@@ -154,11 +154,29 @@ namespace XSpect.Yacq.Expressions
                 {
                     return this.Parameters
                         .Select(p => p.ParameterType)
-                        .If(_ => this.Parameters.IsParamArrayMethod(), _ => _
+                        .If(_ => this.IsParamArray, _ => _
                             .Take(this.Parameters.Count() - 1)
                             .Concat(EnumerableEx.Repeat(this.Parameters.Last().ParameterType.GetElementType()))
                         )
                         .Zip(this.Arguments, Tuple.Create);
+                }
+            }
+
+            public Boolean IsParamArray
+            {
+                get
+                {
+                    return this.Parameters.Any()
+                        && Attribute.IsDefined(this.Parameters.Last(), typeof(ParamArrayAttribute));
+                }
+            }
+
+            public Boolean IsParamArrayContext
+            {
+                get
+                {
+                    return this.IsParamArray
+                        && !this.Parameters.Last().ParameterType.IsAssignableFrom(this.Arguments.Last().Type);
                 }
             }
 
@@ -197,8 +215,8 @@ namespace XSpect.Yacq.Expressions
                            .CompareTo(other.Method.IsExtensionMethod())
                        ) != 0
                     ? value
-                    : (value = this.Parameters.IsParamArrayMethod()
-                          .CompareTo(other.Parameters.IsParamArrayMethod())
+                    : (value = this.IsParamArray
+                          .CompareTo(other.IsParamArray)
                       ) != 0
                           ? value
                           : this.Parameters.Select(_ => _.ParameterType)

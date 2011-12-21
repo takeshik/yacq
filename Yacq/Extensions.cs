@@ -222,11 +222,6 @@ namespace XSpect.Yacq
                 : Enumerable.Empty<Type>();
         }
 
-        internal static Boolean IsParamArrayMethod(this IEnumerable<ParameterInfo> parameters)
-        {
-            return parameters.Any() && Attribute.IsDefined(parameters.Last(), typeof(ParamArrayAttribute));
-        }
-
         internal static Boolean HasExtensionMethods(this Type type)
         {
             return Attribute.IsDefined(type, typeof(ExtensionAttribute));
@@ -274,32 +269,35 @@ namespace XSpect.Yacq
 
         internal static Boolean IsAppropriate(this Type type, Type target)
         {
-            return (type.IsGenericParameter &&
-                !(
-                    (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint)
-                        && target.GetConstructor(Type.EmptyTypes) == null
-                    ) ||
-                    (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint)
-                        && target.IsClass
-                        || target.TryGetGenericTypeDefinition() == typeof(Nullable<>)
-                    ) ||
-                    (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint)
-                        && target.IsValueType
-                    )
-                ) &&
-                target.GetConvertibleTypes().Let(cs =>
-                    type.GetGenericParameterConstraints().All(cs.Contains)
-                )
+            return ((type.IsArray && target.IsArray) || (type.IsByRef && target.IsByRef) || (type.IsPointer && target.IsPointer)
+                && type.GetElementType().IsAppropriate(target.GetElementType())
             ) ||
-                target.GetConvertibleTypes()
-                    .Select(t => t.TryGetGenericTypeDefinition())
-                    .Contains(type.TryGetGenericTypeDefinition())
-            // Special matches:
-            || (
-                typeof(LambdaExpression).IsAssignableFrom(type) &&
-                typeof(Delegate).IsAssignableFrom(target) &&
-                type.GetDelegateSignature() == target.GetDelegateSignature()
-            );
+                (type.IsGenericParameter &&
+                    !(
+                        (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint)
+                            && target.GetConstructor(Type.EmptyTypes) == null
+                        ) ||
+                        (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint)
+                            && target.IsClass
+                            || target.TryGetGenericTypeDefinition() == typeof(Nullable<>)
+                        ) ||
+                        (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint)
+                            && target.IsValueType
+                        )
+                    ) &&
+                    target.GetConvertibleTypes().Let(cs =>
+                        type.GetGenericParameterConstraints().All(cs.Contains)
+                    )
+                ) ||
+                    target.GetConvertibleTypes()
+                        .Select(t => t.TryGetGenericTypeDefinition())
+                        .Contains(type.TryGetGenericTypeDefinition())
+                // Special matches:
+                || (
+                    typeof(LambdaExpression).IsAssignableFrom(type) &&
+                    typeof(Delegate).IsAssignableFrom(target) &&
+                    type.GetDelegateSignature() == target.GetDelegateSignature()
+                );
         }
 
         internal static MethodInfo GetDelegateSignature(this Type type)

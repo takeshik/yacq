@@ -190,7 +190,7 @@ namespace XSpect.Yacq.Expressions
                       )
                 )
                 .Where(c => (c.Arguments.Count == c.Parameters.Count
-                    || (c.Parameters.IsParamArrayMethod() && c.Arguments.Count >= c.Parameters.Count - 1))
+                    || (c.IsParamArray && c.Arguments.Count >= c.Parameters.Count - 1))
                 )
                 .Select(c => new Candidate(
                     c.Instance,
@@ -201,10 +201,15 @@ namespace XSpect.Yacq.Expressions
                         .ToArray()
                 ))
                 .Where(c => c.Arguments.All(e => e != null) && c.Parameters
-                    .Select(p => typeof(Delegate).IsAssignableFrom(p.ParameterType)
-                        ? p.ParameterType.GetDelegateSignature().GetParameters().Length
+                    .SelectMany(p => c.IsParamArrayContext
+                        ? EnumerableEx.Repeat(p.ParameterType.GetElementType())
+                        : EnumerableEx.Return(p.ParameterType)
+                    )
+                    .Select(t => t.GetDelegateSignature() != null
+                        ? t.GetDelegateSignature().GetParameters().Length
                         : 0
                     )
+                    .If(_ => c.IsParamArrayContext, _ => _.Take(c.Arguments.Count))
                     .SequenceEqual(c.Arguments.Select(a => a.GetParameterCount()))
                 )
                 .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
@@ -356,8 +361,9 @@ namespace XSpect.Yacq.Expressions
                       candidate.Member,
                       candidate.TypeArgumentMap,
                       candidate.Arguments
-                          .If(_ => candidate.Parameters.IsParamArrayMethod(), _ =>
-                              _.Take(candidate.Parameters.Count - 1)
+                          .If(_ => candidate.IsParamArrayContext, _ =>
+                              (IList<Expression>) (_
+                                  .Take(candidate.Parameters.Count - 1)
                                   .Concat(EnumerableEx.Return(
 #if SILVERLIGHT
                                       (Expression)
@@ -365,8 +371,8 @@ namespace XSpect.Yacq.Expressions
                                       Vector(symbols, _.Skip(candidate.Parameters.Count - 1))
                                           .Reduce(symbols, candidate.Parameters.Last().ParameterType)
                                   ))
+                              .ToArray())
                           )
-                          .ToArray()
                   )
                 : null;
         }
