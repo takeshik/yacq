@@ -919,7 +919,7 @@ namespace XSpect.Yacq
                         ))
                     );
             }
-            
+
             #endregion
             
             #region Function - Symbol Handling
@@ -986,8 +986,26 @@ namespace XSpect.Yacq
 
             #endregion
 
+            #region Function - Expressions
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Expression), "reduce")]
+            public static Expression Reduce(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Dispatch(
+                    s,
+                    DispatchTypes.Method,
+                    YacqExpression.TypeCandidate(typeof(YacqExtensions)),
+                    "Reduce",
+                    e.Left,
+                    Expression.Constant(s),
+                    Expression.Default(typeof(Type))
+                );
+            }
+
+            #endregion
+
             #region Method - Flow
-            
+
             [YacqSymbol(DispatchTypes.Method, typeof(Object), "let")]
             public static Expression LetObject(DispatchExpression e, SymbolTable s, Type t)
             {
