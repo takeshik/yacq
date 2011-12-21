@@ -177,7 +177,7 @@ namespace XSpect.Yacq.SystemObjects
             }
             return this._type.DefineMethod(
                 name,
-                attributes | MethodAttributes.HideBySig,
+                attributes | MethodAttributes.HideBySig | (isStatic ? 0 : MethodAttributes.Virtual),
                 returnType,
                 parameterTypes.ToArray()
             )

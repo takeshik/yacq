@@ -195,9 +195,86 @@ namespace XSpect.Yacq.SystemObjects
                                         ,
                                     ps
                                 ))
+                        ),
+                        t => t.DefineMethod(
+                            "Equals",
+                            MethodAttributes.Public,
+                            typeof(Boolean),
+                            new [] { typeof(Object), },
+                            new []
+                            {
+                                YacqExpression.AmbiguousParameter("self"),
+                                YacqExpression.AmbiguousParameter("value"),
+                            }.Let(ps =>
+                                YacqExpression.AmbiguousLambda(
+                                    YacqExpression.Identifier("value")
+                                        .Method("as", YacqExpression.Identifier("this"))
+                                        .Method("let", YacqExpression.Identifier("_"),
+                                            YacqExpression.Function("&&", t.GetProperties()
+                                                .Select(p => YacqExpression.TypeCandidate(
+                                                    typeof(EqualityComparer<>).MakeGenericType(p.PropertyType)
+                                                )
+                                                    .Member("Default")
+                                                    .Method("Equals",
+                                                        YacqExpression.Identifier("self").Member(p.Name),
+                                                        YacqExpression.Identifier("_").Member(p.Name)
+                                                    )
+                                                )
+                                                .StartWith(YacqExpression.Function("?", YacqExpression.Identifier("_")))
+#if SILVERLIGHT
+                                                .Cast<Expression>()
+#endif
+                                            )
+                                        ),
+                                        ps
+                                )
+                            )
+                        ),
+                        t => t.DefineMethod(
+                            "GetHashCode",
+                            MethodAttributes.Public,
+                            typeof(Int32),
+                            Type.EmptyTypes,
+                            YacqExpression.AmbiguousLambda(
+                                YacqExpression.Function("^",
+                                    t.GetProperties()
+                                        .Select(p => (Expression) YacqExpression.Identifier("self").Member(p.Name).Method("GetHashCode")
+                                            .If(e => !p.PropertyType.IsValueType, e =>
+                                                YacqExpression.Function("?", YacqExpression.Identifier("self"))
+                                                    .Method("cond", e, Expression.Constant(0))
+                                            )
+                                        )
+                                        .StartWith(Expression.Constant(t.GetHashCode()))
+                                ),
+                                YacqExpression.AmbiguousParameter("self")
+                            )
+                        ),
+                        t => t.DefineMethod(
+                            "ToString",
+                            MethodAttributes.Public,
+                            typeof(String),
+                            Type.EmptyTypes,
+                            YacqExpression.AmbiguousLambda(
+                                YacqExpression.Function("+",
+                                    Expression.Constant("{ "),
+                                    YacqExpression.TypeCandidate(typeof(String))
+                                        .Method("Join",
+                                            t.GetProperties()
+                                                .Select(p => (Expression) YacqExpression.Function("+",
+                                                    Expression.Constant(p.Name + " = "),
+                                                    YacqExpression.Identifier("self").Member(p.Name).Method("ToString")
+                                                        .If(e => !p.PropertyType.IsValueType, e =>
+                                                            YacqExpression.Function("?", YacqExpression.Identifier("self").Member(p.Name))
+                                                                .Method("cond", e, Expression.Constant(""))
+                                                        )
+                                                ))
+                                                .StartWith(Expression.Constant(", "))
+                                        ),
+                                    Expression.Constant(" }")
+                                ),
+                                YacqExpression.AmbiguousParameter("self")
+                            )
                         )
-                        // TODO: Define Boolean Equals(Object)
-                        // TODO: Define Int32 GetHashCode()
                     );
             }
         }
