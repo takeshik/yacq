@@ -104,6 +104,104 @@ namespace XSpect.Yacq.Expressions
                 : null;
         }
 
+        /// <summary>
+        /// Creates a chained <see cref="DispatchExpression"/> that represents the member-reference dispatching.
+        /// </summary>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <returns>A chained member-reference <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Member(
+            this Expression left,
+            SymbolTable symbols,
+            String name
+        )
+        {
+            return YacqExpression.Dispatch(symbols, DispatchTypes.Member, left, name);
+        }
+
+        /// <summary>
+        /// Creates a chained <see cref="DispatchExpression"/> that represents the member-reference dispatching.
+        /// </summary>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <returns>A chained member-reference <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Member(
+            this Expression left,
+            String name
+        )
+        {
+            return YacqExpression.Dispatch(DispatchTypes.Member, left, name);
+        }
+
+        /// <summary>
+        /// Creates a chained <see cref="DispatchExpression"/> that represents the method-call dispatching.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A chained method-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Method(
+            this Expression left,
+            SymbolTable symbols,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return YacqExpression.Dispatch(symbols, DispatchTypes.Method, left, name, arguments);
+        }
+
+        /// <summary>
+        /// Creates a chained <see cref="DispatchExpression"/> that represents the method-call dispatching.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A chained method-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Method(
+            this Expression left,
+            SymbolTable symbols,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return YacqExpression.Dispatch(symbols, DispatchTypes.Method, left, name, arguments);
+        }
+
+        /// <summary>
+        /// Creates a chained <see cref="DispatchExpression"/> that represents the method-call dispatching.
+        /// </summary>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">An array of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A chained method-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Method(
+            this Expression left,
+            String name,
+            params Expression[] arguments
+        )
+        {
+            return YacqExpression.Dispatch(DispatchTypes.Method, left, name, arguments);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DispatchExpression"/> that represents the method-call dispatching.
+        /// </summary>
+        /// <param name="left">An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</param>
+        /// <param name="name">The name to use for dispatching.</param>
+        /// <param name="arguments">A sequence of <see cref="Expression"/> objects that represents the arguments for dispatching.</param>
+        /// <returns>A chained method-call <see cref="DispatchExpression"/> that has the properties set to the specified values.</returns>
+        public static DispatchExpression Method(
+            this Expression left,
+            String name,
+            IEnumerable<Expression> arguments
+        )
+        {
+            return YacqExpression.Dispatch(DispatchTypes.Method, left, name, arguments);
+        }
+
         internal static IEnumerable<Expression> List(this Expression expr, String head)
         {
             return (expr as ListExpression).If(
