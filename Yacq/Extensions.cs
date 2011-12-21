@@ -347,7 +347,7 @@ namespace XSpect.Yacq
                 ? ((AmbiguousLambdaExpression) expr).Parameters.Count
                 : expr is LambdaExpression
                       ? ((LambdaExpression) expr).Parameters.Count
-                      : 0;
+                      : expr.Type.GetDelegateSignature().Null(m => m.GetParameters().Length);
         }
     }
 }
