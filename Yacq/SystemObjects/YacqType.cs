@@ -115,8 +115,8 @@ namespace XSpect.Yacq.SystemObjects
         public FieldBuilder DefineField(
             String name,
             Type type,
-            FieldAttributes attributes = FieldAttributes.Public,
-            Expression initializer = null
+            FieldAttributes attributes,
+            Expression initializer
         )
         {
             var isStatic = attributes.HasFlag(FieldAttributes.Static);
@@ -150,6 +150,52 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
+        /// Defines a new field to the type.
+        /// </summary>
+        /// <param name="name">The name of the field. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the field/</param>
+        /// <param name="attributes">A bitwise combination of the field attributes.</param>
+        /// <returns>The defined field.</returns>
+        public FieldBuilder DefineField(
+            String name,
+            Type type,
+            FieldAttributes attributes
+        )
+        {
+            return this.DefineField(name, type, attributes, null);
+        }
+
+        /// <summary>
+        /// Defines a new public instance field to the type.
+        /// </summary>
+        /// <param name="name">The name of the field. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the field/</param>
+        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
+        /// <returns>The defined field.</returns>
+        public FieldBuilder DefineField(
+            String name,
+            Type type,
+            Expression initializer
+        )
+        {
+            return this.DefineField(name, type, FieldAttributes.Public, initializer);
+        }
+
+        /// <summary>
+        /// Defines a new field to the type.
+        /// </summary>
+        /// <param name="name">The name of the field. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the field/</param>
+        /// <returns>The defined field.</returns>
+        public FieldBuilder DefineField(
+            String name,
+            Type type
+        )
+        {
+            return this.DefineField(name, type, null);
+        }
+
+        /// <summary>
         /// Defines a new method to the type.
         /// </summary>
         /// <param name="name">The name of the method. <paramref name="name"/> cannot contain embedded nulls.</param>
@@ -160,10 +206,10 @@ namespace XSpect.Yacq.SystemObjects
         /// <returns>The defined method.</returns>
         public MethodBuilder DefineMethod(
             String name,
-            MethodAttributes attributes = MethodAttributes.Public,
-            Type returnType = null,
-            IList<Type> parameterTypes = null,
-            Expression body = null
+            MethodAttributes attributes,
+            Type returnType,
+            IList<Type> parameterTypes,
+            Expression body
         )
         {
             var isStatic = attributes.HasFlag(MethodAttributes.Static);
@@ -255,6 +301,72 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
+        /// Defines a new method to the type.
+        /// </summary>
+        /// <param name="name">The name of the method. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="attributes">A bitwise combination of the method attributes.</param>
+        /// <param name="returnType">The return type of the method.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the method, with parameters for "this" instance and all method parameters, returns <paramref name="returnType"/> value.</param>
+        /// <returns>The defined method.</returns>
+        public MethodBuilder DefineMethod(
+            String name,
+            MethodAttributes attributes,
+            Type returnType,
+            Expression body
+        )
+        {
+            return this.DefineMethod(name, attributes, returnType, Type.EmptyTypes, body);
+        }
+
+        /// <summary>
+        /// Defines a new public instance method to the type.
+        /// </summary>
+        /// <param name="name">The name of the method. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="returnType">The return type of the method.</param>
+        /// <param name="parameterTypes">The types of the parameters of the method.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the method, with parameters for "this" instance and all method parameters, returns <paramref name="returnType"/> value.</param>
+        /// <returns>The defined method.</returns>
+        public MethodBuilder DefineMethod(
+            String name,
+            Type returnType,
+            IList<Type> parameterTypes,
+            Expression body
+        )
+        {
+            return this.DefineMethod(name, MethodAttributes.Public, returnType, parameterTypes, body);
+        }
+
+        /// <summary>
+        /// Defines a new public instance method to the type.
+        /// </summary>
+        /// <param name="name">The name of the method. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="returnType">The return type of the method.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the method, with parameters for "this" instance and all method parameters, returns <paramref name="returnType"/> value.</param>
+        /// <returns>The defined method.</returns>
+        public MethodBuilder DefineMethod(
+            String name,
+            Type returnType,
+            Expression body
+        )
+        {
+            return this.DefineMethod(name, MethodAttributes.Public, returnType, Type.EmptyTypes, body);
+        }
+
+        /// <summary>
+        /// Defines a new constructor to the type.
+        /// </summary>
+        /// <param name="attributes">A bitwise combination of the constructor attributes.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the constructor, with parameters for "this" instance and all method parameters, returns no value.</param>
+        /// <returns>The defined constructor.</returns>
+        public ConstructorBuilder DefineConstructor(
+            MethodAttributes attributes,
+            Expression body
+        )
+        {
+            return this.DefineConstructor(attributes, Type.EmptyTypes, null);
+        }
+
+        /// <summary>
         /// Defines a new constructor to the type.
         /// </summary>
         /// <param name="attributes">A bitwise combination of the constructor attributes.</param>
@@ -262,9 +374,9 @@ namespace XSpect.Yacq.SystemObjects
         /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the constructor, with parameters for "this" instance and all method parameters, returns no value.</param>
         /// <returns>The defined constructor.</returns>
         public ConstructorBuilder DefineConstructor(
-            MethodAttributes attributes = MethodAttributes.Public,
-            IList<Type> parameterTypes = null,
-            Expression body = null
+            MethodAttributes attributes,
+            IList<Type> parameterTypes,
+            Expression body
         )
         {
             if (parameterTypes == null)
@@ -318,22 +430,48 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
+        /// Defines a new public constructor to the type.
+        /// </summary>
+        /// <param name="parameterTypes">The types of the parameters of the constructor.</param>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the constructor, with parameters for "this" instance and all method parameters, returns no value.</param>
+        /// <returns>The defined constructor.</returns>
+        public ConstructorBuilder DefineConstructor(
+            IList<Type> parameterTypes,
+            Expression body
+        )
+        {
+            return this.DefineConstructor(MethodAttributes.Public, parameterTypes, body);
+        }
+
+        /// <summary>
+        /// Defines a new public constructor to the type.
+        /// </summary>
+        /// <param name="body">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the constructor, with parameters for "this" instance and all method parameters, returns no value.</param>
+        /// <returns>The defined constructor.</returns>
+        public ConstructorBuilder DefineConstructor(
+            Expression body
+        )
+        {
+            return this.DefineConstructor(MethodAttributes.Public, Type.EmptyTypes, body);
+        }
+
+        /// <summary>
         /// Defines a new property to the type.
         /// </summary>
         /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
         /// <param name="type">The type of the property.</param>
         /// <param name="methodAttributes">A bitwise combination of the accessor method attributes.</param>
         /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the backing field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
-        /// <param name="getter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the getter of the property, with parameters for "this" instance, returns <paramref name="type"/> value, or <c>null</c> if the getter accesses to the backing field.</param>
-        /// <param name="setter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the setter of the property, with parameters for "this" instance and <paramref name="type"/> value, returns no value, or <c>null</c> if the setter accesses to the backing field.</param>
+        /// <param name="getter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the getter of the property, with parameters for "this" instance, returns <paramref name="type"/> value, <see cref="IgnoredExpression"/> if the getter will be auto-implemented and accesses to the backing field, or <c>null</c> if this property does not have getter.</param>
+        /// <param name="setter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the setter of the property, with parameters for "this" instance and <paramref name="type"/> value, returns no value, <see cref="IgnoredExpression"/> if the setter will be auto-implemented and accesses to the backing field, or <c>null</c> if this property does not have setter.</param>
         /// <returns>The defined property.</returns>
         public PropertyBuilder DefineProperty(
             String name,
             Type type,
-            MethodAttributes methodAttributes = MethodAttributes.Public,
-            Expression initializer = null,
-            Expression getter = null,
-            Expression setter = null
+            MethodAttributes methodAttributes,
+            Expression initializer,
+            Expression getter,
+            Expression setter
         )
         {
             var isStatic = methodAttributes.HasFlag(MethodAttributes.Static);
@@ -344,7 +482,7 @@ namespace XSpect.Yacq.SystemObjects
                 Type.EmptyTypes
             )
                 .Apply(p =>
-                    (getter == null || setter == null
+                    (getter is IgnoredExpression || setter is IgnoredExpression
                         ? this.DefineField(
                               GetName(p, "Field"),
                               type,
@@ -358,17 +496,17 @@ namespace XSpect.Yacq.SystemObjects
                         : null
                     )
                     .Apply(
-                        f => p.SetGetMethod(getter != null
+                        f => getter.Null(e => p.SetGetMethod(!(e is IgnoredExpression)
                             ? this.DefineMethod(
                                   "get_" + name,
-                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
                                   type,
                                   Type.EmptyTypes,
-                                  getter
+                                  e
                               )
                             : this._type.DefineMethod(
                                   "get_" + name,
-                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
                                   type,
                                   Type.EmptyTypes
                               )
@@ -380,18 +518,18 @@ namespace XSpect.Yacq.SystemObjects
                                   ),
                                   this._members.Add
                               )
-                        ),
-                        f => p.SetSetMethod(setter != null
+                        )),
+                        f => setter.Null(e => p.SetSetMethod(!(e is IgnoredExpression)
                             ? this.DefineMethod(
                                   "set_" + name,
-                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
                                   typeof(void),
                                   new [] { type, },
-                                  setter
+                                  e
                               )
                             : this._type.DefineMethod(
                                   "set_" + name,
-                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                  methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
                                   typeof(void),
                                   new [] { type, }
                               )
@@ -404,10 +542,112 @@ namespace XSpect.Yacq.SystemObjects
                                   ),
                                   this._members.Add
                               )
-                        )
+                        ))
                     ),
                     this._members.Add
                 );
+        }
+
+        /// <summary>
+        /// Defines a new auto-implemented property to the type.
+        /// </summary>
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="methodAttributes">A bitwise combination of the accessor method attributes.</param>
+        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the backing field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
+            String name,
+            Type type,
+            MethodAttributes methodAttributes,
+            Expression initializer
+        )
+        {
+            return this.DefineProperty(name, type, methodAttributes, initializer, YacqExpression.List(), YacqExpression.List());
+        }
+
+        /// <summary>
+        /// Defines a new property to the type.
+        /// </summary>
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="methodAttributes">A bitwise combination of the accessor method attributes.</param>
+        /// <param name="getter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the getter of the property, with parameters for "this" instance, returns <paramref name="type"/> value, <see cref="IgnoredExpression"/> if the getter will be auto-implemented and accesses to the backing field, or <c>null</c> if this property does not have getter.</param>
+        /// <param name="setter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the setter of the property, with parameters for "this" instance and <paramref name="type"/> value, returns no value, <see cref="IgnoredExpression"/> if the setter will be auto-implemented and accesses to the backing field, or <c>null</c> if this property does not have setter.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
+            String name,
+            Type type,
+            MethodAttributes methodAttributes,
+            Expression getter,
+            Expression setter
+        )
+        {
+            return this.DefineProperty(name, type, methodAttributes, null, getter, setter);
+        }
+
+        /// <summary>
+        /// Defines a new auto-implemented property to the type.
+        /// </summary>
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="methodAttributes">A bitwise combination of the accessor method attributes.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
+            String name,
+            Type type,
+            MethodAttributes methodAttributes
+        )
+        {
+            return this.DefineProperty(name, type, methodAttributes, null);
+        }
+
+        /// <summary>
+        /// Defines a new public instance auto-implemented property to the type.
+        /// </summary>
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="initializer">The expression which is not reduced to be <see cref="LambdaExpression"/> for the initializer of the backing field, with a parameter for "this" instance, returns <paramref name="type"/> value.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
+            String name,
+            Type type,
+            Expression initializer
+        )
+        {
+            return this.DefineProperty(name, type, MethodAttributes.Public, initializer);
+        }
+
+        /// <summary>
+        /// Defines a new public instance property to the type.
+        /// </summary>
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="getter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the getter of the property, with parameters for "this" instance, returns <paramref name="type"/> value, <see cref="IgnoredExpression"/> if the getter will be auto-implemented and accesses to the backing field, or <c>null</c> if this property does not have getter.</param>
+        /// <param name="setter">The expression which is not reduced to be <see cref="LambdaExpression"/> for the body of the setter of the property, with parameters for "this" instance and <paramref name="type"/> value, returns no value, <see cref="IgnoredExpression"/> if the setter will be auto-implemented and accesses to the backing field, or <c>null</c> if this property does not have setter.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
+            String name,
+            Type type,
+            Expression getter,
+            Expression setter
+        )
+        {
+            return this.DefineProperty(name, type, MethodAttributes.Public, getter, setter);
+        }
+
+        /// <summary>
+        /// Defines a new auto-implemented property to the type.
+        /// </summary>
+        /// <param name="name">The name of the property. <paramref name="name"/> cannot contain embedded nulls.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <returns>The defined property.</returns>
+        public PropertyBuilder DefineProperty(
+            String name,
+            Type type
+        )
+        {
+            return this.DefineProperty(name, type, MethodAttributes.Public);
         }
 
         /// <summary>
@@ -423,7 +663,7 @@ namespace XSpect.Yacq.SystemObjects
             }
             if (this.GetConstructors().IsEmpty())
             {
-                this.DefineConstructor(MethodAttributes.Public, Type.EmptyTypes);
+                this.DefineConstructor(null);
             }
             if (this._cctor != null)
             {

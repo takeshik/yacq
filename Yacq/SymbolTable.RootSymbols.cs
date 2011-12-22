@@ -870,6 +870,127 @@ namespace XSpect.Yacq
                     );
             }
 
+            [YacqSymbol(DispatchTypes.Method, "newtype")]
+            public static Expression CreateType(DispatchExpression e, SymbolTable s, Type t)
+            {
+                var type = (e.Arguments[0].List(":") ?? new [] { e.Arguments[0], YacqExpression.TypeCandidate(typeof(Object)), })
+                    .Let(es => s.Resolve("*assembly*").Const<YacqAssembly>().DefineType(
+                        es.First().Id(),
+                        (es.Last() is VectorExpression
+                            ? ((VectorExpression) es.Last()).Elements
+                            : EnumerableEx.Return(es.Last())
+                        )
+                            .ReduceAll(s)
+                            .Cast<TypeCandidateExpression>()
+                            .Select(_ => _.ElectedType)
+                            .ToArray()
+                    ));
+                e.Arguments
+                    .Skip(1)
+                    .OfType<ListExpression>()
+                    .ForEach(l =>
+                    {
+                        var rest = l.Elements
+                            .SkipWhile(_ => _.Id().Let(i => i != "member" && i != "method"))
+                            .Skip(1)
+                            .ToArray();
+                        var attributes = l.Elements
+                            .SkipLast(rest.Length)
+                            .OfType<IdentifierExpression>()
+                            .Select(_ => _.Name)
+                            .ToArray()
+                            .Let(_ =>
+                                (_.Last() == "method"
+                                    ? MemberTypes.Method
+                                    : rest
+                                          .OfType<IdentifierExpression>()
+                                          .Any(i => i.Name == "get" || i.Name == "set")
+                                              ? MemberTypes.Property
+                                              : MemberTypes.Field
+                                )
+                                .Let(mt => Tuple.Create(mt, _.Any()
+                                    ? Enum.Parse(
+                                          mt == MemberTypes.Field
+                                              ? typeof(FieldAttributes)
+                                              : typeof(MethodAttributes),
+                                          String.Join(",", _.SkipLast(1)),
+                                          true
+                                      )
+                                    : null
+                                ))
+                            )
+                            .If(
+                                _ => _.Item1 == MemberTypes.Method && rest.First().Id() == "new",
+                                _ => Tuple.Create(MemberTypes.Constructor, _.Item2)
+                            );
+                        switch (attributes.Item1)
+                        {
+                            case MemberTypes.Field:
+                                rest[0].List(":").Let(es => type.DefineField(
+                                    es.First().Id(),
+                                    ((TypeCandidateExpression) es.Last().Reduce(s)).ElectedType,
+                                    (FieldAttributes) (attributes.Item2 ?? FieldAttributes.Public),
+                                    rest.ElementAtOrDefault(1)
+                                ));
+                                break;
+                            case MemberTypes.Property:
+                                rest[0].List(":").Let(es => type.DefineProperty(
+                                    es.First().Id(),
+                                    ((TypeCandidateExpression) es.Last().Reduce(s)).ElectedType,
+                                    (MethodAttributes) (attributes.Item2 ?? MethodAttributes.Public),
+                                    rest[1].Id().Let(i => i != "get" && i != "set") ? rest[1] : null,
+                                    rest.Any(_ => _.Id() == "get")
+                                        ? rest
+                                              .SkipWhile(_ => _.Id() != "get")
+                                              .Skip(1)
+                                              .If(
+                                                  _ => _.Any() && _.First().Id() != "set",
+                                                  _ => _.First(),
+                                                  _ => YacqExpression.Ignored()
+                                              )
+                                        : null,
+                                    rest.Any(_ => _.Id() == "set")
+                                        ? rest
+                                              .SkipWhile(_ => _.Id() != "set")
+                                              .Skip(1)
+                                              .If(
+                                                  _ => _.Any() && _.First().Id() != "get",
+                                                  _ => _.First(),
+                                                  _ => YacqExpression.Ignored()
+                                              )
+                                        : null
+                                ));
+                                break;
+                            case MemberTypes.Method:
+                                (rest[0].List(":") ?? new [] { rest[0], YacqExpression.TypeCandidate(typeof(void)), })
+                                    .Let(es => type.DefineMethod(
+                                        es.First().Id(),
+                                        (MethodAttributes) (attributes.Item2 ?? MethodAttributes.Public),
+                                        ((TypeCandidateExpression) es.Last().Reduce(s)).ElectedType,
+                                        ((VectorExpression) rest[1]).Elements
+                                            .ReduceAll(s)
+                                            .OfType<TypeCandidateExpression>()
+                                            .Select(_ => _.ElectedType)
+                                            .ToArray(),
+                                        rest[2]
+                                    ));
+                                break;
+                            case MemberTypes.Constructor:
+                                type.DefineConstructor(
+                                    (MethodAttributes) (attributes.Item2 ?? MethodAttributes.Public),
+                                    ((VectorExpression) rest[1]).Elements
+                                        .ReduceAll(s)
+                                        .OfType<TypeCandidateExpression>()
+                                        .Select(_ => _.ElectedType)
+                                        .ToArray(),
+                                    rest[2]
+                                );
+                                break;
+                        }
+                    });
+                return YacqExpression.TypeCandidate(type.Create(s));
+            }
+
             #endregion
             
             #region Function - Symbol Handling
