@@ -34,6 +34,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using XSpect.Yacq.Expressions;
 using System.Text.RegularExpressions;
 using System.Reflection;
@@ -573,13 +574,9 @@ namespace XSpect.Yacq
             public static Expression IsNotNull(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count > 2
-                    ? YacqExpression.Function(
-                          s,
-                          "&&",
+                    ? YacqExpression.Function(s, "&&",
                           e.Arguments
-                              .Select(a => YacqExpression.Function(
-                                  s,
-                                  "!==",
+                              .Select(a => YacqExpression.Function(s, "!==",
                                   a,
                                   Expression.Constant(null)
                               ))
@@ -587,9 +584,7 @@ namespace XSpect.Yacq
                               .Cast<Expression>()
 #endif
                       )
-                    : YacqExpression.Function(
-                          s,
-                          "!==",
+                    : YacqExpression.Function(s, "!==",
                           e.Arguments[0],
                           Expression.Constant(null)
                      );
@@ -599,13 +594,9 @@ namespace XSpect.Yacq
             public static Expression IsNull(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count > 2
-                    ? YacqExpression.Function(
-                          s,
-                          "||",
+                    ? YacqExpression.Function(s, "||",
                           e.Arguments
-                              .Select(a => YacqExpression.Function(
-                                  s,
-                                  "===",
+                              .Select(a => YacqExpression.Function(s, "===",
                                   a,
                                   Expression.Constant(null)
                               ))
@@ -614,9 +605,7 @@ namespace XSpect.Yacq
 #endif
 
                       )
-                    : YacqExpression.Function(
-                          s,
-                          "===",
+                    : YacqExpression.Function(s, "===",
                           e.Arguments[0],
                           Expression.Constant(null)
                      );
@@ -693,28 +682,90 @@ namespace XSpect.Yacq
             {
                 return e.Arguments.Any()
                     ? e.Arguments[0] is VectorExpression
-                          ? new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
+                          ? (Expression) new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
                                 .SelectMany(_ => _.List(":").Let(l => l != null
-                                    ? new [] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
+                                    ? new[] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
                                     : EnumerableEx.Return(_)
                                 ))
                                 .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
                                     v.Reduce(s_).Apply(r => s_.Add(n, Expression.Variable(r.Type, n)))
                                 )))
                                 .ToArray()
-                                .Let(_ => e.Arguments.Count > 1
-                                    ? Expression.Block(
-                                          s_.Literals.Values.OfType<ParameterExpression>(),
-                                          e.Arguments
+                                .Let(_ => Expression.Block(
+                                    s_.Literals.Values
+                                        .OfType<ParameterExpression>(),
+                                    (e.Arguments.Count > 1
+                                        ? e.Arguments
                                               .Skip(1)
                                               .ReduceAll(s_)
-                                              .StartWith(s_.Literals.Values
-                                                  .OfType<ParameterExpression>()
-                                                  .Zip(_, Expression.Assign).ToArray()
-                                              )
-                                      )
-                                    : (Expression) Expression.Empty()
-                                )
+                                        : EnumerableEx.Return(
+#if SILVERLIGHT
+                                              (Expression)
+#endif
+                                              Expression.Empty()
+                                          )
+                                    )
+                                        .StartWith(s_.Literals.Values
+                                            .OfType<ParameterExpression>()
+                                            .Zip(_, Expression.Assign).ToArray()
+                                        )
+                                ))
+                            )
+                          : Expression.Block(e.Arguments.ReduceAll(s))
+                    : Expression.Empty();
+            }
+
+            [YacqSymbol(DispatchTypes.Method, "use")]
+            public static Expression Use(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return e.Arguments.Any()
+                    ? e.Arguments[0] is VectorExpression
+                          ? (Expression) new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
+                                .SelectMany(_ => _.List(":").Let(l => l != null
+                                    ? new[] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
+                                    : EnumerableEx.Return(_)
+                                ))
+                                .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
+                                    v.Reduce(s_).Apply(r => s_.Add(n, Expression.Variable(r.Type, n)))
+                                )))
+                                .ToArray()
+                                .Let(_ => Expression.Block(
+                                    s_.Literals.Values
+                                        .OfType<ParameterExpression>(),
+                                    EnumerableEx.Return(
+                                        (Expression) Expression.Block(
+                                            e.Arguments.Count > 1
+                                                ? e.Arguments
+                                                      .Skip(1)
+                                                      .ReduceAll(s_)
+                                                : EnumerableEx.Return(
+#if SILVERLIGHT
+                                                      (Expression)
+#endif
+                                                      Expression.Empty()
+                                                  )
+                                        )
+                                        .Method(s, "finally",
+                                            s_.Literals.Values
+                                                .OfType<ParameterExpression>()
+                                                .Where(p => typeof(IDisposable).IsAssignableFrom(p.Type))
+                                                .Select(p => YacqExpression.Function(s, "?", p)
+                                                    .Method(s, "then",
+                                                        Expression.Convert(p, typeof(IDisposable))
+                                                            .Method(s, "Dispose")
+                                                    )
+                                                )
+#if SILVERLIGHT
+                                                .Cast<Expression>()
+#endif
+                                        )
+                                        .Reduce(s)
+                                    )
+                                        .StartWith(s_.Literals.Values
+                                            .OfType<ParameterExpression>()
+                                            .Zip(_, Expression.Assign).ToArray()
+                                        )
+                                ))
                             )
                           : Expression.Block(e.Arguments.ReduceAll(s))
                     : Expression.Empty();
@@ -766,6 +817,12 @@ namespace XSpect.Yacq
                 return e.Arguments.ReduceAll(s).ToArray().Let(_ => YacqExpression.Ignored(s));
             }
 
+            [YacqSymbol(DispatchTypes.Method, "throw")]
+            public static Expression Rethrow(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.Rethrow();
+            }
+
             [YacqSymbol(DispatchTypes.Method, "...")]
             public static Expression ErrorImmediately(DispatchExpression e, SymbolTable s, Type t)
             {
@@ -796,9 +853,7 @@ namespace XSpect.Yacq
             public static Expression Input(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Any()
-                    ? YacqExpression.Function(
-                          s,
-                          "$",
+                    ? YacqExpression.Function(s, "$",
                           e.Arguments[0].Method(s, "printn"),
                           YacqExpression.Function(s, "input")
                       )
@@ -1037,9 +1092,7 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, typeof(Expression), "reduce")]
             public static Expression Reduce(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.TypeCandidate(typeof(YacqExtensions)).Method(
-                    s,
-                    "Reduce",
+                return YacqExpression.TypeCandidate(typeof(YacqExtensions)).Method(s, "Reduce",
                     e.Left,
                     Expression.Constant(s),
                     Expression.Default(typeof(Type))
@@ -1053,25 +1106,42 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, typeof(Object), "let")]
             public static Expression LetObject(DispatchExpression e, SymbolTable s, Type t)
             {
-                return e.Left.Reduce(s).Let(_ => Expression.Invoke(
-                    YacqExpression.AmbiguousLambda(
-                        s,
-                        e.Arguments.Skip(1),
-                        YacqExpression.AmbiguousParameter(s, _.Type, e.Arguments[0].Id())
-                    ).Reduce(s),
-                    _
-                ));
+                return YacqExpression.Function(s, "let",
+                    e.Arguments
+                        .Skip(1)
+                        .StartWith(YacqExpression.Vector(
+                            s,
+                            e.Arguments[0],
+                            e.Left
+                        ))
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "use")]
+            public static Expression UseObject(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Function(s, "use",
+                    e.Arguments
+                        .Skip(1)
+                        .StartWith(YacqExpression.Vector(
+                            s,
+                            e.Arguments[0],
+                            e.Left
+                        ))
+                );
             }
 
             [YacqSymbol(DispatchTypes.Method, typeof(Object), "alias")]
             public static Expression AliasObject(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new SymbolTable(s).Apply(s_ => s_.Add(
-                    e.Arguments[0].Id(),
-                    e.Left.Reduce(s)
-                )).Let(s_ => e.Arguments.Count > 2
-                    ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
-                    : e.Arguments[1].Reduce(s_)
+                return YacqExpression.Function(s, "alias",
+                    e.Arguments
+                        .Skip(1)
+                        .StartWith(YacqExpression.Vector(
+                            s,
+                            e.Arguments[0],
+                            e.Left
+                        ))
                 );
             }
             
@@ -1169,7 +1239,67 @@ namespace XSpect.Yacq
                         ))
                 );
             }
-            
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Exception), "throw")]
+            public static Expression Throw(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.Throw(e.Left.Reduce(s));
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "except")]
+            public static Expression Catch(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return _Try(e, s, t, null);
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "catch")]
+            public static Expression CatchVoid(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return _Try(e, s, t, typeof(void));
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "fault")]
+            public static Expression Fault(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.TryFault(
+                    e.Left.Reduce(s),
+                    e.Arguments.Count != 1
+                        ? YacqExpression.Function(s, "let", e.Arguments)
+                        : e.Arguments[0].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "finally")]
+            public static Expression Finally(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.TryFinally(
+                    e.Left.Reduce(s),
+                    e.Arguments.Count != 1
+                        ? YacqExpression.Function(s, "let", e.Arguments)
+                        : e.Arguments[0].Reduce(s)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "lock")]
+            public static Expression Lock(DispatchExpression e, SymbolTable s, Type t)
+            {
+                // TODO: This generates not canonical "lock" code now
+                return YacqExpression.Identifier(s, ".lock-" + Guid.NewGuid().ToString("n").Substring(0, 8)).Let(i =>
+                    YacqExpression.Function(s, "let",
+                        YacqExpression.Vector(s, i, e.Arguments[0]),
+                        YacqExpression.Function(s, "let",
+                            YacqExpression.TypeCandidate(typeof(Monitor))
+                                .Method(s, "Enter", i),
+                            e.Left
+                        )
+                            .Method(s, "finally",
+                                YacqExpression.TypeCandidate(typeof(Monitor))
+                                    .Method(s, "Exit", i)
+                            )
+                    )
+                );
+            }
+
             #endregion
 
             #region Method - Input / Output
@@ -1716,6 +1846,54 @@ namespace XSpect.Yacq
             {
                 return Expression.Constant(
                     ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType
+                );
+            }
+
+            #endregion
+
+            #region Helpers
+
+            private static Expression _Try(DispatchExpression e, SymbolTable s, Type t, Type returnType)
+            {
+                return Expression.MakeTry(
+                    returnType,
+                    e.Left.Reduce(s),
+                    null,
+                    null,
+                    e.Arguments
+                        .SkipLast(e.Arguments.Count % 2)
+                        .Buffer(2)
+                        .Select(c => (c.First() as VectorExpression)
+                            .Null(v => (IList<Expression>) v.Elements, new[] { c.First(), })
+                            .Let(ves => (ves[0].List(":").If(
+                                    les => les != null,
+                                    les => new SymbolTable(s)
+                                    {
+                                        {les.First().Id(), Expression.Parameter(
+                                            ((TypeCandidateExpression) les.Last().Reduce(s)).ElectedType,
+                                            les.First().Id()
+                                        )}
+                                    }
+                                        .Let(ns => Expression.Catch(
+                                            (ParameterExpression) ns.Literals.Values.Single(),
+                                            c.Last().Reduce(ns),
+                                            ves.Count > 1 ? ves[1].Reduce(ns) : null
+                                        )),
+                                    les => Expression.Catch(
+                                        ((TypeCandidateExpression) ves[0].Reduce(s)).ElectedType,
+                                        c.Last().Reduce(s),
+                                        ves.Count > 1 ? ves[1].Reduce(s) : null
+                                    )
+                                )
+                            ))
+                        )
+                        .If(_ => e.Arguments.Count % 2 == 1, _ =>
+                            _.StartWith(Expression.Catch(
+                                typeof(Exception),
+                                e.Arguments.Last().Reduce(s))
+                            )
+                        )
+                        .ToArray()
                 );
             }
 
