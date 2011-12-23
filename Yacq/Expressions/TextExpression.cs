@@ -108,9 +108,7 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             return this._codes.Any()
-                ? (Expression) TypeCandidate(typeof(String)).Method(
-                      symbols,
-                      "Format",
+                ? (Expression) TypeCandidate(typeof(String)).Method(symbols, "Format",
                       this._codes
                           .Select(c => YacqServices.Parse(symbols, c))
                           .StartWith(Constant(this.Value))
