@@ -832,7 +832,9 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, ">_<")]
             public static Expression BreakImmediately(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Empty().Apply(_ => Debugger.Break());
+                return Debugger.IsAttached
+                    ? Expression.Constant(false).Apply(_ => Debugger.Break())
+                    : Expression.Constant(true).Apply(_ => Debugger.Launch());
             }
 
             #endregion
@@ -1453,7 +1455,18 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Member, ">_<")]
             public static Expression Break(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.TypeCandidate(typeof(Debugger)).Method(s, "Break");
+                return YacqExpression.TypeCandidate(typeof(Debugger))
+                    .Member(s, "IsAttached")
+                    .Method(s, "cond",
+                        YacqExpression.Function(s, "let",
+                            YacqExpression.TypeCandidate(typeof(Debugger)).Method("Break"),
+                            Expression.Constant(false)
+                        ),
+                        YacqExpression.Function(s, "let",
+                            YacqExpression.TypeCandidate(typeof(Debugger)).Method("Launch"),
+                            Expression.Constant(true)
+                        )
+                    );
             }
 
             #endregion
