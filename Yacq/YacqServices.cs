@@ -35,10 +35,9 @@ using System.Linq.Expressions;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 using XSpect.Yacq.Linq;
+using XSpect.Yacq.SystemObjects;
 #if !__MonoCS__
 using System.Reactive.Linq;
-using XSpect.Yacq.SystemObjects;
-
 #endif
 
 namespace XSpect.Yacq
