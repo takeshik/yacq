@@ -638,7 +638,7 @@ namespace XSpect.Yacq
                 else if (e.Arguments[1] is ListExpression)
                 {
                     var a1 = ((ListExpression) e.Arguments[1]);
-                    var a1e0l = a1[0].List(".");
+                    var a1e0l = a1.Elements.ElementAtOrDefault(0).List(".");
                     return a1e0l != null
                         ? YacqExpression.Dispatch(
                               s,
@@ -651,7 +651,7 @@ namespace XSpect.Yacq
                                   .Select(_ => _.ElectedType),
                               a1.Elements.Skip(1)
                           )
-                        : e.Arguments[0].Method(s, a1[0].Id(), a1.Elements.Skip(1));
+                        : e.Arguments[0].Method(s, a1.Elements.ElementAtOrDefault(0).Null(_ => _.Id(), ""), a1.Elements.Skip(1));
                 }
                 else if (e.Arguments[1] is VectorExpression)
                 {
@@ -1087,21 +1087,15 @@ namespace XSpect.Yacq
 
             #endregion
 
-            #region Function - Expressions
+            #region Method - Flow
 
-            [YacqSymbol(DispatchTypes.Method, typeof(Expression), "reduce")]
-            public static Expression Reduce(DispatchExpression e, SymbolTable s, Type t)
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "")]
+            public static Expression Void(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.TypeCandidate(typeof(YacqExtensions)).Method(s, "Reduce",
-                    e.Left,
-                    Expression.Constant(s),
-                    Expression.Default(typeof(Type))
+                return e.Left.Reduce(s).If(_ => _.Type != typeof(void),
+                    _ => Expression.Block(typeof(void), _)
                 );
             }
-
-            #endregion
-
-            #region Method - Flow
 
             [YacqSymbol(DispatchTypes.Method, typeof(Object), "let")]
             public static Expression LetObject(DispatchExpression e, SymbolTable s, Type t)
@@ -1431,6 +1425,20 @@ namespace XSpect.Yacq
                     e.Left.Reduce(s).Const<SymbolTable>(),
                     e.Arguments[0].Reduce(s).Const<String>(),
                     e.Arguments[e.Arguments.Count > 1 ? 1 : 0].Reduce(s).Const<String>()
+                );
+            }
+
+            #endregion
+
+            #region Method - Expressions
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Expression), "reduce")]
+            public static Expression Reduce(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExtensions)).Method(s, "Reduce",
+                    e.Left,
+                    Expression.Constant(s),
+                    Expression.Default(typeof(Type))
                 );
             }
 
