@@ -127,11 +127,18 @@ namespace XSpect.Yacq.Expressions
                                         .Concat(new [] { this.ReturnType, })
                                         .ToArray()
                                     ), e, ps)
-                                  : expectedType == null || expectedType.IsGenericTypeDefinition
+                                  : expectedType == null
                                         ? Lambda(e, ps)
-                                        : typeof(LambdaExpression).IsAssignableFrom(expectedType)
-                                              ? (Expression) Quote(Lambda(expectedType.GetGenericArguments()[0], e, ps))
-                                              : Lambda(expectedType, e, ps)
+                                        : expectedType.GetDelegateSignature()
+                                              .GetParameters()
+                                              .Let(eps => eps.Length == ps.Length && eps
+                                                  .Zip(ps, (p, a) => p.ParameterType.IsAppropriate(a.Type))
+                                                  .All(_ => _)
+                                              )
+                                              ? typeof(LambdaExpression).IsAssignableFrom(expectedType)
+                                                    ? (Expression) Quote(Lambda(expectedType.GetGenericArguments()[0], e, ps))
+                                                    : Lambda(expectedType, e, ps)
+                                              : null
                               )
                       );
         }
