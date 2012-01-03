@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -90,7 +90,7 @@ namespace XSpect.Yacq.SystemObjects
 #else
                     AssemblyBuilderAccess.RunAndSave
 #endif
-),
+                ),
                 true
             );
             this._module = new Lazy<ModuleBuilder>(

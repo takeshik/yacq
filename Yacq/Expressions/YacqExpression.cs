@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -31,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq.Expressions
 {
@@ -90,6 +91,26 @@ namespace XSpect.Yacq.Expressions
         /// The symbol table linked with this expression.
         /// </value>
         public SymbolTable Symbols
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the start position in the source for this expression.
+        /// </summary>
+        /// <value>The start position in the source for this expression.</value>
+        public TextPosition StartPosition
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the end position in the source for this expression.
+        /// </summary>
+        /// <value>The end position in the source for this expression.</value>
+        public TextPosition EndPosition
         {
             get;
             private set;
@@ -169,6 +190,23 @@ namespace XSpect.Yacq.Expressions
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
         protected abstract Expression ReduceImpl(SymbolTable symbols, Type expectedType);
+
+        internal void SetPosition(ReaderCursor cursor, Int32 length)
+        {
+            var start = cursor.Position;
+            cursor.MoveForward(length);
+            this.SetPosition(start, new TextPosition(
+                cursor.Position.Index - 1,
+                cursor.Position.Line,
+                cursor.Position.Column - 1
+            ));
+        }
+
+        internal void SetPosition(TextPosition start, TextPosition end)
+        {
+            this.StartPosition = start;
+            this.EndPosition = end;
+        }
 
         internal static Expression ImplicitConvert(Expression expression, Type expectedType)
         {

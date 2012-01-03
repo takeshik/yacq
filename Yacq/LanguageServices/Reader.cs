@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -30,144 +30,81 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.LanguageServices
 {
     /// <summary>
-    /// Provides pre-evaluating <see cref="YacqExpression"/> generator from <see cref="Token"/> sequence.
+    /// Generates pre-evaluating <see cref="YacqExpression"/> by supplied rules from code string sequence.
     /// </summary>
     public partial class Reader
     {
-        private LinkedListNode<Token> _cursor;
-
-        private readonly Stack<Scope> _stack;
-
-        internal Scope Current
+        /// <summary>
+        /// Gets the list of reading rules.
+        /// </summary>
+        /// <value>The list of reading rules.</value>
+        public IList<Action<ReaderCursor, ReaderResult>> Rules
         {
-            get
-            {
-                if (_stack.IsEmpty())
-                {
-                    throw new ParseException("Missing open parenthesis.", this._cursor.Value);
-                }
-                return this._stack.Peek();
-            }
+            get;
+            private set;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
-        /// <param name="tokens">The reading <see cref="Token"/> sequence.</param>
-        public Reader(IEnumerable<Token> tokens)
+        /// <param name="rules">The sequence of additional rules.</param>
+        public Reader(IEnumerable<Action<ReaderCursor, ReaderResult>> rules)
         {
-            this._cursor = new LinkedList<Token>(tokens).First;
-            this._stack = new Stack<Scope>();
-            this.EnterScope();
-        }
-
-        private void EnterScope()
-        {
-            this._stack.Push(new Scope(this._cursor.Value));
-        }
-
-        internal ICollection<YacqExpression> LeaveScope()
-        {
-            var context = this._stack.Pop();
-            if (!(
-                (this._cursor.Value.Type == TokenType.RightParenthesis && context.Header.Type == TokenType.LeftParenthesis) ||
-                (this._cursor.Value.Type == TokenType.RightBracket && context.Header.Type == TokenType.LeftBracket) ||
-                (this._cursor.Value.Type == TokenType.RightBrace && context.Header.Type == TokenType.LeftBrace)
-            ))
-            {
-                throw new ParseException("Invalid parenthesis match.", this._cursor.Value);
-            }
-            else
-            {
-                return context.List;
-            }
+            this.Rules = new List<Action<ReaderCursor, ReaderResult>>();
+            (rules ?? Enumerable.Empty<Action<ReaderCursor, ReaderResult>>()).ForEach(this.Rules.Add);
+            this.InitializeRules();
         }
 
         /// <summary>
-        /// Read the token sequence and generate expressions.
+        /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
-        /// <returns>Generated expressions.</returns>
-        public YacqExpression[] Read()
+        /// <param name="rules">The array of additional rules.</param>
+        public Reader(params Action<ReaderCursor, ReaderResult>[] rules)
+            : this((IEnumerable<Action<ReaderCursor, ReaderResult>>) rules)
         {
-            do
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Reader"/> class.
+        /// </summary>
+        public Reader()
+            : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Reads the code string and generates expressions.
+        /// </summary>
+        /// <param name="input">The code string to read.</param>
+        /// <returns>Generated expressions.</returns>
+        public YacqExpression[] Read(String input)
+        {
+            var cursor = new ReaderCursor(this, input);
+            var result = new ReaderResult();
+            while (cursor.PeekCharForward(0) != '\0')
             {
-                switch (this._cursor.Value.Type)
+                var index = cursor.Position.Index;
+                if (this.Rules
+                    .Do(f => f(cursor, result))
+                    .FirstOrDefault(_ => cursor.Position.Index > index) == null
+                )
                 {
-                    case TokenType.LeftParenthesis:
-                    case TokenType.LeftBracket:
-                    case TokenType.LeftBrace:
-                        this.EnterScope();
-                        break;
-                    case TokenType.RightParenthesis:
-                        this.LeaveScope().Apply(l =>
-                            this.Current.AddLast(YacqExpression.List(
-                                l
-#if SILVERLIGHT
-                                    .Cast<Expression>()
-#endif
-                            ))
-                        );
-                        break;
-                    case TokenType.RightBracket:
-                        this.LeaveScope().Apply(l =>
-                            this.Current.AddLast(YacqExpression.Vector(
-                                l
-#if SILVERLIGHT
-                                    .Cast<Expression>()
-#endif
-                            ))
-                        );
-                        break;
-                    case TokenType.RightBrace:
-                        this.LeaveScope().Apply(l =>
-                            this.Current.AddLast(YacqExpression.LambdaList(
-                                l
-#if SILVERLIGHT
-                                    .Cast<Expression>()
-#endif
-                            ))
-                        );
-                        break;
-                    case TokenType.Period:
-                        this.Current.RemoveLast().Apply(l =>
-                            this.Current.Hook.Push(_ => this.Current.AddLast(YacqExpression.List(
-                                YacqExpression.Identifier("."),
-                                l,
-                                _.RemoveLast()
-                            )))
-                        );
-                        break;
-                    case TokenType.Colon:
-                        this.Current.RemoveLast().Apply(l =>
-                            this.Current.Hook.Push(_ => this.Current.AddLast(YacqExpression.List(
-                                YacqExpression.Identifier(":"),
-                                l,
-                                _.RemoveLast()
-                            )))
-                        );
-                        break;
-                    case TokenType.Identifier:
-                        this.Current.AddLast(YacqExpression.Identifier(this._cursor.Value.Text));
-                        break;
-                    case TokenType.StringLiteral:
-                        this.Current.AddLast(YacqExpression.Text(this._cursor.Value.Text));
-                        break;
-                    case TokenType.NumberLiteral:
-                        this.Current.AddLast(YacqExpression.Number(this._cursor.Value.Text));
-                        break;
+                    return null;
                 }
-            } while ((this._cursor = this._cursor.Next).Value.Type != TokenType.End);
-            if (this._stack.Count > 1)
-            {
-                throw new ParseException("Missing close parenthesis.", this._cursor.Value);
             }
-            return this._stack.Single().List.ToArray();
+            if (result.Depth > 1)
+            {
+                throw new InvalidOperationException();
+            }
+            else
+            {
+                return result.EndScope(null);
+            }
         }
     }
 }

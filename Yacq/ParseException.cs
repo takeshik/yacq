@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -28,7 +28,9 @@
  */
 
 using System;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
@@ -40,10 +42,30 @@ namespace XSpect.Yacq
         : Exception
     {
         /// <summary>
-        /// Gets the token where the error occured.
+        /// Gets the expression to explain the cause of the expression.
         /// </summary>
-        /// <value>The token where the error occured.</value>
-        public Token Token
+        /// <value>The expression to explain the cause of the expression.</value>
+        public Expression Expression
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the start position in the source for the exception.
+        /// </summary>
+        /// <value>The start position in the source for the exception.</value>
+        public Nullable<TextPosition> StartPosition
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the end position in the source for the exception.
+        /// </summary>
+        /// <value>The end position in the source for the exception.</value>
+        public Nullable<TextPosition> EndPosition
         {
             get;
             private set;
@@ -58,21 +80,73 @@ namespace XSpect.Yacq
         {
         }
 
+        private ParseException(
+            String message,
+            Expression expression,
+            Nullable<TextPosition> startPosition,
+            Nullable<TextPosition> endPosition
+        )
+            : base(message + " (at " + GetPositionString(expression, startPosition, endPosition) + ")")
+        {
+            this.Expression = expression;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ParseException"/> class.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="token">The token where the error occured.</param>
-        public ParseException(String message, Token token)
-            : base(message + String.Format(
-                  " ({0} at line {1}, column {2}, position {3})",
-                  token.Type,
-                  token.Line,
-                  token.Column,
-                  token.Position
-              ))
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        public ParseException(
+            String message,
+            Expression expression
+        )
+            : this(message, expression, null, null)
         {
-            this.Token = token;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="position">The position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            TextPosition position
+        )
+            : this(message, null, position, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            TextPosition startPosition,
+            TextPosition endPosition
+        )
+            : this(message, null, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Expression expression,
+            TextPosition startPosition,
+            TextPosition endPosition
+        )
+            : this(message, expression, (Nullable<TextPosition>) startPosition, endPosition)
+        {
         }
 
 #if !SILVERLIGHT
@@ -86,6 +160,21 @@ namespace XSpect.Yacq
         {
         }
 #endif
+
+        private static String GetPositionString(Expression expression, Nullable<TextPosition> startPosition, Nullable<TextPosition> endPosition)
+        {
+            return ((expression as YacqExpression)
+                .Null(e => Tuple.Create(
+                    (startPosition ?? e.StartPosition).ToString(),
+                    (endPosition ?? e.EndPosition).ToString()
+                )) ?? Tuple.Create(
+                    (startPosition != null ? startPosition.Value.ToString() : null),
+                    (endPosition != null ? endPosition.Value.ToString() : null)
+                )).Let(_ => _.Item2 != null
+                    ? _.Item1 + " - " + _.Item1
+                    : _.Item1
+                );
+        }
     }
 
 #if !SILVERLIGHT

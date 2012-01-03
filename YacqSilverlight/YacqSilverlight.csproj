@@ -162,17 +162,20 @@
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\Reader.Scope.cs">
-      <Link>LanguageServices\Reader.Scope.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\Reader.DefaultRules.cs">
+      <Link>LanguageServices\Reader.DefaultRules.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\Token.cs">
-      <Link>LanguageServices\Token.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\ReaderCursor.cs">
+      <Link>LanguageServices\ReaderCursor.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\Tokenizer.cs">
-      <Link>LanguageServices\Tokenizer.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\ReaderResult.cs">
+      <Link>LanguageServices\ReaderResult.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\TokenType.cs">
-      <Link>LanguageServices\TokenType.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\ReaderScope.cs">
+      <Link>LanguageServices\ReaderScope.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\TextPosition.cs">
+      <Link>LanguageServices\TextPosition.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Linq\YacqQbservable.cs">
       <Link>Linq\YacqQbservable.cs</Link>

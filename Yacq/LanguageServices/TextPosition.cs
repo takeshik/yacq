@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -32,44 +32,23 @@ using System;
 namespace XSpect.Yacq.LanguageServices
 {
     /// <summary>
-    /// Represents code token.
+    /// Represents a position in the string.
     /// </summary>
-    public struct Token
+    public struct TextPosition
+        : IComparable<TextPosition>
     {
         /// <summary>
-        /// Gets the kind of this token.
+        /// Gets the 0-origin index of the string.
         /// </summary>
-        /// <value>Kind of this token.</value>
-        public TokenType Type
+        public Int32 Index
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// Gets the string expression of this token.
+        /// Gets the 1-origin line number of the string.
         /// </summary>
-        /// <value>The string expression of this token.</value>
-        public String Text
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets the 0-origin position in the sequence of the input of this token.
-        /// </summary>
-        /// <value>The 0-origin position in the sequence of the input of this token.</value>
-        public Int32 Position
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets the 1-origin line number of this token,
-        /// </summary>
-        /// <value>The 1-origin line number of this token.</value>
         public Int32 Line
         {
             get;
@@ -77,9 +56,8 @@ namespace XSpect.Yacq.LanguageServices
         }
 
         /// <summary>
-        /// Gets the 1-origin column number of this token,
+        /// Gets the 1-origin column number of the string.
         /// </summary>
-        /// <value>The 1-origin column number of this token.</value>
         public Int32 Column
         {
             get;
@@ -87,21 +65,38 @@ namespace XSpect.Yacq.LanguageServices
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Token"/> structure.
+        /// Initializes a new instance of <see cref="TextPosition"/>.
         /// </summary>
-        /// <param name="type">The kind of this token.</param>
-        /// <param name="text">The string expression of this token.</param>
-        /// <param name="position">The 0-origin position in the sequence of the input of this token.</param>
-        /// <param name="line">The 1-origin line number of this token.</param>
-        /// <param name="column">The 1-origin column number of this token.</param>
-        public Token(TokenType type, String text, Int32 position, Int32 line, Int32 column)
+        /// <param name="index">The 0-origin index of the string.</param>
+        /// <param name="line">The 1-origin line number of the string.</param>
+        /// <param name="column">The 1-origin column number of the string.</param>
+        public TextPosition(Int32 index, Int32 line, Int32 column)
             : this()
         {
-            this.Type = type;
-            this.Text = text;
-            this.Position = position;
+            this.Index = index;
             this.Line = line;
             this.Column = column;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this instance.
+        /// </returns>
+        public override String ToString()
+        {
+            return "L" + this.Line + ":C" + this.Column + " (idx:" + this.Index + ")";
+        }
+
+        /// <summary>
+        /// Compares this instance to a specified <see cref="TextPosition"/> object and indicates whether this instance is earlier than, the same as, or later than the second <see cref="TextPosition"/> object.
+        /// </summary>
+        /// <param name="other">An object to compare with this instance.</param>
+        /// <returns>A signed integer that indicates the relationship between this instance and <paramref name="other"/>,</returns>
+        public Int32 CompareTo(TextPosition other)
+        {
+            return this.Index.CompareTo(other.Index);
         }
     }
 }

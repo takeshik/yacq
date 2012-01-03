@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ Runner
  *   Runner and Compiler frontend of YACQ
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ Runner.
