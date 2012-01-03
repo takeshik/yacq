@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -62,11 +62,33 @@ namespace XSpect.Yacq
         /// <summary>
         /// Read code string and generate expressions without reducing.
         /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read.</param>
+        /// <returns>All expressions without reducing, generated from the code.</returns>
+        public static YacqExpression[] ReadAll(Reader reader, String code)
+        {
+            return (reader ?? new Reader()).Read(code);
+        }
+
+        /// <summary>
+        /// Read code string and generate expressions without reducing.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read.</param>
+        /// <returns>All expressions without reducing, generated from the code.</returns>
+        public static YacqExpression Read(Reader reader, String code)
+        {
+            return ReadAll(reader, code).LastOrDefault();
+        }
+
+        /// <summary>
+        /// Read code string and generate expressions without reducing.
+        /// </summary>
         /// <param name="code">Code string to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
         public static YacqExpression[] ReadAll(String code)
         {
-            return new Reader(new Tokenizer(code)).Read();
+            return ReadAll(null, code);
         }
 
         /// <summary>
@@ -76,7 +98,7 @@ namespace XSpect.Yacq
         /// <returns>All expressions without reducing, generated from the code.</returns>
         public static YacqExpression Read(String code)
         {
-            return ReadAll(code).Last();
+            return Read(null, code);
         }
 
         /// <summary>
@@ -87,12 +109,13 @@ namespace XSpect.Yacq
         /// <returns>All expressions generated from the code.</returns>
         public static Expression[] ParseAll(SymbolTable symbols, String code)
         {
-            return ReadAll(code)
+            return CreateSymbolTable(symbols).Let(s =>
+                ReadAll(s.Resolve("*reader*").Const<Reader>(), code)
 #if SILVERLIGHT
                 .Cast<Expression>()
 #endif
-                .ReduceAll(CreateSymbolTable(symbols))
-                .ToArray();
+                .ReduceAll(s)
+            ).ToArray();
         }
 
         /// <summary>
@@ -116,8 +139,8 @@ namespace XSpect.Yacq
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
         public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, String code, params AmbiguousParameterExpression[] parameters)
         {
-            var expressions = ReadAll(code);
             symbols = CreateSymbolTable(symbols);
+            var expressions = ReadAll(symbols.Resolve("*reader*").Const<Reader>(), code);
             return (LambdaExpression) YacqExpression.AmbiguousLambda(
                 symbols,
                 returnType,
@@ -532,6 +555,9 @@ namespace XSpect.Yacq
             return (symbols ?? new SymbolTable())
                 .If(s => !s.ExistsKey("$global"),
                     s => s.Add("$global", Expression.Constant(symbols))
+                )
+                .If(s => !s.ExistsKey("*reader*"),
+                    s => s.Add("*reader*", Expression.Constant(new Reader()))
                 )
                 .If(s => !s.ExistsKey("*assembly*"),
                     s => s.Add("*assembly*", Expression.Constant(new YacqAssembly("YacqGeneratedTypes")))

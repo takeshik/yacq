@@ -85,6 +85,11 @@
   <ItemGroup>
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
+    <Compile Include="LanguageServices\Reader.DefaultRules.cs" />
+    <Compile Include="LanguageServices\ReaderCursor.cs" />
+    <Compile Include="LanguageServices\ReaderResult.cs" />
+    <Compile Include="LanguageServices\ReaderScope.cs" />
+    <Compile Include="LanguageServices\TextPosition.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -107,11 +112,7 @@
     <Compile Include="Expressions\DispatchExpression.cs" />
     <Compile Include="Expressions\TypeCandidateExpression.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="LanguageServices\Reader.Scope.cs" />
     <Compile Include="LanguageServices\Reader.cs" />
-    <Compile Include="LanguageServices\Tokenizer.cs" />
-    <Compile Include="LanguageServices\TokenType.cs" />
-    <Compile Include="LanguageServices\Token.cs" />
     <Compile Include="Expressions\TextExpression.cs" />
     <Compile Include="Expressions\ListExpression.cs" />
     <Compile Include="Expressions\VectorExpression.cs" />

@@ -15,7 +15,7 @@ Global
 		DebugNoSign|Any CPU = DebugNoSign|Any CPU
 		Release|Any CPU = Release|Any CPU
 		ReleaseNoSign|Any CPU = ReleaseNoSign|Any CPU
-		Description = Yet Another Compilable Querying Language, based on Expression Trees API
+		Description = Yet Another Compilable Query Language, based on Expression Trees API
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AF21A720-B805-4F95-B872-068925A11BB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
