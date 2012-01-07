@@ -1042,7 +1042,7 @@ namespace XSpect.Yacq
 
         private void PrepareModify()
         {
-            if(this.IsReadOnly)
+            if (this.IsReadOnly)
             {
                 throw new InvalidOperationException("This SymbolTable is read-only.");
             }

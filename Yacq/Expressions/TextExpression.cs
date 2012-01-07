@@ -155,7 +155,7 @@ namespace XSpect.Yacq.Expressions
 
         private String ParseEscapeSequence(String str)
         {
-            if(!str.StartsWith("\\"))
+            if (!str.StartsWith("\\"))
             {
                 return str;
             }

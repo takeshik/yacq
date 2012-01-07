@@ -270,6 +270,52 @@ namespace XSpect.Yacq.LanguageServices
         }
 
         /// <summary>
+        /// Peeks characters as a string while specified character sequence is encountered, in forward direction.
+        /// </summary>
+        /// <param name="chars">A character sequence to search the terminator of peeking.</param>
+        /// <returns>A string of peeked characters in forward direction.</returns>
+        public String PeekWhileStringForward(IEnumerable<Char> chars)
+        {
+            return this.PeekStringForward(this.EnumerateForward()
+                .Buffer(chars.Count(), 1)
+                .Select((c, i) => Tuple.Create(c, i))
+                .FirstOrDefault(_ => _.Item1.SequenceEqual(chars))
+                .Null(_ => _.Item2)
+            );
+        }
+
+        /// <summary>
+        /// Peeks characters as a string while specified character sequence is encountered, in forward direction.
+        /// </summary>
+        /// <param name="chars">A character sequence to search the terminator of peeking.</param>
+        /// <returns>A string of peeked characters in backward direction.</returns>
+        public String PeekWhileStringBackward(IEnumerable<Char> chars)
+        {
+            return this.PeekStringForward(this.EnumerateBackward()
+                .Buffer(chars.Count(), 1)
+                .Select((c, i) => Tuple.Create(c, i))
+                .FirstOrDefault(_ => _.Item1.SequenceEqual(chars))
+                .Null(_ => _.Item2)
+            );
+        }
+
+        /// <summary>
+        /// Peeks characters as a string while specified character sequence is encountered, in forward direction.
+        /// </summary>
+        /// <param name="chars">A character sequence to search the terminator of peeking.</param>
+        /// <returns>A string of peeked characters in ordered backward direction.</returns>
+        public String PeekWhileStringOrderedBackward(IEnumerable<Char> chars)
+        {
+            chars = chars.Reverse();
+            return this.PeekStringForward(this.EnumerateBackward()
+                .Buffer(chars.Count(), 1)
+                .Select((c, i) => Tuple.Create(c, i))
+                .FirstOrDefault(_ => _.Item1.SequenceEqual(chars))
+                .Null(_ => _.Item2)
+            );
+        }
+
+        /// <summary>
         /// Moves this cursor to specified characters in forward direction.
         /// </summary>
         /// <param name="count">The number to move this cursor.</param>

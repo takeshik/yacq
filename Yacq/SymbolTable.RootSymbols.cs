@@ -932,7 +932,18 @@ namespace XSpect.Yacq
             {
                 var type = (e.Arguments[0].List(":") ?? new [] { e.Arguments[0], YacqExpression.TypeCandidate(typeof(Object)), })
                     .Let(es => s.Resolve("*assembly*").Const<YacqAssembly>().DefineType(
-                        es.First().Id(),
+                        es.First().List(".")
+                            .Null(l => String.Join(".", l
+                                .Expand(_ => _ is ListExpression
+                                    ? ((ListExpression) _).Elements
+                                    : Enumerable.Empty<Expression>()
+                                )
+                                .OfType<IdentifierExpression>()
+                                .Select(_ => _.Name)
+                                .Where(_ => _ != ".")
+                                .ToArray()
+                                .Let(_ => _.TakeLast(2).Concat(_.SkipLast(2).Reverse()))
+                            ), es.First().Id()),
                         (es.Last() is VectorExpression
                             ? ((VectorExpression) es.Last()).Elements
                             : EnumerableEx.Return(es.Last())

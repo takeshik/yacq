@@ -92,26 +92,35 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
+            Expression value = null;
             if (this.Elements.IsEmpty())
             {
                 return Empty();
             }
-            var value = this[0].TryReduce(symbols);
-            if (value != null && value.Type.GetDelegateSignature() != null)
+            if (!(this[0] is IdentifierExpression)
+                || symbols.ExistsKey(DispatchTypes.Member, this[0].Id())
+            )
             {
-                return Invoke(value, this.Elements.Skip(1).ReduceAll(symbols));
+                value = this[0].TryReduce(symbols);
+                if (value != null && value.Type.GetDelegateSignature() != null)
+                {
+                    return Invoke(value, this.Elements.Skip(1).ReduceAll(symbols));
+                }
+                if (value is TypeCandidateExpression)
+                {
+                    return Dispatch(
+                        symbols,
+                        DispatchTypes.Constructor,
+                        value,
+                        null,
+                        this.Elements.Skip(1)
+                    );
+                }
             }
-            else if (value is TypeCandidateExpression)
-            {
-                return Dispatch(
-                    symbols,
-                    DispatchTypes.Constructor,
-                    value,
-                    null,
-                    this.Elements.Skip(1)
-                );
-            }
-            else if (this[0] is IdentifierExpression && symbols.ExistsKey(DispatchTypes.Method, this[0].Id()))
+            if (this[0] is IdentifierExpression
+                && symbols.ExistsKey(DispatchTypes.Method, this[0].Id())
+                || symbols.Missing != DispatchExpression.DefaultMissing
+            )
             {
                 return Function(
                     symbols,
@@ -119,14 +128,11 @@ namespace XSpect.Yacq.Expressions
                     this.Elements.Skip(1)
                 );
             }
-            else if (value != null && this.Elements.Count == 1)
+            if (value != null && this.Elements.Count == 1)
             {
                 return value;
             }
-            else
-            {
-                throw new ParseException("List evaluation failed: " + this);
-            }
+            throw new ParseException("List evaluation failed: " + this);
         }
     }
 
