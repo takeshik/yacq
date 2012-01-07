@@ -56,11 +56,27 @@ namespace XSpect.Yacq.LanguageServices
         /// <summary>
         /// Gets the count of the <see cref="ReaderScope"/> stack in this instance.
         /// </summary>
+        /// <value>The count of the <see cref="ReaderScope"/> stack in this instance.</value>
         public Int32 Depth
         {
             get
             {
                 return this._scopes.Count;
+            }
+        }
+
+        /// <summary>
+        /// Gets the sequence of tags in the <see cref="ReaderScope"/> stack in this instance.
+        /// </summary>
+        /// <value>The sequence of tags in the <see cref="ReaderScope"/> stack in this instance.</value>
+        public IEnumerable<String> Tags
+        {
+            get
+            {
+                return this._scopes
+                    .SkipLast(1)
+                    .Reverse()
+                    .Select(s => s.Tag);
             }
         }
 
@@ -91,7 +107,7 @@ namespace XSpect.Yacq.LanguageServices
         {
             if (this.Current.Tag != tag)
             {
-                throw new ParseException("Invalid tag match: expected \"" + this.Current.Tag + "\" but got \"" + tag + "\".");
+                throw new ParseException("Scope tag was not matched: expected \"" + this.Current.Tag + "\" but got \"" + tag + "\"");
             }
             else
             {

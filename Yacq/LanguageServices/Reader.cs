@@ -99,7 +99,7 @@ namespace XSpect.Yacq.LanguageServices
             }
             if (result.Depth > 1)
             {
-                throw new InvalidOperationException();
+                throw new ParseException("Scope was not closed: " + String.Join(" > ", result.Tags), cursor.Position);
             }
             else
             {

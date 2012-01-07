@@ -30,6 +30,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using XSpect.Yacq.Expressions;
 
@@ -55,7 +56,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Comma
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == ',')
+                    if (c.PeekCharForward(0) == ',')
                     {
                         c.MoveForward(1);
                     }
@@ -64,21 +65,57 @@ namespace XSpect.Yacq.LanguageServices
                 #region One-line Comment
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == ';')
+                    if (c.PeekCharForward(0) == ';')
                     {
                         c.MoveForward(1);
                         c.MoveForward(c.PeekWhileStringForward(_ => _ != '\n' && _ != '\r').Length + 1);
-                        if(c.PeekCharForward(0) == '\n')
+                        if (c.PeekCharForward(0) == '\n')
                         {
                             c.MoveForward(1);
                         }
                     }
                 },
                 #endregion
+                #region Multi-line Comment
+                (c, r) =>
+                {
+                    if (c.MatchForward("#|") || c.MatchForward("|#"))
+                    {
+                        do
+                        {
+                            c.MoveForward(c.PeekWhileStringForward(_ => _ != '#' && _ != '|').Length);
+                            if (c.PeekCharForward(0) == '\0')
+                            {
+                                return;
+                            }
+                            else if (c.PeekStringForward(2) == "#|")
+                            {
+                                r.BeginScope("Comment", c.Position);
+                                c.MoveForward(2);
+                            }
+                            else if (c.PeekStringForward(2) == "|#")
+                            {
+                                r.EndScope("Comment");
+                                c.MoveForward(2);
+                            }
+                        } while (r.Current.Tag == "Comment");
+                    }
+                },
+                #endregion
+                #region Expression Comment
+                (c, r) =>
+                {
+                    if (c.MatchForward("#;"))
+                    {
+                        r.Current.RegisterHook(_ => _.Drop());
+                        c.MoveForward(2);
+                    }
+                },
+                #endregion
                 #region Open Parenthesis
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == '(')
+                    if (c.PeekCharForward(0) == '(')
                     {
                         r.BeginScope("Parenthesis", c.Position);
                         c.MoveForward(1);
@@ -88,7 +125,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Close Parenthesis
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == ')')
+                    if (c.PeekCharForward(0) == ')')
                     {
                         r.Current.StartPosition.Let(p =>
                             YacqExpression.List(r.EndScope("Parenthesis"))
@@ -101,7 +138,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Open Bracket
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == '[')
+                    if (c.PeekCharForward(0) == '[')
                     {
                         r.BeginScope("Bracket", c.Position);
                         c.MoveForward(1);
@@ -111,7 +148,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Close Bracket
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == ']')
+                    if (c.PeekCharForward(0) == ']')
                     {
                         r.Current.StartPosition.Let(p =>
                             YacqExpression.Vector(r.EndScope("Bracket"))
@@ -124,7 +161,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Open Brace
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == '{')
+                    if (c.PeekCharForward(0) == '{')
                     {
                         r.BeginScope("Brace", c.Position);
                         c.MoveForward(1);
@@ -134,7 +171,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Close Brace
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == '}')
+                    if (c.PeekCharForward(0) == '}')
                     {
                         r.Current.StartPosition.Let(p =>
                             YacqExpression.LambdaList(r.EndScope("Brace"))
@@ -147,15 +184,22 @@ namespace XSpect.Yacq.LanguageServices
                 #region Period
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == '.')
+                    if (c.PeekCharForward(0) == '.')
                     {
                         var left = r.Current.Drop();
                         var id = YacqExpression.Identifier(".").Apply(e => e.SetPosition(c, 1));
                         r.Current.RegisterHook(_ => _.Add(
-                            _.Drop().Let(right => YacqExpression.List(
-                                id,
-                                left,
-                                right
+                            _.Drop().Let(right => (left.List(":") != null
+                                ? ((ListExpression) left).Let(l => YacqExpression.List(l.Elements
+                                      .SkipLast(1)
+                                      .Concat(EnumerableEx.Return(
+#if SILVERLIGHT
+                                          (Expression)
+#endif
+                                          YacqExpression.List(id, l.Elements.Last(), right)
+                                      ))
+                                  ))
+                                : YacqExpression.List(id, left, right)
                             ).Apply(e => e.SetPosition(left.StartPosition, right.EndPosition)))
                         ));
                     }
@@ -164,7 +208,7 @@ namespace XSpect.Yacq.LanguageServices
                 #region Colon
                 (c, r) =>
                 {
-                    if(c.PeekCharForward(0) == ':')
+                    if (c.PeekCharForward(0) == ':')
                     {
                         var left = r.Current.Drop();
                         var id = YacqExpression.Identifier(":").Apply(e => e.SetPosition(c, 1));
