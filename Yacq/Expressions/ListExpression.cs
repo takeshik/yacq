@@ -98,7 +98,7 @@ namespace XSpect.Yacq.Expressions
                 return Empty();
             }
             if (!(this[0] is IdentifierExpression)
-                || symbols.ExistsKey(DispatchTypes.Member, this[0].Id())
+                || symbols.ResolveMatch(DispatchTypes.Member, this[0].Id()) != null
             )
             {
                 value = this[0].TryReduce(symbols);
@@ -118,7 +118,7 @@ namespace XSpect.Yacq.Expressions
                 }
             }
             if (this[0] is IdentifierExpression
-                && symbols.ExistsKey(DispatchTypes.Method, this[0].Id())
+                && symbols.ResolveMatch(DispatchTypes.Method, this[0].Id()) != null
                 || symbols.Missing != DispatchExpression.DefaultMissing
             )
             {
