@@ -86,7 +86,7 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "=")]
             public static Expression Assign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Assign(e.Arguments[0].Reduce(s), e.Arguments.Last().Reduce(s))
+                return e.Arguments[0].Reduce(s).Let(l => Expression.Assign(l, e.Arguments.Last().Reduce(s, l.Type)))
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "=", e.Arguments
                               .Skip(1)
