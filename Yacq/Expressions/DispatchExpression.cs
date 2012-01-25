@@ -45,6 +45,10 @@ namespace XSpect.Yacq.Expressions
     public partial class DispatchExpression
         : YacqExpression
     {
+        private const BindingFlags _instanceFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+
+        private const BindingFlags _staticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+
         private Expression _left;
 
         /// <summary>
@@ -171,49 +175,31 @@ namespace XSpect.Yacq.Expressions
         private Expression DispatchByTypeSystem(SymbolTable symbols, Type expectedType)
         {
             return this.GetMembers(symbols)
-                .Select(m => m is MethodInfo
-                    && ((MethodInfo) m).IsExtensionMethod()
-                    && !(this._left is TypeCandidateExpression)
-                    ? new Candidate(
-                          null,
-                          m,
-                          this.TypeArguments,
-                          this.Arguments
-                              .StartWith(this._left)
-                              .ToArray()
-                      )
-                    : new Candidate(
-                          this._left is TypeCandidateExpression ? null : this._left,
-                          m,
-                          this.TypeArguments,
-                          this.Arguments
-                      )
-                )
-                .Where(c => (c.Arguments.Count == c.Parameters.Count
-                    || (c.IsParamArray && c.Arguments.Count >= c.Parameters.Count - 1))
-                )
-                .Select(c => new Candidate(
-                    c.Instance,
-                    c.Member,
-                    c.TypeArguments,
-                    c.ParameterMap
-                        .Select(_ => _.Item2.Reduce(symbols, _.Item1))
-                        .ToArray()
-                ))
-                .Where(c => c.Arguments.All(e => e != null) && c.Parameters
-                    .SelectMany(p => c.IsParamArrayContext
-                        ? EnumerableEx.Repeat(p.ParameterType.GetElementType())
-                        : EnumerableEx.Return(p.ParameterType)
-                    )
-                    .Select(t => t.GetDelegateSignature() != null
-                        ? t.GetDelegateSignature().GetParameters().Length
-                        : 0
-                    )
-                    .If(_ => c.IsParamArrayContext, _ => _.Take(c.Arguments.Count))
-                    .SequenceEqual(c.Arguments.Select(a => a.GetParameterCount()))
+                .Select(CreateCandidate)
+                .Choose(c => c.ParameterMap != null
+                    ? c.ParameterMap
+                          .Select(_ => _.Item2.Reduce(symbols, _.Item1))
+                          .ToArray()
+                          .If(
+                              es => es.All(a => a != null),
+                              es => c.Clone(argumentNames: new String[c.Parameters.Count], arguments: es),
+                              es => null
+                          )
+                    : null
                 )
                 .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
-                .Choose(c => CheckAndFixArguments(symbols, c))
+                .Choose(c => c.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
+                    ? c.Clone(arguments: (c.IsParamArrayContext
+                          ? c.Arguments
+                                .Take(c.Parameters.Count - 1)
+                                .Concat(EnumerableEx.Return(
+                                    Vector(symbols, c.Arguments.Skip(c.Parameters.Count - 1))
+                                        .Reduce(symbols, c.Parameters.Last().ParameterType)
+                                ))
+                          : c.ParameterMap.Select(_ => _.Item2)
+                      ).ToArray())
+                    : null
+                )
                 .OrderBy(c => c)
                 .ThenBy(c => c.Arguments.Sum(e => e.GetParameterCount()))
                 .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
@@ -223,62 +209,76 @@ namespace XSpect.Yacq.Expressions
                     _ => _
                 ).Count()))
                 .FirstOrDefault()
-                .Null(c => this.GetResultExpression(c))
+                .Null(c => this.GetResultExpression(symbols, c))
                 ?? this.DispatchFailback(symbols);
         }
 
         private IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
         {
-            try
+            switch (this.DispatchType & DispatchTypes.TargetMask)
             {
-                switch (this.DispatchType)
-                {
-                    case DispatchTypes.Constructor:
-                        return ((TypeCandidateExpression) this._left).ElectedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-                    case DispatchTypes.Member:
-                        return String.IsNullOrEmpty(this.Name)
-                            // Default members must be instance properties.
-                            ? this._left.Type.GetDefaultMembers()
-                            : (this._left is TypeCandidateExpression
-                                  ? ((TypeCandidateExpression) this._left).ElectedType.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                                  : this._left.Type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                              ).Where(m => m.Name == this.Name && (m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property | m.MemberType == MemberTypes.Event));
-                    case DispatchTypes.Method:
-                        return (this._left is TypeCandidateExpression
-                            ? ((IEnumerable<MethodInfo>) ((TypeCandidateExpression) this._left).ElectedType
-                                  .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                              )
-                                  .If(_ => ((TypeCandidateExpression) this._left).ElectedType.IsInterface, _ =>
-                                      _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Static))
-                                  )
-                                  .Where(m => m.Name == this.Name)
-                            : ((IEnumerable<MethodInfo>) this._left.Type
-                                  .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                              )
-                                  .If(_ => this._left.Type.IsInterface, _ =>
-                                      _.Concat(typeof(Object).GetMethods(BindingFlags.Public | BindingFlags.Instance))
-                                  )
-                                  .Where(m => m.Name == this.Name)
-                                  .Concat(symbols.AllLiterals.Values
-                                      .OfType<TypeCandidateExpression>()
-                                      .SelectMany(e => e.Candidates)
-                                      .Where(t => t.HasExtensionMethods())
-                                      .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
-                                      .Where(m => m.Name == this.Name && m.IsExtensionMethod())
-                                  )
+                case DispatchTypes.Constructor:
+                    return GetTypes((TypeCandidateExpression) this._left)
+                        .SelectMany(t => Static.GetTargetType(t).GetConstructors(_instanceFlags))
 #if SILVERLIGHT
-                    ).Cast<MemberInfo>();
-#else
-                    );
+                        .Cast<MemberInfo>()
 #endif
-                    default:
-                        throw new ParseException("Dispatcher doesn't support: " + this.DispatchType);
-                }
+;
+                case DispatchTypes.Member:
+                    return String.IsNullOrEmpty(this.Name)
+                        // Default members must be instance properties.
+                        ? this._left.Type.GetDefaultMembers()
+                        : GetTypes(this._left)
+                              .SelectMany(t => Static.GetTargetType(t)
+                                  .Null(st => st.GetMembers(_staticFlags))
+                                  ?? t.GetMembers(_instanceFlags)
+                              )
+                              .Where(m => m.Name == this.Name && (
+                                  m.MemberType == MemberTypes.Field ||
+                                  m.MemberType == MemberTypes.Property ||
+                                  m.MemberType == MemberTypes.Event ||
+                                  m.MemberType == MemberTypes.NestedType
+                              ));
+                case DispatchTypes.Method:
+                    return GetTypes(this._left)
+                        .SelectMany(t => Static.GetTargetType(t)
+                            .Null(st => ((IEnumerable<MethodInfo>) st.GetMethods(_staticFlags))
+                                .If(_ => t.IsInterface, _ => _.Concat(typeof(Object).GetMethods(_staticFlags)))
+                            ) ?? ((IEnumerable<MethodInfo>) t.GetMethods(_instanceFlags))
+                                .If(_ => t.IsInterface, _ => _.Concat(typeof(Object).GetMethods(_instanceFlags)))
+                                .Concat(symbols.AllLiterals.Values
+                                    .OfType<TypeCandidateExpression>()
+                                    .SelectMany(e => e.Candidates)
+                                    .Where(ct => ct.HasExtensionMethods())
+                                    .SelectMany(ct => ct.GetMethods(_staticFlags))
+                                    .Where(m => m.Name == this.Name && m.IsExtensionMethod())
+                                )
+                        )
+                        .Where(m => m.Name == this.Name)
+#if SILVERLIGHT
+                        .Cast<MemberInfo>()
+#endif
+;
+                default:
+                    throw new ParseException("Dispatcher doesn't support: " + this.DispatchType);
             }
-            catch
-            {
-                return Enumerable.Empty<MemberInfo>();
-            }
+        }
+
+        private Candidate CreateCandidate(MemberInfo member)
+        {
+            return new Candidate(
+                (this._left is TypeCandidateExpression || (member as MethodInfo).Null(m => m.IsExtensionMethod()))
+                    ? null
+                    : this._left,
+                member,
+                this.TypeArguments,
+                this.Arguments
+                    .Select(e => e.List(":").Null(l => l.First().Id()))
+                    .ToArray(),
+                this.Arguments
+                    .Select(e => e.List(":").Null(l => l.Last(), e))
+                    .ToArray()
+            );
         }
 
         private Candidate InferTypeArguments(Candidate candidate, IDictionary<Type, Type> typeArgumentMap, SymbolTable symbols)
@@ -286,117 +286,95 @@ namespace XSpect.Yacq.Expressions
             return this.DispatchType != DispatchTypes.Method
                 ? candidate
                 : new Dictionary<Type, Type>(typeArgumentMap).Let(map =>
-                  {
-                      if (map.Count == candidate.Method.GetGenericArguments().Length)
-                      {
-                          return new Candidate(
-                              candidate.Instance,
-                              candidate.Method != null && candidate.Method.IsGenericMethodDefinition
-                                  ? candidate.Method.MakeGenericMethod(typeArgumentMap.ToArgumentArray())
-                                  : candidate.Member,
-                              map,
-                              candidate.ParameterMap
-                                  .Select(_ => _.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null
-                                      ? ((AmbiguousLambdaExpression) _.Item2)
-                                            .ApplyTypeArguments(_.Item1)
-                                            .ApplyTypeArguments(map)
-                                            .Reduce(symbols, _.Item1.ReplaceGenericArguments(map))
-                                      : _.Item2
-                                  )
-                                  .ToArray()
-                          );
-                      }
-                      else
-                      {
-                          candidate.ParameterMap
-                              .Where(_ => (_.Item1.IsGenericParameter
-                                  ? EnumerableEx.Return(_.Item1)
-                                  : _.Item1.GetGenericArguments()
-                              )
-                                  .Any(t => !map.ContainsKey(t))
-                              )
-                              .ForEach(_ =>
-                              {
-                                  if (_.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null)
-                                  {
-                                      if (_.Item1.GetDelegateSignature().ReturnType.Let(r =>
-                                          r.IsGenericParameter && !map.ContainsKey(r)
-                                      ))
-                                      {
-                                          _.Item1.GetDelegateSignature().GetParameters()
-                                              .Select(p => p.ParameterType)
-                                              .Where(t => t.IsGenericParameter)
-                                              .Select(t => map.ContainsKey(t) ? map[t] : null)
-                                              .If(ts => ts.All(t => t != null), ts =>
-                                                  map[_.Item1.GetDelegateSignature().ReturnType] = ((AmbiguousLambdaExpression) _.Item2)
-                                                      .ApplyTypeArguments(ts)
-                                                      .Type(symbols)
-                                                      .GetDelegateSignature()
-                                                      .ReturnType
-                                              );
-                                      }
-                                  }
-                                  else if (_.Item1.ContainsGenericParameters)
-                                  {
-                                      (_.Item1.IsGenericParameter
-                                          ? EnumerableEx.Return(Tuple.Create(_.Item1, _.Item2.Type))
-                                          : _.Item1.GetAppearingTypes()
-                                                .Zip(_.Item2.Type.GetCorrespondingType(_.Item1).GetAppearingTypes(), Tuple.Create)
-                                                .Where(t => t.Item1.IsGenericParameter)
-                                      ).ForEach(t => map[t.Item1] = t.Item2);
-                                  }
-                              });
-                          return map.Keys.All(typeArgumentMap.ContainsKey)
-                              ? null
-                              : this.InferTypeArguments(candidate, map, symbols);
-                      }
-                  });
+                {
+                    if (map.Count == candidate.Method.GetGenericArguments().Length)
+                    {
+                        return candidate.Clone(
+                            member: candidate.Method != null && candidate.Method.IsGenericMethodDefinition
+                                ? candidate.Method.MakeGenericMethod(typeArgumentMap.ToArgumentArray())
+                                : candidate.Member,
+                            arguments: candidate.ParameterMap
+                                .Select(_ => _.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null
+                                    ? ((AmbiguousLambdaExpression) _.Item2)
+                                          .ApplyTypeArguments(_.Item1)
+                                          .ApplyTypeArguments(map)
+                                          .Reduce(symbols, _.Item1.ReplaceGenericArguments(map))
+                                    : _.Item2
+                                )
+                                .ToArray()
+                        );
+                    }
+                    else
+                    {
+                        candidate.ParameterMap
+                            .Where(_ => (_.Item1.IsGenericParameter
+                                ? EnumerableEx.Return(_.Item1)
+                                : _.Item1.GetGenericArguments()
+                            )
+                                .Any(t => !map.ContainsKey(t))
+                            )
+                            .ForEach(_ =>
+                            {
+                                if (_.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null)
+                                {
+                                    if (_.Item1.GetDelegateSignature().ReturnType.Let(r =>
+                                        r.IsGenericParameter && !map.ContainsKey(r)
+                                    ))
+                                    {
+                                        _.Item1.GetDelegateSignature().GetParameters()
+                                            .Select(p => p.ParameterType)
+                                            .Where(t => t.IsGenericParameter)
+                                            .Select(t => map.ContainsKey(t) ? map[t] : null)
+                                            .If(ts => ts.All(t => t != null), ts =>
+                                                map[_.Item1.GetDelegateSignature().ReturnType] = ((AmbiguousLambdaExpression) _.Item2)
+                                                    .ApplyTypeArguments(ts)
+                                                    .Type(symbols)
+                                                    .GetDelegateSignature()
+                                                    .ReturnType
+                                            );
+                                    }
+                                }
+                                else if (_.Item1.ContainsGenericParameters)
+                                {
+                                    (_.Item1.IsGenericParameter
+                                        ? EnumerableEx.Return(Tuple.Create(_.Item1, _.Item2.Type))
+                                        : _.Item1.GetAppearingTypes()
+                                              .Zip(_.Item2.Type.GetCorrespondingType(_.Item1).GetAppearingTypes(), Tuple.Create)
+                                              .Where(t => t.Item1.IsGenericParameter)
+                                    ).ForEach(t => map[t.Item1] = t.Item2);
+                                }
+                            });
+                        return map.Keys.All(typeArgumentMap.ContainsKey)
+                            ? null
+                            : this.InferTypeArguments(candidate, map, symbols);
+                    }
+                });
         }
 
-        private static Candidate CheckAndFixArguments(SymbolTable symbols, Candidate candidate)
-        {
-            return candidate.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
-                ? new Candidate(
-                      candidate.Instance,
-                      candidate.Member,
-                      candidate.TypeArgumentMap,
-                      candidate.Arguments
-                          .If(_ => candidate.IsParamArrayContext, _ =>
-                              (IList<Expression>) (_
-                                  .Take(candidate.Parameters.Count - 1)
-                                  .Concat(EnumerableEx.Return(
-#if SILVERLIGHT
-                                      (Expression)
-#endif
-                                      Vector(symbols, _.Skip(candidate.Parameters.Count - 1))
-                                          .Reduce(symbols, candidate.Parameters.Last().ParameterType)
-                                  ))
-                              .ToArray())
-                          )
-                  )
-                : null;
-        }
-
-        private Expression GetResultExpression(Candidate c)
+        private Expression GetResultExpression(SymbolTable symbols, Candidate c)
         {
             switch (this.DispatchType)
             {
                 case DispatchTypes.Constructor:
                     return New(c.Constructor, c.Arguments);
                 case DispatchTypes.Member:
-                    return c.Property != null
-                        ? c.Arguments.Any()
-                              ? (Expression) Property(c.Instance, c.Property, c.Arguments)
-                              : Property(c.Instance, c.Property)
-                        : c.Field != null
-                              ? (Expression) Field(c.Instance, c.Field)
+                    switch (c.Member.MemberType)
+                    {
+                        case MemberTypes.Field:
+                            return Field(c.Instance, c.Field);
+                        case MemberTypes.Property:
+                            return c.Arguments.Any()
+                                ? (Expression) Property(c.Instance, c.Property, c.Arguments)
+                                : Property(c.Instance, c.Property);
+                        case MemberTypes.Event:
+                            return
 #if __MonoCS__
-                              : null;
+                                null;
 #else
-                              : typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
+ typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
                                     typeof(Observable),
                                     "FromEventPattern",
-                                    new []
+                                    new[]
                                     {
                                         c.Event.EventHandlerType,
                                         c.Event.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType,
@@ -423,6 +401,11 @@ namespace XSpect.Yacq.Expressions
                                     ), t)
                                 ));
 #endif
+                        case MemberTypes.NestedType:
+                            return TypeCandidate(symbols, c.Type);
+                        default:
+                            return null;
+                    }
                 default: // case DispatchType.Method:
                     return Call(c.Instance, c.Method, c.Arguments);
             }
@@ -454,6 +437,19 @@ namespace XSpect.Yacq.Expressions
             {
                 throw new ParseException("Dispatch failed: " + this);
             }
+        }
+
+        private static IEnumerable<Type> GetTypes(Expression expression)
+        {
+            return expression is TypeCandidateExpression
+                ? GetTypes((TypeCandidateExpression) expression)
+                : EnumerableEx.Return(expression.Type);
+        }
+
+        private static IEnumerable<Type> GetTypes(TypeCandidateExpression expression)
+        {
+            return expression.Candidates
+                .Select(t => (typeof(Static<>).MakeGenericType(t)));
         }
     }
 

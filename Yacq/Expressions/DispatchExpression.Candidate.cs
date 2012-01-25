@@ -37,9 +37,13 @@ namespace XSpect.Yacq.Expressions
 {
     partial class DispatchExpression
     {
-        private class Candidate
+        internal class Candidate
             : IComparable<Candidate>
         {
+            private readonly Lazy<IList<String>> _filledArgumentNames;
+
+            private readonly Lazy<IList<Tuple<Type, Expression>>> _parameterMap;
+
             public Expression Instance
             {
                 get;
@@ -71,6 +75,20 @@ namespace XSpect.Yacq.Expressions
                               .Zip(value, Tuple.Create)
                               .ToDictionary(_ => _.Item1, _ => _.Item2)
                         : new Dictionary<Type, Type>();
+                }
+            }
+
+            public IList<String> ArgumentNames
+            {
+                get;
+                private set;
+            }
+
+            public IList<String> FilledArgumentNames
+            {
+                get
+                {
+                    return this._filledArgumentNames.Value;
                 }
             }
 
@@ -148,17 +166,11 @@ namespace XSpect.Yacq.Expressions
                 }
             }
 
-            public IEnumerable<Tuple<Type, Expression>> ParameterMap
+            public IList<Tuple<Type, Expression>> ParameterMap
             {
                 get
                 {
-                    return this.Parameters
-                        .Select(p => p.ParameterType)
-                        .If(_ => this.IsParamArray, _ => _
-                            .Take(this.Parameters.Count() - 1)
-                            .Concat(EnumerableEx.Repeat(this.Parameters.Last().ParameterType.GetElementType()))
-                        )
-                        .Zip(this.Arguments, Tuple.Create);
+                    return this._parameterMap.Value;
                 }
             }
 
@@ -180,20 +192,79 @@ namespace XSpect.Yacq.Expressions
                 }
             }
 
-            public Candidate(Expression instance, MemberInfo member, IDictionary<Type, Type> typeArgumentMap, IList<Expression> arguments)
+            private Candidate(
+                Expression instance,
+                MemberInfo member,
+                IList<String> argumentNames,
+                IList<Expression> arguments
+            )
             {
+                this._filledArgumentNames = new Lazy<IList<String>>(() => this.ArgumentNames
+                    .TakeWhile(n => n == null)
+                    .Count()
+                    .Let(c => this.Parameters
+                        .Select(p => p.Name)
+                        .Take(c)
+                        .Concat(this.ArgumentNames.Skip(c))
+                    )
+                    .ToArray()
+                );
+                this._parameterMap = new Lazy<IList<Tuple<Type, Expression>>>(() =>
+                    (this.IsParamArrayContext
+                        // Guard for irregular parameter names, such as T[]..ctor(int <null>)
+                        || this.Parameters.Any(p => String.IsNullOrWhiteSpace(p.Name))
+                        ? this.ArgumentNames.All(n => n == null)
+                              ? this.Parameters
+                                    .SkipLast(1)
+                                    .Select(p => p.ParameterType)
+                                    .Concat(EnumerableEx.Repeat(
+                                        this.Parameters.Last().ParameterType.GetElementType()
+                                    ))
+                                    .Zip(this.Arguments, Tuple.Create)
+                              : null
+                        : this.Arguments.Count <= this.Parameters.Count
+                              && this.Parameters.All(p => this.FilledArgumentNames.Contains(p.Name) || p.IsOptional)
+                              ? this.FilledArgumentNames
+                                    .Zip(this.Arguments, Tuple.Create)
+                                    .ToDictionary(_ => _.Item1, _ => _.Item2)
+                                    .Let(d => this.Parameters.Select(p => Tuple.Create(
+                                        p.ParameterType,
+                                        d.ContainsKey(p.Name)
+                                            ? d[p.Name]
+                                            : Constant(p.DefaultValue)
+                                   )))
+                              : null
+                    )
+                    .Null(_ => _.ToArray())
+                );
                 this.Instance = instance;
                 this.Member = member;
-                this.TypeArgumentMap = typeArgumentMap ?? new Dictionary<Type, Type>();
+                this.ArgumentNames = argumentNames ?? new String[this.Method.GetParameters().Length];
                 this.Arguments = arguments;
             }
 
-            public Candidate(Expression instance, MemberInfo member, IList<Type> typeArguments, IList<Expression> arguments)
+            public Candidate(
+                Expression instance,
+                MemberInfo member,
+                IDictionary<Type, Type> typeArgumentMap,
+                IList<String> argumentNames,
+                IList<Expression> arguments
+            )
+                : this(instance, member, argumentNames, arguments)
             {
-                this.Instance = instance;
-                this.Member = member;
+                this.TypeArgumentMap = typeArgumentMap ?? new Dictionary<Type, Type>();
+            }
+
+            public Candidate(
+                Expression instance,
+                MemberInfo member,
+                IList<Type> typeArguments,
+                IList<String> argumentNames,
+                IList<Expression> arguments
+            )
+                : this(instance, member, argumentNames, arguments)
+            {
                 this.TypeArguments = typeArguments ?? new Type[0];
-                this.Arguments = arguments;
             }
 
             public override String ToString()
@@ -203,7 +274,11 @@ namespace XSpect.Yacq.Expressions
                     + (this.TypeArguments.Any()
                           ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">"
                           : String.Join(", ", this.TypeArguments.Select(t => t.Name)))
-                    + "(" + String.Join(", ", this.Arguments.Select(t => t.ToString())) + ")";
+                    + "(" + String.Join(", ", this.ArgumentNames.Zip(this.Arguments, (n, a) => n != null
+                          ? n + ": " + a
+                          : a.ToString()
+                      ))
+                    + ")";
             }
 
             public Int32 CompareTo(Candidate other)
@@ -215,8 +290,8 @@ namespace XSpect.Yacq.Expressions
                            .CompareTo(other.Method.IsExtensionMethod())
                        ) != 0
                     ? value
-                    : (value = this.IsParamArray
-                          .CompareTo(other.IsParamArray)
+                    : (value = this.IsParamArrayContext
+                          .CompareTo(other.IsParamArrayContext)
                       ) != 0
                           ? value
                           : this.Parameters.Select(_ => _.ParameterType)
@@ -230,6 +305,32 @@ namespace XSpect.Yacq.Expressions
                                         )
                                 )
                                 .FirstOrDefault(_ => _ != 0);
+            }
+
+            public Candidate Clone(
+                Expression instance = null,
+                MemberInfo member = null,
+                IDictionary<Type, Type> typeArgumentMap = null,
+                IList<Type> typeArguments = null,
+                IList<String> argumentNames = null,
+                IList<Expression> arguments = null
+            )
+            {
+                return typeArgumentMap != null
+                    ? new Candidate(
+                          instance ?? this.Instance,
+                          member ?? this.Member,
+                          typeArgumentMap,
+                          argumentNames ?? this.ArgumentNames,
+                          arguments ?? this.Arguments
+                      )
+                    : new Candidate(
+                          instance ?? this.Instance,
+                          member ?? this.Member,
+                          typeArguments ?? this.TypeArguments,
+                          argumentNames ?? this.ArgumentNames,
+                          arguments ?? this.Arguments
+                      );
             }
         }
     }
