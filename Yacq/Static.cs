@@ -27,6 +27,8 @@
  * THE SOFTWARE.
  */
 
+using System;
+
 namespace XSpect.Yacq
 {
     /// <summary>
@@ -35,5 +37,45 @@ namespace XSpect.Yacq
     /// <typeparam name="T">The type which specify for the symbol's LeftType.</typeparam>
     public class Static<T>
     {
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this instance.
+        /// </returns>
+        public override String ToString()
+        {
+            return "[" + typeof(T).FullName + "]";
+        }
+    }
+
+    internal static class Static
+    {
+        public static Type GetTargetType(Type type)
+        {
+            return type.TryGetGenericTypeDefinition() == typeof(Static<>)
+                ? type.GetGenericArguments()[0]
+                : null;
+        }
+
+        public static Type MakeType(Type type)
+        {
+            return typeof(Static<>).MakeGenericType(type);
+        }
+
+        public static Type MakeType<T>()
+        {
+            return MakeType(typeof(T));
+        }
+
+        public static Object Value(Type type)
+        {
+            return Activator.CreateInstance(MakeType(type));
+        }
+
+        public static Object Value<T>()
+        {
+            return Activator.CreateInstance(MakeType<T>());
+        }
     }
 }
