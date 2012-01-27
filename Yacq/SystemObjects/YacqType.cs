@@ -482,8 +482,9 @@ namespace XSpect.Yacq.SystemObjects
                 Type.EmptyTypes
             )
                 .Apply(p =>
-                    (getter is IgnoredExpression || setter is IgnoredExpression
-                        ? this.DefineField(
+                    (getter is IgnoredExpression && setter is IgnoredExpression
+                        ? null
+                        : this.DefineField(
                               GetName(p, "Field"),
                               type,
                               FieldAttributes.Private | (isStatic ? FieldAttributes.Static : 0),
@@ -493,10 +494,9 @@ namespace XSpect.Yacq.SystemObjects
                               typeof(CompilerGeneratedAttribute).GetConstructor(Type.EmptyTypes),
                               new Object[0]
                           )))
-                        : null
                     )
                     .Apply(
-                        f => getter.Null(e => p.SetGetMethod(!(e is IgnoredExpression)
+                        f => getter.Null(e => p.SetGetMethod(!(e as ListExpression).Null(l => l.Elements.IsEmpty())
                             ? this.DefineMethod(
                                   "get_" + name,
                                   methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
@@ -519,7 +519,7 @@ namespace XSpect.Yacq.SystemObjects
                                   this._members.Add
                               )
                         )),
-                        f => setter.Null(e => p.SetSetMethod(!(e is IgnoredExpression)
+                        f => setter.Null(e => p.SetSetMethod(!(e as ListExpression).Null(l => l.Elements.IsEmpty())
                             ? this.DefineMethod(
                                   "set_" + name,
                                   methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),

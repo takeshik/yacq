@@ -258,7 +258,7 @@ namespace XSpect.Yacq.Expressions
 #if SILVERLIGHT
                         .Cast<MemberInfo>()
 #endif
-;
+                        ;
                 default:
                     throw new ParseException("Dispatcher doesn't support: " + this.DispatchType);
             }
