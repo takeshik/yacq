@@ -103,8 +103,13 @@ namespace XSpect.Yacq
                 return e.Arguments.Any(a => a.Type(s) == typeof(String))
                     ? YacqExpression.TypeCandidate(typeof(String)).Method(s, "Concat", e.Arguments)
                     : e.Arguments.Count == 1
-                          ? Expression.UnaryPlus(e.Arguments[0].Reduce(s))
-                          : Expression.Add(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                          ? Expression.UnaryPlus(e.Arguments[0].Reduce(s)
+                                .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, false)))
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.Add(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                                 .Let(_ => e.Arguments.Count > 2
                                     ? (Expression) YacqExpression.Function(s, "+", e.Arguments
                                           .Skip(2)
@@ -132,8 +137,13 @@ namespace XSpect.Yacq
             public static Expression Minus(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 1
-                    ? Expression.Negate(e.Arguments[0].Reduce(s))
-                    : Expression.Subtract(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? Expression.Negate(e.Arguments[0].Reduce(s)
+                          .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, true)))
+                      )
+                    : new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.Subtract(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                           .Let(_ => e.Arguments.Count > 2
                               ? (Expression) YacqExpression.Function(s, "-", e.Arguments
                                     .Skip(2)
@@ -155,7 +165,10 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "*")]
             public static Expression Multiply(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Multiply(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                        .Let(_ => Expression.Multiply(a[0].TryConvert(_), a[1].TryConvert(_)))
+                    )
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "*", e.Arguments
                               .Skip(2)
@@ -177,7 +190,10 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "/")]
             public static Expression Divide(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Divide(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                        .Let(_ => Expression.Divide(a[0].TryConvert(_), a[1].TryConvert(_)))
+                    )
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "/", e.Arguments
                               .Skip(2)
@@ -221,7 +237,10 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "%")]
             public static Expression Modulo(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Modulo(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                        .Let(_ => Expression.Modulo(a[0].TryConvert(_), a[1].TryConvert(_)))
+                    )
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "%", e.Arguments
                               .Skip(2)
@@ -245,7 +264,7 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "<<")]
             public static Expression LeftShift(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.LeftShift(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return Expression.LeftShift(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s, typeof(Int32)))
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "<<", e.Arguments
                               .Skip(2)
@@ -269,7 +288,7 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, ">>")]
             public static Expression RightShift(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.RightShift(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return Expression.RightShift(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s, typeof(Int32)))
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, ">>", e.Arguments
                               .Skip(2)
@@ -339,14 +358,19 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "~")]
             public static Expression OnesComplement(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.OnesComplement(e.Arguments[0].Reduce(s));
+                return Expression.OnesComplement(e.Arguments[0].Reduce(s)
+                    .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, false)))
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "<")]
             public static Expression LessThan(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.LessThan(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.LessThan(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "<", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "<", e.Arguments.Skip(1))
@@ -357,7 +381,10 @@ namespace XSpect.Yacq
             public static Expression LessThanOrEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.LessThanOrEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.LessThanOrEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "<=", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "<=", e.Arguments.Skip(1))
@@ -368,7 +395,10 @@ namespace XSpect.Yacq
             public static Expression GreaterThan(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.GreaterThan(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.GreaterThan(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, ">", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, ">", e.Arguments.Skip(1))
@@ -379,7 +409,10 @@ namespace XSpect.Yacq
             public static Expression GreaterThanOrEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.GreaterThanOrEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.GreaterThanOrEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, ">=", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, ">=", e.Arguments.Skip(1))
@@ -396,7 +429,10 @@ namespace XSpect.Yacq
             public static Expression Equal(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.Equal(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.Equal(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "==", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "==", e.Arguments.Skip(1))
@@ -407,7 +443,10 @@ namespace XSpect.Yacq
             public static Expression NotEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.NotEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.NotEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "!=", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "!=", e.Arguments.Skip(1))
@@ -439,7 +478,10 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "&")]
             public static Expression And(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.And(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                        .Let(_ => Expression.And(a[0].TryConvert(_), a[1].TryConvert(_)))
+                    )
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "&", e.Arguments
                               .Skip(2)
@@ -476,7 +518,10 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "|")]
             public static Expression Or(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Or(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                        .Let(_ => Expression.Or(a[0].TryConvert(_), a[1].TryConvert(_)))
+                    )
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "|", e.Arguments
                               .Skip(2)
@@ -513,7 +558,10 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "^")]
             public static Expression ExclusiveOr(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.ExclusiveOr(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                return new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                        .Let(_ => Expression.ExclusiveOr(a[0].TryConvert(_), a[1].TryConvert(_)))
+                    )
                     .Let(_ => e.Arguments.Count > 2
                         ? (Expression) YacqExpression.Function(s, "^", e.Arguments
                               .Skip(2)
@@ -1650,7 +1698,10 @@ namespace XSpect.Yacq
             public static Expression MathType = YacqExpression.TypeCandidate(typeof(Math));
             
             [YacqSymbol("Nullable")]
-            public static Expression NullableType = YacqExpression.TypeCandidate(typeof(Nullable));
+            public static Expression NullableType = YacqExpression.TypeCandidate(
+                typeof(Nullable),
+                typeof(Nullable<>)
+            );
             
             [YacqSymbol("Random")]
             public static Expression RandomType = YacqExpression.TypeCandidate(typeof(Random));
