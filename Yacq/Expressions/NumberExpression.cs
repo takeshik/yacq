@@ -89,10 +89,11 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return Constant(expectedType != null && TestNumericConversion(this.Value.GetType(), expectedType)
-                ? System.Convert.ChangeType(this.Value, expectedType, CultureInfo.InvariantCulture)
-                : this.Value
-            );
+            return Constant((expectedType != null
+                ? ConvertNumericType(this.Value.GetType(), expectedType)
+                      .Null(t => System.Convert.ChangeType(this.Value, t, CultureInfo.InvariantCulture))
+                : null
+            ) ?? this.Value);
         }
 
         private Object Parse()

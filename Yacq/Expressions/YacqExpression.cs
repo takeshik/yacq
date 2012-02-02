@@ -229,146 +229,306 @@ namespace XSpect.Yacq.Expressions
                 }
                 if (!expectedType.IsAppropriate(expression.Type))
                 {
-                    if (TestNumericConversion(expression.Type, expectedType))
+                    if (Nullable.GetUnderlyingType(expectedType).Let(t => t != null && t == expression.Type))
                     {
-                        return Convert(expression, expectedType);
+                        return Convert(expression, typeof(Nullable<>).MakeGenericType(expression.Type));
                     }
-                    return null;
+                    else if (Nullable.GetUnderlyingType(expression.Type).Let(t => t != null && t == expectedType))
+                    {
+                        return Convert(expression, Nullable.GetUnderlyingType(expression.Type));
+                    }
+                    return ConvertNumericType(expression.Type, expectedType)
+                        .Null(t => Convert(expression, t));
                 }
             }
             return expression;
         }
 
-        internal static Boolean TestNumericConversion(Type expressionType, Type expectedType)
+        internal static Type ConvertNumericType(Type expressionType, Type expectedType)
         {
-            switch (Type.GetTypeCode(expressionType))
+            var expectedType_ = Type.GetTypeCode(Nullable.GetUnderlyingType(expectedType) ?? expectedType);
+            switch (Type.GetTypeCode(Nullable.GetUnderlyingType(expressionType) ?? expressionType))
             {
-                case TypeCode.Byte:
-                    switch (Type.GetTypeCode(expectedType))
+                case TypeCode.Char:
+                    switch (expectedType_)
                     {
                         case TypeCode.Char:
                         case TypeCode.UInt16:
-                        case TypeCode.Int16:
-                        case TypeCode.UInt32:
                         case TypeCode.Int32:
-                        case TypeCode.UInt64:
+                        case TypeCode.UInt32:
                         case TypeCode.Int64:
-                        case TypeCode.Decimal:
+                        case TypeCode.UInt64:
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
+                        case TypeCode.Decimal:
+                            return expectedType;
                         default:
-                            return false;
+                            return null;
                     }
                 case TypeCode.SByte:
-                    switch (Type.GetTypeCode(expectedType))
+                    switch (expectedType_)
                     {
+                        case TypeCode.SByte:
                         case TypeCode.Int16:
                         case TypeCode.Int32:
                         case TypeCode.Int64:
-                        case TypeCode.Decimal:
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
+                        case TypeCode.Decimal:
+                            return expectedType;
                         default:
-                            return false;
+                            return null;
                     }
-                case TypeCode.Char:
-                    switch (Type.GetTypeCode(expectedType))
+                case TypeCode.Byte:
+                    switch (expectedType_)
                     {
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
                         case TypeCode.UInt16:
-                        case TypeCode.Int16:
-                        case TypeCode.UInt32:
                         case TypeCode.Int32:
-                        case TypeCode.UInt64:
+                        case TypeCode.UInt32:
                         case TypeCode.Int64:
-                        case TypeCode.Decimal:
+                        case TypeCode.UInt64:
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
-                        default:
-                            return false;
-                    }
-                case TypeCode.UInt16:
-                    switch (Type.GetTypeCode(expectedType))
-                    {
-                        case TypeCode.Int16:
-                        case TypeCode.UInt32:
-                        case TypeCode.Int32:
-                        case TypeCode.UInt64:
-                        case TypeCode.Int64:
                         case TypeCode.Decimal:
-                        case TypeCode.Single:
-                        case TypeCode.Double:
-                            return true;
+                            return expectedType;
                         default:
-                            return false;
+                            return null;
                     }
                 case TypeCode.Int16:
-                    switch (Type.GetTypeCode(expectedType))
+                    switch (expectedType_)
+                    {
+                        case TypeCode.Int16:
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                        case TypeCode.Decimal:
+                            return expectedType;
+                        default:
+                            return null;
+                    }
+                case TypeCode.UInt16:
+                    switch (expectedType_)
+                    {
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt64:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                        case TypeCode.Decimal:
+                            return expectedType;
+                        default:
+                            return null;
+                    }
+                case TypeCode.Int32:
+                    switch (expectedType_)
                     {
                         case TypeCode.Int32:
                         case TypeCode.Int64:
-                        case TypeCode.Decimal:
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
+                        case TypeCode.Decimal:
+                            return expectedType;
                         default:
-                            return false;
+                            return null;
                     }
                 case TypeCode.UInt32:
-                    switch (Type.GetTypeCode(expectedType))
+                    switch (expectedType_)
                     {
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
                         case TypeCode.UInt64:
-                        case TypeCode.Int64:
-                        case TypeCode.Decimal:
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
-                        default:
-                            return false;
-                    }
-                case TypeCode.Int32:
-                    switch (Type.GetTypeCode(expectedType))
-                    {
-                        case TypeCode.Int64:
                         case TypeCode.Decimal:
-                        case TypeCode.Single:
-                        case TypeCode.Double:
-                            return true;
+                            return expectedType;
                         default:
-                            return false;
-                    }
-                case TypeCode.UInt64:
-                    switch (Type.GetTypeCode(expectedType))
-                    {
-                        case TypeCode.Decimal:
-                        case TypeCode.Single:
-                        case TypeCode.Double:
-                            return true;
-                        default:
-                            return false;
+                            return null;
                     }
                 case TypeCode.Int64:
-                    switch (Type.GetTypeCode(expectedType))
+                    switch (expectedType_)
                     {
-                        case TypeCode.Decimal:
+                        case TypeCode.Int64:
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
+                        case TypeCode.Decimal:
+                            return expectedType;
                         default:
-                            return false;
+                            return null;
+                    }
+                case TypeCode.UInt64:
+                    switch (expectedType_)
+                    {
+                        case TypeCode.UInt64:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                        case TypeCode.Decimal:
+                            return expectedType;
+                        default:
+                            return null;
                     }
                 case TypeCode.Single:
-                    switch (Type.GetTypeCode(expectedType))
+                    switch (expectedType_)
                     {
+                        case TypeCode.Single:
                         case TypeCode.Double:
-                            return true;
+                            return expectedType;
                         default:
-                            return false;
+                            return null;
+                    }
+                case TypeCode.Double:
+                    switch (expectedType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt64:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                        case TypeCode.Decimal:
+                            return expectedType;
+                        default:
+                            return null;
                     }
                 default:
-                    return false;
+                    return null;
+            }
+        }
+
+        internal static Type ConvertNumericTypeForAlithmetics(Type type, Boolean needsSigned)
+        {
+            var isNullable = Nullable.GetUnderlyingType(type) != null;
+            switch (Type.GetTypeCode(isNullable ? Nullable.GetUnderlyingType(type) : type))
+            {
+                case TypeCode.Char:
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                case TypeCode.Int32:
+                    return isNullable
+                        ? typeof(Nullable<Int32>)
+                        : typeof(Int32);
+                case TypeCode.UInt32:
+                    return needsSigned
+                        ? isNullable
+                              ? typeof(Nullable<Int64>)
+                              : typeof(Int64)
+                        : isNullable
+                              ? typeof(Nullable<UInt32>)
+                              : typeof(UInt32);
+                case TypeCode.Int64:
+                    return isNullable
+                        ? typeof(Nullable<Int64>)
+                        : typeof(Int64);
+                case TypeCode.UInt64:
+                    return needsSigned
+                        ? null
+                        : isNullable
+                              ? typeof(Nullable<UInt64>)
+                              : typeof(UInt64);
+                default:
+                    return null;
+            }
+        }
+
+        internal static Type ConvertNumericTypeForAlithmetics(Type leftType, Type rightType)
+        {
+            var isNullable = Nullable.GetUnderlyingType(leftType) != null || Nullable.GetUnderlyingType(rightType) != null;
+            var rightType_ = Type.GetTypeCode(Nullable.GetUnderlyingType(rightType) ?? rightType);
+            switch (Type.GetTypeCode(Nullable.GetUnderlyingType(leftType) ?? leftType))
+            {
+                case TypeCode.Char:
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                case TypeCode.Int32:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                            return isNullable
+                                ? typeof(Nullable<Int32>)
+                                : typeof(Int32);
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                            return isNullable
+                                ? typeof(Nullable<Int64>)
+                                : typeof(Int64);
+                        default:
+                            return null;
+                    }
+                case TypeCode.UInt32:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.Byte:
+                        case TypeCode.UInt16:
+                        case TypeCode.UInt32:
+                            return isNullable
+                                ? typeof(Nullable<UInt32>)
+                                : typeof(UInt32);
+                        case TypeCode.SByte:
+                        case TypeCode.Int16:
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                            return isNullable
+                                ? typeof(Nullable<Int64>)
+                                : typeof(Int64);
+                        case TypeCode.UInt64:
+                            return isNullable
+                                ? typeof(Nullable<UInt64>)
+                                : typeof(UInt64);
+                        default:
+                            return null;
+                    }
+                case TypeCode.Int64:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                            return isNullable
+                                ? typeof(Nullable<Int64>)
+                                : typeof(Int64);
+                        default:
+                            return null;
+                    }
+                case TypeCode.UInt64:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.Byte:
+                        case TypeCode.UInt16:
+                        case TypeCode.UInt32:
+                        case TypeCode.UInt64:
+                            return isNullable
+                                ? typeof(Nullable<UInt64>)
+                                : typeof(UInt64);
+                        default:
+                            return null;
+                    }
+                default:
+                    return null;
             }
         }
     }
