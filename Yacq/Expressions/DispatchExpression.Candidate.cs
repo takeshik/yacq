@@ -235,7 +235,7 @@ namespace XSpect.Yacq.Expressions
                                         p.ParameterType,
                                         d.ContainsKey(p.Name)
                                             ? d[p.Name]
-                                            : Constant(p.DefaultValue)
+                                            : Constant(p.DefaultValue, p.ParameterType)
                                    )))
                               : null
                     )
