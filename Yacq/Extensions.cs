@@ -297,7 +297,8 @@ namespace XSpect.Yacq
                     typeof(LambdaExpression).IsAssignableFrom(type) &&
                     typeof(Delegate).IsAssignableFrom(target) &&
                     type.GetDelegateSignature() == target.GetDelegateSignature()
-                );
+                )
+                || (type.IsValueType && target == typeof(Object));
         }
 
         internal static MethodInfo GetDelegateSignature(this Type type)

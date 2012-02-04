@@ -174,7 +174,7 @@ namespace XSpect.Yacq.Expressions
 
         private Expression DispatchByTypeSystem(SymbolTable symbols, Type expectedType)
         {
-            return this.GetMembers(symbols)
+            return ImplicitConvert(this.GetMembers(symbols)
                 .Select(CreateCandidate)
                 .Choose(c => c.ParameterMap != null
                     ? c.ParameterMap
@@ -210,7 +210,9 @@ namespace XSpect.Yacq.Expressions
                 ).Count()))
                 .FirstOrDefault()
                 .Null(c => this.GetResultExpression(symbols, c))
-                ?? this.DispatchFailback(symbols);
+                    ?? this.DispatchFailback(symbols),
+                expectedType
+            );
         }
 
         private IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
@@ -223,7 +225,7 @@ namespace XSpect.Yacq.Expressions
 #if SILVERLIGHT
                         .Cast<MemberInfo>()
 #endif
-;
+                        ;
                 case DispatchTypes.Member:
                     return String.IsNullOrEmpty(this.Name)
                         // Default members must be instance properties.
@@ -373,7 +375,7 @@ namespace XSpect.Yacq.Expressions
 #if __MonoCS__
                                 null;
 #else
- typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
+                                typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
                                     typeof(Observable),
                                     "FromEventPattern",
                                     new[]
@@ -445,12 +447,20 @@ namespace XSpect.Yacq.Expressions
         {
             return expression is TypeCandidateExpression
                 ? GetTypes((TypeCandidateExpression) expression)
-                : EnumerableEx.Return(expression.Type);
+                : expression.Type.If(
+                      t => t.IsInterface,
+                      t => t.GetInterfaces().StartWith(t),
+                      EnumerableEx.Return
+                  );
         }
 
         private static IEnumerable<Type> GetTypes(TypeCandidateExpression expression)
         {
             return expression.Candidates
+                .SelectMany(t => t.IsInterface
+                    ? t.GetInterfaces().StartWith(t)
+                    : EnumerableEx.Return(t)
+                )
                 .Select(t => (typeof(Static<>).MakeGenericType(t)));
         }
     }

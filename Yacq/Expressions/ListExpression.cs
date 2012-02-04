@@ -81,7 +81,9 @@ namespace XSpect.Yacq.Expressions
         /// </returns>
         public override String ToString()
         {
-            return "(" + String.Join(" ", this.Elements.Select(e => e.ToString())) + ")";
+            return this.List(".").Count() == 2 || this.List(":").Count() == 2
+                ? String.Concat(this.Elements[1], this.Elements[0], this.Elements[2])
+                :  "(" + String.Join(" ", this.Elements.Select(e => e.ToString())) + ")";
         }
 
         /// <summary>
