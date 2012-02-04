@@ -278,7 +278,7 @@ namespace XSpect.Yacq.LanguageServices
                     var c_ = c.Clone();
                     var _0 = c.PeekCharForward(0);
                     if ((_0 >= '0' && _0 <= '9') || // 0-9
-                        ((_0 == '+' || _0 == '-') && c.PeekCharForward(0).Let(_1 => _1 >= '0' && _1 <= '9'))
+                        ((_0 == '+' || _0 == '-') && c.PeekCharForward(1).Let(_1 => _1 >= '0' && _1 <= '9'))
                     ) 
                     {
                         var number = c.PeekWhileStringForward((_, i) =>
@@ -287,7 +287,8 @@ namespace XSpect.Yacq.LanguageServices
                             (_ >= '0' && _ <= '9') || // 0-9
                             (_ >= 'A' && _ <= 'F') || // A-F
                             (_ >= 'a' && _ <= 'f') || // a-f
-                            _ == '.' ||
+                            (_ == '.' && c_.PeekCharForward(i + 1) // the next character of '.'
+                                .Let(nc => nc >= '0' && nc <= '9')) || // 0-9
                             _ == '_'
                         );
                         c.MoveForward(number.Length);
@@ -318,6 +319,7 @@ namespace XSpect.Yacq.LanguageServices
                                     ? 2
                                     : 1
                             );
+                            c.MoveForward(type.Length);
                             number += type;
                         }
                         r.Current.Add(YacqExpression.Number(number).Apply(e => e.SetPosition(c_, number.Length)));

@@ -91,6 +91,7 @@ namespace XSpect.Yacq.Expressions
         {
             return Constant((expectedType != null
                 ? ConvertNumericType(this.Value.GetType(), expectedType)
+                      .Let(t => Nullable.GetUnderlyingType(t) ?? t)
                       .Null(t => System.Convert.ChangeType(this.Value, t, CultureInfo.InvariantCulture))
                 : null
             ) ?? this.Value);
@@ -98,10 +99,22 @@ namespace XSpect.Yacq.Expressions
 
         private Object Parse()
         {
-            var text = this.SourceText.Replace("_", "").ToLower();
-            if (text.Contains("."))
+            var text = this.SourceText.Replace("_", "").ToUpper();
+            var suffix = text.Length > 1
+                ? new String(text
+                      .Substring(text.Length - 2)
+                      .Where(_ => _ == 'D' || _ == 'F' || _ == 'L' || _ == 'M' || _ == 'U')
+                      .ToArray()
+                  )
+                : "";
+            text = text.Substring(0, text.Length - suffix.Length);
+            if (suffix == "M")
             {
-                return text.Last() == 'f'
+                return Decimal.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
+            }
+            if (text.Contains(".") || suffix == "D" || suffix == "F")
+            {
+                return text.Last() == 'F'
                     ? (Object) Single.Parse(text.Remove(text.Length - 1), NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture)
                     : Double.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
             }
@@ -119,11 +132,30 @@ namespace XSpect.Yacq.Expressions
                     var value = b != 10
                         ? System.Convert.ToUInt64(text.Substring(2), b)
                         : UInt64.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
-                    return value <= Int32.MaxValue
-                        ? (Int32) value
-                        : value <= UInt32.MaxValue
-                              ? (UInt32) value
-                              : (Object) value;
+                    if (suffix == "UL" || suffix == "LU")
+                    {
+                        return value;
+                    }
+                    else if (suffix == "U")
+                    {
+                        return value <= UInt32.MaxValue
+                            ? (UInt32) value
+                            : (Object) value;
+                    }
+                    else if (suffix == "L")
+                    {
+                        return value <= Int64.MaxValue
+                            ? (Int64) value
+                            : (Object) value;
+                    }
+                    else
+                    {
+                        return value <= Int32.MaxValue
+                            ? (Int32) value
+                            : value <= UInt32.MaxValue
+                                  ? (UInt32) value
+                                  : (Object) value;
+                    }
                 }
                 else
                 {
@@ -133,7 +165,7 @@ namespace XSpect.Yacq.Expressions
                     var value = b != 10
                         ? System.Convert.ToInt64("-" + text.Substring(3), b)
                         : Int64.Parse(text, CultureInfo.InvariantCulture);
-                    return value >= Int32.MinValue && value <= Int32.MaxValue
+                    return suffix != "L" && value >= Int32.MinValue && value <= Int32.MaxValue
                         ? (Int32) value
                         : (Object) value;
                 }
@@ -142,11 +174,11 @@ namespace XSpect.Yacq.Expressions
 
         private static Int32 GetBase(String b)
         {
-            return b == "0b"
+            return b == "0B"
                 ? 2
-                : b == "0o"
+                : b == "0O"
                       ? 8
-                      : b == "0x"
+                      : b == "0X"
                             ? 16
                             : 10;
         }
