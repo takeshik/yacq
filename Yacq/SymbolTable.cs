@@ -982,7 +982,7 @@ namespace XSpect.Yacq
                 expression.DispatchType,
                 expression.Left.Reduce(this)
                     .Null(e => e is TypeCandidateExpression
-                        ? typeof(Static<>).MakeGenericType(((TypeCandidateExpression) e).ElectedType)
+                        ? Static.MakeType(((TypeCandidateExpression) e).ElectedType)
                         : e.Type
                     ),
                 expression.Name
@@ -1033,7 +1033,7 @@ namespace XSpect.Yacq
                 expression.DispatchType,
                 expression.Left.Reduce(this)
                     .Null(e => e is TypeCandidateExpression
-                        ? typeof(Static<>).MakeGenericType(((TypeCandidateExpression) e).ElectedType)
+                        ? Static.MakeType(((TypeCandidateExpression) e).ElectedType)
                         : e.Type
                     ),
                 expression.Name

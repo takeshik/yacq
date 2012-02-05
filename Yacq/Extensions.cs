@@ -222,6 +222,80 @@ namespace XSpect.Yacq
                 : Enumerable.Empty<Type>();
         }
 
+        internal static MemberAccessibilities GetAccessibility(this MemberInfo member)
+        {
+            switch (member.MemberType)
+            {
+                case MemberTypes.Constructor:
+                case MemberTypes.Method:
+                    return (MemberAccessibilities) (((MethodBase) member).Attributes & MethodAttributes.MemberAccessMask);
+                case MemberTypes.Event:
+                    return ((EventInfo) member).Let(e =>
+#if SILVERLIGHT
+                        Enumerable.Empty<MethodInfo>()
+#else
+                        e.GetOtherMethods(true)
+#endif
+                            .StartWith(
+                                e.GetAddMethod(true),
+                                e.GetRemoveMethod(true),
+                                e.GetRaiseMethod(true)
+                            )
+                            .Where(m => m != null)
+                            .Select(m => m.GetAccessibility())
+                            .Max(m => m)
+                        );
+                case MemberTypes.Field:
+                    return (MemberAccessibilities) (((FieldInfo) member).Attributes & FieldAttributes.FieldAccessMask);
+                case MemberTypes.Property:
+                    return ((PropertyInfo) member).GetAccessors(true)
+                        .Select(m => m.GetAccessibility())
+                        .Max(m => m);
+                case MemberTypes.NestedType:
+                    switch (((Type) member).Attributes & TypeAttributes.VisibilityMask)
+                    {
+                        case TypeAttributes.NotPublic:
+                        case TypeAttributes.NestedAssembly:
+                            return MemberAccessibilities.Assembly;
+                        case TypeAttributes.Public:
+                        case TypeAttributes.NestedPublic:
+                            return MemberAccessibilities.Public;
+                        case TypeAttributes.NestedPrivate:
+                            return MemberAccessibilities.Private;
+                        case TypeAttributes.NestedFamily:
+                            return MemberAccessibilities.Family;
+                        case TypeAttributes.NestedFamANDAssem:
+                            return MemberAccessibilities.FamANDAssem;
+                        case TypeAttributes.NestedFamORAssem:
+                            return MemberAccessibilities.FamORAssem;
+                        default:
+                            return MemberAccessibilities.Unknown;
+                    }
+                default:
+                    return MemberAccessibilities.Unknown;
+            }
+        }
+
+        internal static Boolean IsSpecialName(this MemberInfo member)
+        {
+            switch (member.MemberType)
+            {
+                case MemberTypes.Constructor:
+                case MemberTypes.Method:
+                    return ((MethodBase) member).IsSpecialName;
+                case MemberTypes.Event:
+                    return ((EventInfo) member).IsSpecialName;
+                case MemberTypes.Field:
+                    return ((FieldInfo) member).IsSpecialName;
+                case MemberTypes.Property:
+                    return ((PropertyInfo) member).IsSpecialName;
+                case MemberTypes.NestedType:
+                    return ((Type) member).IsSpecialName;
+                default:
+                    return false;
+            }
+        }
+
         internal static Boolean HasExtensionMethods(this Type type)
         {
             return Attribute.IsDefined(type, typeof(ExtensionAttribute));
