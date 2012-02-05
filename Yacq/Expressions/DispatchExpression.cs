@@ -172,6 +172,51 @@ namespace XSpect.Yacq.Expressions
             return e.DispatchByTypeSystem(s, t);
         }
 
+        /// <summary>
+        /// Gets all members and extension methods in specified types.
+        /// </summary>
+        /// <param name="symbols">The symbol table for search extension methods.</param>
+        /// <param name="types">Types to get members.</param>
+        /// <returns>All members and extension methods in <paramref name="types"/>.</returns>
+        public static IEnumerable<MemberInfo> GetMembers(SymbolTable symbols, params Type[] types)
+        {
+            return types
+                .SelectMany(t => t.IsInterface
+                    ? t.GetInterfaces().StartWith(t)
+                    : EnumerableEx.Return(t)
+                )
+                .Distinct()
+                .SelectMany(t => Static.GetTargetType(t)
+                    .Null(st => st.GetMembers(_staticFlags))
+                    ?? t.GetMembers(_instanceFlags)
+                )
+                .Concat(symbols.AllLiterals.Values
+                    .OfType<TypeCandidateExpression>()
+                    .SelectMany(e => e.Candidates)
+                    .Where(ct => ct.HasExtensionMethods())
+                    .SelectMany(ct => ct.GetMethods(_staticFlags))
+                    .Where(m => m.IsExtensionMethod() && m.GetParameters()[0].ParameterType.Let(t => types.Any(t.IsAppropriate)))
+#if SILVERLIGHT
+                    .Cast<MemberInfo>()
+#endif
+                )
+                .If(
+                    _ => types.All(t => t.IsInterface),
+                    _ => _.Concat(typeof(Object).GetMembers(_instanceFlags))
+                );
+        }
+
+        /// <summary>
+        /// Gets all members and extension methods in specified types.
+        /// </summary>
+        /// <param name="symbols">The symbol table for search extension methods.</param>
+        /// <param name="types">Types to get members.</param>
+        /// <returns>All members and extension methods in <paramref name="types"/>.</returns>
+        public static IEnumerable<MemberInfo> GetMembers(SymbolTable symbols, IEnumerable<Type> types)
+        {
+            return GetMembers(symbols, types.ToArray());
+        }
+
         private Expression DispatchByTypeSystem(SymbolTable symbols, Type expectedType)
         {
             return ImplicitConvert(this.GetMembers(symbols)
@@ -221,46 +266,32 @@ namespace XSpect.Yacq.Expressions
             {
                 case DispatchTypes.Constructor:
                     return GetTypes((TypeCandidateExpression) this._left)
-                        .SelectMany(t => Static.GetTargetType(t).GetConstructors(_instanceFlags))
-#if SILVERLIGHT
-                        .Cast<MemberInfo>()
-#endif
-                        ;
+                        .ToArray()
+                        .Let(ts => GetMembers(symbols, ts)
+                            .Where(m =>
+                                m.MemberType == MemberTypes.Constructor &&
+                                ts.Contains(m.DeclaringType) &&
+                                m.GetAccessibility() == MemberAccessibilities.Public
+                            )
+                        );
                 case DispatchTypes.Member:
                     return String.IsNullOrEmpty(this.Name)
                         // Default members must be instance properties.
                         ? this._left.Type.GetDefaultMembers()
-                        : GetTypes(this._left)
-                              .SelectMany(t => Static.GetTargetType(t)
-                                  .Null(st => st.GetMembers(_staticFlags))
-                                  ?? t.GetMembers(_instanceFlags)
-                              )
+                        : GetMembers(symbols, GetTypes(this._left))
                               .Where(m => m.Name == this.Name && (
                                   m.MemberType == MemberTypes.Field ||
                                   m.MemberType == MemberTypes.Property ||
                                   m.MemberType == MemberTypes.Event ||
                                   m.MemberType == MemberTypes.NestedType
-                              ));
+                              ) && m.GetAccessibility() == MemberAccessibilities.Public);
                 case DispatchTypes.Method:
-                    return GetTypes(this._left)
-                        .SelectMany(t => Static.GetTargetType(t)
-                            .Null(st => ((IEnumerable<MethodInfo>) st.GetMethods(_staticFlags))
-                                .If(_ => t.IsInterface, _ => _.Concat(typeof(Object).GetMethods(_staticFlags)))
-                            ) ?? ((IEnumerable<MethodInfo>) t.GetMethods(_instanceFlags))
-                                .If(_ => t.IsInterface, _ => _.Concat(typeof(Object).GetMethods(_instanceFlags)))
-                                .Concat(symbols.AllLiterals.Values
-                                    .OfType<TypeCandidateExpression>()
-                                    .SelectMany(e => e.Candidates)
-                                    .Where(ct => ct.HasExtensionMethods())
-                                    .SelectMany(ct => ct.GetMethods(_staticFlags))
-                                    .Where(m => m.Name == this.Name && m.IsExtensionMethod())
-                                )
-                        )
-                        .Where(m => m.Name == this.Name)
-#if SILVERLIGHT
-                        .Cast<MemberInfo>()
-#endif
-                        ;
+                    return GetMembers(symbols, GetTypes(this._left))
+                        .Where(m =>
+                            m.MemberType == MemberTypes.Method &&
+                            m.Name == this.Name &&
+                            m.GetAccessibility() == MemberAccessibilities.Public
+                        );
                 default:
                     throw new ParseException("Dispatcher doesn't support: " + this.DispatchType);
             }
@@ -447,21 +478,12 @@ namespace XSpect.Yacq.Expressions
         {
             return expression is TypeCandidateExpression
                 ? GetTypes((TypeCandidateExpression) expression)
-                : expression.Type.If(
-                      t => t.IsInterface,
-                      t => t.GetInterfaces().StartWith(t),
-                      EnumerableEx.Return
-                  );
+                : EnumerableEx.Return(expression.Type);
         }
 
         private static IEnumerable<Type> GetTypes(TypeCandidateExpression expression)
         {
-            return expression.Candidates
-                .SelectMany(t => t.IsInterface
-                    ? t.GetInterfaces().StartWith(t)
-                    : EnumerableEx.Return(t)
-                )
-                .Select(t => (typeof(Static<>).MakeGenericType(t)));
+            return expression.Candidates.Select(Static.MakeType);
         }
     }
 

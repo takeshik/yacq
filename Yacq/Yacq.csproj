@@ -90,6 +90,7 @@
     <Compile Include="LanguageServices\ReaderResult.cs" />
     <Compile Include="LanguageServices\ReaderScope.cs" />
     <Compile Include="LanguageServices\TextPosition.cs" />
+    <Compile Include="MemberAccessibilities.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

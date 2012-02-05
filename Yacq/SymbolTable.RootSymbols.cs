@@ -1834,82 +1834,70 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Member, typeof(Object), "?")]
             public static Expression GetMembersAndSymbols(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Constant(
-                    e.Left.Type(s).Let(lt =>
-                        lt.GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                            .Where(m => !(m is ConstructorInfo
-                                || (m is MethodInfo && m.Name.StartsWith("get_") || m.Name.StartsWith("set_"))))
-                            .Concat(s.AllLiterals.Values
-                                .OfType<TypeCandidateExpression>()
-                                .SelectMany(_ => _.Candidates)
-                                .SelectMany(_ => _.GetExtensionMethods()
-                                    .Where(m => m.GetParameters()[0].ParameterType.IsAppropriate(lt))
-                                )
-#if SILVERLIGHT
-                                .Cast<MemberInfo>()
-#endif
-                            )
-                            .OrderBy(m => m is MethodInfo
-                                ? ((MethodInfo) m).IsExtensionMethod()
-                                      ? 2
-                                      : 1
-                                : 0
+                return Expression.Constant(e.Left.Type(s).Let(lt =>
+                    DispatchExpression.GetMembers(s, lt)
+                        .Where(m => m.GetAccessibility() == MemberAccessibilities.Public && !m.IsSpecialName())
+                        .OrderBy(m => m is MethodInfo
+                            ? ((MethodInfo) m).IsExtensionMethod()
+                                  ? 2
+                                  : 1
+                            : 0
+                        )
+                        .ThenBy(m => m.Name)
+                        .Select(m => m is MethodBase
+                            ? "("+ m.Name + ")"
+                            : m.Name
+                        )
+                        .Concat(s.AllKeys
+                            .Where(_ => _.TypeMatch(lt))
+                            .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                ? 0
+                                : 1
                             )
                             .ThenBy(m => m.Name)
-                            .Select(m => m is MethodBase
-                                ? "("+ m.Name + ")"
-                                : m.Name
+                            .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                ? _.Name
+                                : "(" + _.Name + ")"
                             )
-                            .Concat(s.AllKeys
-                                .Where(_ => _.TypeMatch(lt))
-                                .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
-                                    ? 0
-                                    : 1
-                                )
-                                .ThenBy(m => m.Name)
-                                .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
-                                    ? _.Name
-                                    : "(" + _.Name + ")"
-                                )
-                            )
-                            .Distinct()
-                    )
-                );
+                        )
+                        .Distinct()
+                ));
             }
 
             [YacqSymbol(DispatchTypes.Member, typeof(Static<Object>), "?")]
             public static Expression GetStaticMembersAndSymbols(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Constant(
-                    ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType.Let(lt =>
-                        lt.GetMembers(BindingFlags.Public | BindingFlags.Static)
-                            .Where(m => !(m is MethodInfo && m.Name.StartsWith("get_") || m.Name.StartsWith("set_")))
-                            .OrderBy(m => m is MethodInfo
-                                ? ((MethodInfo) m).IsExtensionMethod()
-                                      ? 2
-                                      : 1
-                                : 0
+                return Expression.Constant(((TypeCandidateExpression) e.Left.Reduce(s)).Candidates
+                    .Select(Static.MakeType)
+                    .ToArray()
+                    .Let(ts =>
+                    DispatchExpression.GetMembers(s, ts)
+                        .Where(m => m.GetAccessibility() == MemberAccessibilities.Public && !m.IsSpecialName())
+                        .OrderBy(m => m is MethodInfo
+                            ? ((MethodInfo) m).IsExtensionMethod()
+                                  ? 2
+                                  : 1
+                            : 0
+                        )
+                        .ThenBy(m => m.Name)
+                        .Select(m => m is MethodBase
+                            ? "(" + m.Name + ")"
+                            : m.Name
+                        )
+                        .Concat(s.AllKeys
+                            .Where(_ => ts.Any(_.TypeMatch))
+                            .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                ? 0
+                                : 1
                             )
                             .ThenBy(m => m.Name)
-                            .Select(m => m is MethodBase
-                                ? "(" + m.Name + ")"
-                                : m.Name
+                            .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
+                                ? _.Name
+                                : "(" + _.Name + ")"
                             )
-                            .Concat(s.AllKeys
-                                .Where(_ => _.TypeMatch(typeof(Static<>).MakeGenericType(lt)))
-                                .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
-                                    ? 0
-                                    : 1
-                                )
-                                .ThenBy(m => m.Name)
-                                .Select(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
-                                    ? _.Name
-                                    : "(" + _.Name + ")"
-                                )
-                            )
-                            .Distinct()
-                    )
-                );
+                        )
+                        .Distinct()
+                ));
             }
 
             #endregion

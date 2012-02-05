@@ -189,6 +189,9 @@
     <Compile Include="..\Yacq\Linq\YacqQueryable.Operators.cs">
       <Link>Linq\YacqQueryable.Operators.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\MemberAccessibilities.cs">
+      <Link>MemberAccessibilities.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\ParseException.cs">
       <Link>ParseException.cs</Link>
     </Compile>
