@@ -71,7 +71,8 @@ namespace XSpect.Yacq.Expressions
                 private set
                 {
                     this.TypeArgumentMap = value != null && value.Any()
-                        ? this.MethodBase.GetGenericArguments()
+                        ? (this.Method.Null(m => m.TryGetGenericMethodDefinition()) ?? this.MethodBase)
+                              .GetGenericArguments()
                               .Zip(value, Tuple.Create)
                               .ToDictionary(_ => _.Item1, _ => _.Item2)
                         : new Dictionary<Type, Type>();
