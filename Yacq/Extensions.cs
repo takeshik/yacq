@@ -313,9 +313,18 @@ namespace XSpect.Yacq
                 : Enumerable.Empty<MethodInfo>();
         }
 
-        internal static Type TryGetGenericTypeDefinition(this Type t)
+        internal static Type TryGetGenericTypeDefinition(this Type type)
         {
-            return t != null && t.IsGenericType && !t.IsGenericTypeDefinition ? t.GetGenericTypeDefinition() : t;
+            return type != null && type.IsGenericType && !type.IsGenericTypeDefinition
+                ? type.GetGenericTypeDefinition()
+                : type;
+        }
+
+        internal static MethodInfo TryGetGenericMethodDefinition(this MethodInfo method)
+        {
+            return method != null && method.IsGenericMethod && !method.IsGenericMethodDefinition
+                ? method.GetGenericMethodDefinition()
+                : method;
         }
 
         internal static Type[] ToArgumentArray(this IDictionary<Type, Type> argumentMap)
