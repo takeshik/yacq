@@ -105,7 +105,7 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             return this.UnfixedParameters.Any()
-                ? expectedType != null
+                ? expectedType != null && expectedType.GetDelegateSignature() != null
                       ? this.ApplyTypeArguments(expectedType)
                             .If(e => e.UnfixedParameters.IsEmpty(), e => e, e => null)
                       : null
