@@ -19,9 +19,9 @@ namespace XSpect.Yacq.Runner
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-
+            this.codeListBox.SelectedIndex = 0;
         }
     }
 }

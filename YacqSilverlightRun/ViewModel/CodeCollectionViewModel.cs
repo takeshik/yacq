@@ -50,7 +50,18 @@ namespace XSpect.Yacq.Runner.ViewModel
 
         public CodeCollectionViewModel(Boolean isInDesignMode)
         {
-            this._model = new CodeCollection();
+            this._model = new CodeCollection()
+            {
+                new Code()
+                {
+                    Id = "default",
+                    Title = "(Default)",
+                    Description = new Lazy<String>(() => "Default empty code."),
+                    OriginalBody = new Lazy<String>(() => ""),
+                    Output = "YACQ Silverlight Runner (version " + YacqServices.Version + ")",
+                }
+            };
+            this._model.ForEach(c => this.Add(new CodeViewModel(c)));
             this._model.CollectionChanged += (s, e) =>
             {
                 switch (e.Action)

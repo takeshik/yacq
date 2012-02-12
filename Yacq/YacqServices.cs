@@ -32,6 +32,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 using XSpect.Yacq.Linq;
@@ -55,7 +56,16 @@ namespace XSpect.Yacq
         {
             get
             {
+#if SILVERLIGHT
+                return Version.Parse(typeof(YacqServices).Assembly
+                    .GetCustomAttributes(typeof(AssemblyFileVersionAttribute), false)
+                    .OfType<AssemblyFileVersionAttribute>()
+                    .First()
+                    .Version
+                );
+#else
                 return typeof(YacqServices).Assembly.GetName().Version;
+#endif
             }
         }
 

@@ -97,13 +97,11 @@
     <NoConfig>true</NoConfig>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GalaSoft.MvvmLight.Extras.SL4, Version=3.0.0.32268, Culture=neutral, PublicKeyToken=5d2b2859f4a49b53, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MvvmLightLibs.3.0.3\lib\SL4\GalaSoft.MvvmLight.Extras.SL4.dll</HintPath>
+    <Reference Include="GalaSoft.MvvmLight.Extras.SL4">
+      <HintPath>..\packages\MvvmLightLibs.3.1.1\lib\SL4\GalaSoft.MvvmLight.Extras.SL4.dll</HintPath>
     </Reference>
-    <Reference Include="GalaSoft.MvvmLight.SL4, Version=3.0.0.32268, Culture=neutral, PublicKeyToken=cd39e69f7fb3ebff, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MvvmLightLibs.3.0.3\lib\SL4\GalaSoft.MvvmLight.SL4.dll</HintPath>
+    <Reference Include="GalaSoft.MvvmLight.SL4">
+      <HintPath>..\packages\MvvmLightLibs.3.1.1\lib\SL4\GalaSoft.MvvmLight.SL4.dll</HintPath>
     </Reference>
     <Reference Include="System.Interactive, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Ix_Experimental-Main.1.1.10823\lib\SL4\System.Interactive.dll</HintPath>
@@ -126,7 +124,7 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Windows.Controls, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MvvmLightLibs.3.0.3\lib\SL4\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\MvvmLightLibs.3.1.1\lib\SL4\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Windows.Browser" />
