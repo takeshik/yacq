@@ -233,6 +233,7 @@ namespace XSpect.Yacq.Expressions
                     : null
                 )
                 .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
+                .Where(c => !c.Arguments.Any(e => e == null || e is YacqExpression))
                 .Choose(c => c.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
                     ? c.Clone(arguments: (c.IsParamArrayContext
                           ? c.Arguments
