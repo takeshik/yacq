@@ -267,6 +267,7 @@ namespace XSpect.Yacq.Expressions
             {
                 case DispatchTypes.Constructor:
                     return GetTypes((TypeCandidateExpression) this._left)
+                        .Select(Static.GetTargetType)
                         .ToArray()
                         .Let(ts => GetMembers(symbols, ts)
                             .Where(m =>
