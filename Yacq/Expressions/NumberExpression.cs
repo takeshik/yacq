@@ -91,8 +91,7 @@ namespace XSpect.Yacq.Expressions
         {
             return Constant((expectedType != null
                 ? ConvertNumericType(this.Value.GetType(), expectedType)
-                      .Let(t => Nullable.GetUnderlyingType(t) ?? t)
-                      .Null(t => System.Convert.ChangeType(this.Value, t, CultureInfo.InvariantCulture))
+                      .Null(t => System.Convert.ChangeType(this.Value, Nullable.GetUnderlyingType(t) ?? t, CultureInfo.InvariantCulture))
                 : null
             ) ?? this.Value);
         }
@@ -114,8 +113,8 @@ namespace XSpect.Yacq.Expressions
             }
             if (text.Contains(".") || suffix == "D" || suffix == "F")
             {
-                return text.Last() == 'F'
-                    ? (Object) Single.Parse(text.Remove(text.Length - 1), NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture)
+                return suffix == "F"
+                    ? (Object) Single.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture)
                     : Double.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
             }
             else
