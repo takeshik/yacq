@@ -469,6 +469,18 @@ namespace XSpect.Yacq.Expressions
                             return isNullable
                                 ? typeof(Nullable<Int64>)
                                 : typeof(Int64);
+                        case TypeCode.Single:
+                            return isNullable
+                                ? typeof(Nullable<Single>)
+                                : typeof(Single);
+                        case TypeCode.Double:
+                            return isNullable
+                                ? typeof(Nullable<Double>)
+                                : typeof(Double);
+                        case TypeCode.Decimal:
+                            return isNullable
+                                ? typeof(Nullable<Decimal>)
+                                : typeof(Decimal);
                         default:
                             return null;
                     }
@@ -493,6 +505,18 @@ namespace XSpect.Yacq.Expressions
                             return isNullable
                                 ? typeof(Nullable<UInt64>)
                                 : typeof(UInt64);
+                        case TypeCode.Single:
+                            return isNullable
+                                ? typeof(Nullable<Single>)
+                                : typeof(Single);
+                        case TypeCode.Double:
+                            return isNullable
+                                ? typeof(Nullable<Double>)
+                                : typeof(Double);
+                        case TypeCode.Decimal:
+                            return isNullable
+                                ? typeof(Nullable<Decimal>)
+                                : typeof(Decimal);
                         default:
                             return null;
                     }
@@ -510,6 +534,18 @@ namespace XSpect.Yacq.Expressions
                             return isNullable
                                 ? typeof(Nullable<Int64>)
                                 : typeof(Int64);
+                        case TypeCode.Single:
+                            return isNullable
+                                ? typeof(Nullable<Single>)
+                                : typeof(Single);
+                        case TypeCode.Double:
+                            return isNullable
+                                ? typeof(Nullable<Double>)
+                                : typeof(Double);
+                        case TypeCode.Decimal:
+                            return isNullable
+                                ? typeof(Nullable<Decimal>)
+                                : typeof(Decimal);
                         default:
                             return null;
                     }
@@ -524,6 +560,80 @@ namespace XSpect.Yacq.Expressions
                             return isNullable
                                 ? typeof(Nullable<UInt64>)
                                 : typeof(UInt64);
+                        case TypeCode.Single:
+                            return isNullable
+                                ? typeof(Nullable<Single>)
+                                : typeof(Single);
+                        case TypeCode.Double:
+                            return isNullable
+                                ? typeof(Nullable<Double>)
+                                : typeof(Double);
+                        case TypeCode.Decimal:
+                            return isNullable
+                                ? typeof(Nullable<Decimal>)
+                                : typeof(Decimal);
+                        default:
+                            return null;
+                    }
+                case TypeCode.Single:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt64:
+                        case TypeCode.Single:
+                            return isNullable
+                                ? typeof(Nullable<Single>)
+                                : typeof(Single);
+                        case TypeCode.Double:
+                            return isNullable
+                                ? typeof(Nullable<Double>)
+                                : typeof(Double);
+                        default:
+                            return null;
+                    }
+                case TypeCode.Double:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt64:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            return isNullable
+                                ? typeof(Nullable<Double>)
+                                : typeof(Double);
+                        default:
+                            return null;
+                    }
+                case TypeCode.Decimal:
+                    switch (rightType_)
+                    {
+                        case TypeCode.Char:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.UInt16:
+                        case TypeCode.Int32:
+                        case TypeCode.UInt32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt64:
+                        case TypeCode.Decimal:
+                            return isNullable
+                                ? typeof(Nullable<Decimal>)
+                                : typeof(Decimal);
                         default:
                             return null;
                     }
