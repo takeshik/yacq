@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <version>1.8</version>
+    <version>1.9</version>
     <authors>takeshik</authors>
     <owners>takeshik</owners>
-    <licenseUrl>https://github.com/takeshik/yacq/blob/v1.8/LICENSE.txt</licenseUrl>
+    <licenseUrl>https://github.com/takeshik/yacq/blob/v1.9/LICENSE.txt</licenseUrl>
     <projectUrl>http://www.yacq.net/</projectUrl>
     <dependencies>
       <dependency id="Ix_Experimental-Main" version="1.1.10823" />
@@ -17,7 +17,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>YACQ (Yet Another Compilable Query) is an embeddable querying language for .NET, based on Expression Trees API. This provides dynamic evaluation from strings, complete access to .NET libraries and the LINQ ecosystem. More details and the usage are in Project site.</description>
     <language>en-US</language>
-    <tags>linq expression-tree expressions evaluator</tags>
+    <tags>linq expression-tree expressions scripting language yacq</tags>
   </metadata>
   <files>
     <file src="Yacq\bin\Release\Yacq.dll" target="lib\net40\Yacq.dll" />
