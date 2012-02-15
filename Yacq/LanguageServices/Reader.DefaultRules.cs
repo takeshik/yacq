@@ -337,7 +337,7 @@ namespace XSpect.Yacq.LanguageServices
                         c.MoveForward(1);
                         do
                         {
-                            if (c.PeekCharForward(0) == _0)
+                            if (c.PeekCharForward(0) == _0 && str.Length > 0 && str[str.Length - 1] == '\\')
                             {
                                 str.Append(c.PeekCharForward(0));
                                 c.MoveForward(1);
