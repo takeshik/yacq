@@ -1,8 +1,8 @@
-# YACQ - Yet Another Compilable Query
+# YACQ - Yet Another Compilable Query Language for .NET
 
-YACQ は、.NET Framework 4 または Silverlight 4 で動作する、完全に C# のみによって書かれたソフトウェア組込可能なクエリ言語処理系です。
+YACQ は、.NET Framework 4、Silverlight 4、または Mono 2.10 上で動作する、完全に C# のみによって書かれたソフトウェア組込可能なクエリ言語処理系です。
 
-> YACQ is a software-embeddable query language system for .NET Framework or Silverlight 4, written only in C#.
+> YACQ is a software-embeddable query language system for .NET Framework 4, Silverlight 4, or Mono 2.10, written only in C#.
 
 詳細な情報およびドキュメントは[プロジェクトウェブサイト](http://www.yacq.net/wiki/Ja%3AWikiStart) 上で公開されています。
 

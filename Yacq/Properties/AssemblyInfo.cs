@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -41,7 +41,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("XSpect Project")]
 [assembly: AssemblyProduct("YACQ")]
-[assembly: AssemblyCopyright("Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@users.sf.net>, All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>, All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -60,8 +60,8 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.8.0.0")]
-[assembly: AssemblyFileVersion("1.8.0.0")]
+[assembly: AssemblyVersion("1.9.0.0")]
+[assembly: AssemblyFileVersion("1.9.0.0")]
 
 #pragma warning disable 1699
 #if !NOSIGN
