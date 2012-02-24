@@ -32,6 +32,8 @@ using System.Collections.Generic;
 using System.Linq;
 using XSpect.Yacq.Expressions;
 
+using Parseq;
+
 namespace XSpect.Yacq.LanguageServices
 {
     /// <summary>
@@ -40,11 +42,10 @@ namespace XSpect.Yacq.LanguageServices
     public partial class Reader
     {
         /// <summary>
-        /// Gets the list of reading rules.
+        /// Gets the parser of Yacq.
         /// </summary>
-        /// <value>The list of reading rules.</value>
-        public IList<Action<ReaderCursor, ReaderResult>> Rules
-        {
+        /// <value>The lparser of Yacq.</value>
+        public Parser<Char,IEnumerable<YacqExpression>> Parser {
             get;
             private set;
         }
@@ -52,21 +53,9 @@ namespace XSpect.Yacq.LanguageServices
         /// <summary>
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
-        /// <param name="rules">The sequence of additional rules.</param>
-        public Reader(IEnumerable<Action<ReaderCursor, ReaderResult>> rules)
-        {
-            this.Rules = new List<Action<ReaderCursor, ReaderResult>>();
-            (rules ?? Enumerable.Empty<Action<ReaderCursor, ReaderResult>>()).ForEach(this.Rules.Add);
-            this.InitializeRules();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Reader"/> class.
-        /// </summary>
-        /// <param name="rules">The array of additional rules.</param>
-        public Reader(params Action<ReaderCursor, ReaderResult>[] rules)
-            : this((IEnumerable<Action<ReaderCursor, ReaderResult>>) rules)
-        {
+        /// <param name="parser">The sequence of additional rules.</param>
+        public Reader(Parser<Char,IEnumerable<YacqExpression>> parser){
+            this.Parser = parser;
         }
 
         /// <summary>
@@ -75,6 +64,7 @@ namespace XSpect.Yacq.LanguageServices
         public Reader()
             : this(null)
         {
+            this.InitializeRules();
         }
 
         /// <summary>
@@ -82,28 +72,21 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="input">The code string to read.</param>
         /// <returns>Generated expressions.</returns>
-        public YacqExpression[] Read(String input)
-        {
-            var cursor = new ReaderCursor(this, input);
-            var result = new ReaderResult();
-            while (cursor.PeekCharForward(0) != '\0')
+        public YacqExpression[] Read(String input){
+            var stream = new ReaderStream(input);
+
+            Reply<Char,IEnumerable<YacqExpression>> reply;
+            IEnumerable<YacqExpression> result;
+            ErrorMessage message;
+            switch ((reply = this.Parser(stream))
+                .TryGetValue(out result, out message))
             {
-                var index = cursor.Position.Index;
-                if (this.Rules
-                    .Do(f => f(cursor, result))
-                    .FirstOrDefault(_ => cursor.Position.Index > index) == null
-                )
-                {
-                    return null;
-                }
-            }
-            if (result.Depth > 1)
-            {
-                throw new ParseException("Scope was not closed: " + String.Join(" > ", result.Tags), cursor.Position);
-            }
-            else
-            {
-                return result.EndScope(null);
+                case ReplyStatus.Success:
+                    return result.ToArray();
+                case ReplyStatus.Failure:
+                    throw new ParseException("syntax error.", reply.Stream.Position, reply.Stream.Position);
+                default:
+                    throw new ParseException(message.MessageDetails, message.Beginning, message.End);
             }
         }
     }

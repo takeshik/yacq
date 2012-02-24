@@ -165,17 +165,8 @@
     <Compile Include="..\Yacq\LanguageServices\Reader.DefaultRules.cs">
       <Link>LanguageServices\Reader.DefaultRules.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\ReaderCursor.cs">
-      <Link>LanguageServices\ReaderCursor.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\LanguageServices\ReaderResult.cs">
-      <Link>LanguageServices\ReaderResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\LanguageServices\ReaderScope.cs">
-      <Link>LanguageServices\ReaderScope.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\LanguageServices\TextPosition.cs">
-      <Link>LanguageServices\TextPosition.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\ReaderStream.cs">
+      <Link>LanguageServices\ReaderStream.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Linq\YacqQbservable.cs">
       <Link>Linq\YacqQbservable.cs</Link>
@@ -251,6 +242,12 @@
       <Link>Libraries\csharp-aliases.yacq</Link>
     </EmbeddedResource>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Parseq\Parseq.Silverlight\Parseq.Silverlight.csproj">
+      <Project>{8FC20CBB-88B8-4E6E-90F4-FD355C4B6468}</Project>
+      <Name>Parseq.Silverlight</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions>
