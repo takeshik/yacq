@@ -48,7 +48,9 @@ namespace XSpect.Yacq.SystemObjects
 #if SILVERLIGHT
             = new SHA1Managed();
 #else
-            = new SHA1Cng();
+            = Environment.OSVersion.Version.Major >= 6
+                  ? (SHA1) new SHA1Cng()
+                  : new SHA1CryptoServiceProvider();
 #endif
 
         private readonly Lazy<AssemblyBuilder> _assembly;
