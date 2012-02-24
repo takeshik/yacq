@@ -34,322 +34,166 @@ using System.Linq.Expressions;
 using System.Text;
 using XSpect.Yacq.Expressions;
 
+using Parseq;
+using Parseq.Combinators;
+
 namespace XSpect.Yacq.LanguageServices
 {
     partial class Reader
     {
-        private void InitializeRules()
-        {
-            this.Rules = new List<Action<ReaderCursor, ReaderResult>>()
-            {
-                #region Whitespace
-                (c, r) =>
-                {
-                    var length = c.PeekWhileStringForward(_ => _ == ' ' || _ == '\n' || _ == '\r' || _ == '\t')
-                        .Count();
-                    if (length > 0)
-                    {
-                        c.MoveForward(length);
-                    }
-                },
-                #endregion
-                #region Comma
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == ',')
-                    {
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region One-line Comment
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == ';')
-                    {
-                        c.MoveForward(1);
-                        c.MoveForward(c.PeekWhileStringForward(_ => _ != '\n' && _ != '\r').Length + 1);
-                        if (c.PeekCharForward(0) == '\n')
-                        {
-                            c.MoveForward(1);
-                        }
-                    }
-                },
-                #endregion
-                #region Multi-line Comment
-                (c, r) =>
-                {
-                    if (c.MatchForward("#|") || c.MatchForward("|#"))
-                    {
-                        do
-                        {
-                            c.MoveForward(c.PeekWhileStringForward(_ => _ != '#' && _ != '|').Length);
-                            if (c.PeekCharForward(0) == '\0')
-                            {
-                                return;
-                            }
-                            else if (c.PeekStringForward(2) == "#|")
-                            {
-                                r.BeginScope("Comment", c.Position);
-                                c.MoveForward(2);
-                            }
-                            else if (c.PeekStringForward(2) == "|#")
-                            {
-                                r.EndScope("Comment");
-                                c.MoveForward(2);
-                            }
-                        } while (r.Current.Tag == "Comment");
-                    }
-                },
-                #endregion
-                #region Expression Comment
-                (c, r) =>
-                {
-                    if (c.MatchForward("#;"))
-                    {
-                        r.Current.RegisterHook(_ => _.Drop());
-                        c.MoveForward(2);
-                    }
-                },
-                #endregion
-                #region Open Parenthesis
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == '(')
-                    {
-                        r.BeginScope("Parenthesis", c.Position);
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region Close Parenthesis
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == ')')
-                    {
-                        r.Current.StartPosition.Let(p =>
-                            YacqExpression.List(r.EndScope("Parenthesis"))
-                                .Apply(e => e.SetPosition(p, c.Position))
-                        ).Apply(r.Current.Add);
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region Open Bracket
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == '[')
-                    {
-                        r.BeginScope("Bracket", c.Position);
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region Close Bracket
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == ']')
-                    {
-                        r.Current.StartPosition.Let(p =>
-                            YacqExpression.Vector(r.EndScope("Bracket"))
-                                .Apply(e => e.SetPosition(p, c.Position))
-                        ).Apply(r.Current.Add);
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region Open Brace
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == '{')
-                    {
-                        r.BeginScope("Brace", c.Position);
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region Close Brace
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == '}')
-                    {
-                        r.Current.StartPosition.Let(p =>
-                            YacqExpression.LambdaList(r.EndScope("Brace"))
-                                .Apply(e => e.SetPosition(p, c.Position))
-                        ).Apply(r.Current.Add);
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-                #region Period
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == '.')
-                    {
-                        var left = r.Current.Drop();
-                        var id = YacqExpression.Identifier(".").Apply(e => e.SetPosition(c, 1));
-                        r.Current.RegisterHook(_ => _.Add(
-                            _.Drop().Let(right => (left.List(":") != null
-                                ? ((ListExpression) left).Let(l => YacqExpression.List(l.Elements
-                                      .SkipLast(1)
-                                      .Concat(EnumerableEx.Return(
-#if SILVERLIGHT
-                                          (Expression)
-#endif
-                                          YacqExpression.List(id, l.Elements.Last(), right)
-                                      ))
-                                  ))
-                                : YacqExpression.List(id, left, right)
-                            ).Apply(e => e.SetPosition(left.StartPosition, right.EndPosition)))
-                        ));
-                    }
-                },
-                #endregion
-                #region Colon
-                (c, r) =>
-                {
-                    if (c.PeekCharForward(0) == ':')
-                    {
-                        var left = r.Current.Drop();
-                        var id = YacqExpression.Identifier(":").Apply(e => e.SetPosition(c, 1));
-                        r.Current.RegisterHook(_ => _.Add(
-                            _.Drop().Let(right => YacqExpression.List(
-                                id,
-                                left,
-                                right
-                            ).Apply(e => e.SetPosition(left.StartPosition, right.EndPosition)))
-                        ));
-                    }
-                },
-                #endregion
-                #region Identifier
-                (c, r) =>
-                {
-                    var _0 = c.PeekCharForward(0);
-                    if (!((
-                        Char.IsControl(_0) ||
-                        _0 == ' ' ||
-                        _0 == '"' ||
-                        _0 == '#' ||
-                        (_0 >= '\'' && _0 <= ')') || // ' ( )
-                        _0 == ',' ||
-                        (_0 >= '0' && _0 <= '9') || // 0-9
-                        _0 == ';' ||
-                        _0 == '[' ||
-                        _0 == ']' ||
-                        _0 == '`' ||
-                        _0 == '{' ||
-                        _0 == '}'
-                    ) || (
-                        c.PeekCharForward(1).Let(_1 => (
-                            (_0 == '+' || _0 == '-') &&
-                            (_1 >= '0' && _1 <= '9') // 0-9
-                        ) || (
-                            (_0 == '.' && _1 != '.') ||
-                            (_0 == ':' && _1 != ':')
-                        ))
-                    )))
-                    {
-                        var str = c.PeekWhileStringForward((_0 == '.' || _0 == ':')
-                            ? ((Func<Char, Int32, Boolean>) ((_, i) => _ == _0))
-                            : (_, i) => i == 0 || !(
-                                  Char.IsControl(_) ||
-                                  _ == ' ' ||
-                                  _ == '"' ||
-                                  (_ >= '\'' && _ <= ')') || // ' ( )
-                                  _ == ',' ||
-                                  _ == '.' ||
-                                  _ == ':' ||
-                                  _ == ';' ||
-                                  _ == '[' ||
-                                  _ == ']' ||
-                                  _ == '`' ||
-                                  _ == '{' ||
-                                  _ == '}'
-                            )
-                        );
-                        r.Current.Add(YacqExpression.Identifier(str).Apply(e => e.SetPosition(c, str.Length)));
-                    }
-                },
-                #endregion
-                #region Number
-                (c, r) =>
-                {
-                    var c_ = c.Clone();
-                    var _0 = c.PeekCharForward(0);
-                    if ((_0 >= '0' && _0 <= '9') || // 0-9
-                        ((_0 == '+' || _0 == '-') && c.PeekCharForward(1).Let(_1 => _1 >= '0' && _1 <= '9'))
-                    ) 
-                    {
-                        var number = c.PeekWhileStringForward((_, i) =>
-                            i == 0 ||
-                            (i == ((_0 == '+' || _0 == '-') ? 2 : 1) && _ == 'o' || _ == 'x') ||
-                            (_ >= '0' && _ <= '9') || // 0-9
-                            (_ >= 'A' && _ <= 'F') || // A-F
-                            (_ >= 'a' && _ <= 'f') || // a-f
-                            (_ == '.' && c_.PeekCharForward(i + 1) // the next character of '.'
-                                .Let(nc => nc >= '0' && nc <= '9')) || // 0-9
-                            _ == '_'
-                        );
-                        c.MoveForward(number.Length);
-                        if (number.Last().Let(_ => _ == 'e' || _ == 'E') &&
-                            c.PeekCharForward(0).Let(_ => _ == '+' || _ == '-')
-                        )
-                        {
-                            var exponent = c.PeekWhileStringForward((_, i) =>
-                                i == 0 ||
-                                (_ >= '0' && _ <= '9') || // 0-9
-                                _ == '_'
-                            );
-                            c.MoveForward(exponent.Length);
-                            number += exponent;
-                        }
-                        if (c.PeekCharForward(0).Let(_ =>
-                            _ == 'D' || _ == 'd' ||
-                            _ == 'F' || _ == 'f' ||
-                            _ == 'L' || _ == 'l' ||
-                            _ == 'M' || _ == 'm' ||
-                            _ == 'U' || _ == 'u'
-                        ))
-                        {
-                            var type = c.PeekStringForward(
-                                c.PeekStringForward(2)
-                                .ToUpper()
-                                .Let(_ => _ == "UL")
-                                    ? 2
-                                    : 1
-                            );
-                            c.MoveForward(type.Length);
-                            number += type;
-                        }
-                        r.Current.Add(YacqExpression.Number(number).Apply(e => e.SetPosition(c_, number.Length)));
-                    }
-                },
-                #endregion
-                #region String
-                (c, r) =>
-                {
-                    var _0 = c.PeekCharForward(0);
-                    if (_0 == '\'' || _0 == '"' || _0 == '`')
-                    {
-                        var c_ = c.Clone();
-                        var str = new StringBuilder();
-                        c.MoveForward(1);
-                        do
-                        {
-                            if (c.PeekCharForward(0) == _0 && str.Length > 0 && str[str.Length - 1] == '\\')
-                            {
-                                str.Append(c.PeekCharForward(0));
-                                c.MoveForward(1);
-                            }
-                            str.Append(c.PeekWhileStringForward(_ => _ != _0).Apply(_ => c.MoveForward(_.Length)));
-                        } while (str.Length > 0 && str[str.Length - 1] == '\\');
-                        r.Current.Add(YacqExpression.Text(_0, str.ToString()).Apply(e => e.SetPosition(c_, str.Length)));
-                        c.MoveForward(1);
-                    }
-                },
-                #endregion
-            };
+        private void InitializeRules(){
+            var position = (Parser<Char, Position>)(stream => Reply.Success(stream, stream.Position));
+
+            var space = Chars.Space();
+            var spaces = Chars.Space().Many();
+
+            var blockCommentPrefix = '#'.Satisfy().Right('|'.Satisfy()).Select(_ => "#|");
+            var blockCommentSuffix = '|'.Satisfy().Right('#'.Satisfy()).Select(_ => "|#");
+
+            var numberPrefix = Chars.OneOf('+', '-').Maybe().Select(
+                x => x.Select(y => y.ToString()).Otherwise(() => String.Empty));
+
+            var numberSuffix = Combinator.Choice(
+                'u'.Satisfy().Right('l'.Satisfy()).Select(_ => "ul"),
+                'U'.Satisfy().Right('L'.Satisfy()).Select(_ => "UL"),
+                Chars.OneOf('f', 'F', 'd', 'D', 'm', 'M', 'u', 'U', 'l', 'L').Select(_ => _.ToString()))
+                .Maybe().Select(_ => _.Otherwise(() => String.Empty));
+
+            var punctuation = Chars.OneOf(';', '\'', '\"', '`', '(', ')', '[', ']', '{', '}', ',', '.', ':');
+
+            var digit = '_'.Satisfy().Many().Right(Chars.Digit());
+
+            var hex = '_'.Satisfy().Many().Right(Chars.Hex());
+
+            var oct = '_'.Satisfy().Many().Right(Chars.Oct());
+
+            var bin = '_'.Satisfy().Many().Right(Chars.OneOf('0', '1'));
+
+            var identifier = Combinator.Choice(
+                from s in position
+                from x in '.'.Satisfy().Many(1)
+                from e in position
+                select (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))
+                    .Apply(node => node.SetPosition(s, e)),
+
+                from s in position
+                from x in ':'.Satisfy().Many(1)
+                from e in position
+                select (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))
+                    .Apply(node => node.SetPosition(s, e)),
+
+                from s in position
+                from y in Chars.Digit().Not()
+                from z in space.Or(punctuation).Not().Right(Chars.Any()).Many(1)
+                from e in position
+                select (YacqExpression)YacqExpression.Identifier(new StringBuilder().Append(z.ToArray()).ToString())
+                    .Apply(node => node.SetPosition(s, e)));
+
+            var number = Combinator.Choice(
+                 from s in position
+                 from x in Combinator.Sequence('0'.Satisfy(), 'b'.Satisfy())
+                 from y in bin.Many(1)
+                 from z in numberPrefix
+                 from e in position
+                 select (YacqExpression)YacqExpression.Number(
+                     new StringBuilder().Append(x.ToArray()).Append(y.ToArray()).Append(z).ToString())
+                        .Apply(node => node.SetPosition(s, e)),
+
+                 from s in position
+                 from x in Combinator.Sequence('0'.Satisfy(), 'o'.Satisfy())
+                 from y in oct.Many(1)
+                 from z in numberSuffix
+                 from e in position
+                 select (YacqExpression)YacqExpression.Number(
+                     new StringBuilder().Append(x.ToArray()).Append(y.ToArray()).Append(z).ToString())
+                        .Apply(node => node.SetPosition(s, e)),
+
+                 from s in position
+                 from x in Combinator.Sequence('0'.Satisfy(), 'x'.Satisfy())
+                 from y in hex.Many(1)
+                 from z in numberSuffix
+                 from e in position
+                 select (YacqExpression)YacqExpression.Number(
+                     new StringBuilder().Append(x.ToArray()).Append(y.ToArray()).Append(z).ToString())
+                        .Apply(node => node.SetPosition(s, e)),
+
+                 from s in position
+                 from u in numberPrefix
+                 from w in digit.Many(1)
+                 from x in
+                     Combinator.Maybe(from a in '.'.Satisfy()
+                                      from b in digit.Many(1)
+                                      select new StringBuilder().Append(a).Append(b.ToArray()).ToString())
+                               .Select(_ => _.Otherwise(() => String.Empty))
+
+                 from y in
+                     Combinator.Maybe(from a in Chars.OneOf('e', 'E')
+                                      from b in numberPrefix
+                                      from c in digit.Many(1)
+                                      select new StringBuilder().Append(a).Append(b).Append(c.ToArray()).ToString())
+                               .Select(_ => _.Otherwise(() => String.Empty))
+
+                 from z in numberSuffix
+                 from e in position
+                 select (YacqExpression)YacqExpression.Number(
+                     new StringBuilder().Append(u).Append(w.ToArray()).Append(x).Append(y).Append(z).ToString())
+                        .Apply(node => node.SetPosition(s, e)));
+
+            var text = from x in Chars.OneOf('\'', '\"', '`')
+                       from y in (x.Satisfy().Not().Right(Chars.Any())).Many()
+                       from z in x.Satisfy()
+                       select (YacqExpression)YacqExpression.Text(
+                           new StringBuilder().Append(x).Append(y.ToArray()).Append(x).ToString());
+
+            var eolComment = from x in ';'.Satisfy()
+                             from y in '\n'.Satisfy().Not().Right(Chars.Any()).Many()
+                             from z in '\n'.Satisfy()
+                             select Unit.Instance;
+
+
+            Parser<Char, YacqExpression> expressionRef = null;
+            Parser<Char, YacqExpression> expressionRestRef = null;
+
+            var expression = new Lazy<Parser<Char, YacqExpression>>(
+                () => expressionRef);
+
+            var expressionRest = new Lazy<Parser<Char, YacqExpression>>(
+                () => expressionRestRef);
+
+            var list = from start in position
+                       from x in '('.Satisfy().Left(spaces)
+                       from y in expression.Value.Between(spaces, spaces).Many()
+                       from z in ')'.Satisfy().Left(spaces)
+                       from end in position
+                       select (YacqExpression)YacqExpression.List(y.ToArray())
+                            .Apply(node => node.SetPosition(start, end));
+
+            var vector = from start in position
+                         from x in '['.Satisfy()
+                         from y in expression.Value.Between(spaces, spaces).Many()
+                         from z in ']'.Satisfy()
+                         from end in position
+                         select (YacqExpression)YacqExpression.Vector(y.ToArray())
+                            .Apply(node => node.SetPosition(start, end));
+
+            var lambda = from start in position
+                         from x in '{'.Satisfy().Left(spaces)
+                         from y in expression.Value.Between(spaces, spaces).Many()
+                         from z in '}'.Satisfy().Left(spaces)
+                         from end in position
+                         select (YacqExpression)YacqExpression.LambdaList(y.ToArray())
+                            .Apply(node => node.SetPosition(start,end));
+
+            var term = Combinator.Choice(text, number, list, vector, lambda, identifier)
+                .Between(spaces, spaces);
+
+            expressionRef =
+                term.Pipe('.'.Satisfy().Right(term).Many(), (x, y) => Enumerable.Aggregate(y, x,
+                    (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier("."), a, b)))
+                    .Or(term);
+
+
+            this.Parser = expression.Value.Between(spaces, spaces).Many(1);
         }
     }
 }
