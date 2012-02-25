@@ -39,161 +39,158 @@ using Parseq.Combinators;
 
 namespace XSpect.Yacq.LanguageServices
 {
-    partial class Reader
-    {
+    partial class Reader {
         private void InitializeRules(){
-            var position = (Parser<Char, Position>)(stream => Reply.Success(stream, stream.Position));
+
+            var newline =
+                Combinator.Choice(
+                    '\r'.Satisfy().Pipe('\n'.Satisfy(), (x, y) => "\r\n"),
+                    '\r'.Satisfy().Select(_ => "\r"),
+                    '\n'.Satisfy().Select(_ => "\n")
+                    );
+
+            var eolComment =
+                ';'.Satisfy().Pipe(newline.Not().Right(Chars.Any()), newline,
+                    (x, y, z) => Unit.Instance);
+                            
 
             var space = Chars.Space();
-            var spaces = Chars.Space().Many();
+            var spaces = space.Many();
 
-            var blockCommentPrefix = '#'.Satisfy().Right('|'.Satisfy()).Select(_ => "#|");
-            var blockCommentSuffix = '|'.Satisfy().Right('#'.Satisfy()).Select(_ => "|#");
+            var numberPrefix =
+                Chars.OneOf('+', '-').Maybe()
+                    .Select(x => x.Select(y => y.ToString()).Otherwise(() => String.Empty));
 
-            var numberPrefix = Chars.OneOf('+', '-').Maybe().Select(
-                x => x.Select(y => y.ToString()).Otherwise(() => String.Empty));
+            var numberSuffix =
+                Combinator.Choice(
+                    Prims.Pipe('u'.Satisfy(), 'l'.Satisfy(), (x, y) => "ul"),
+                    Prims.Pipe('U'.Satisfy(), 'L'.Satisfy(), (x, y) => "UL"),
+                    Chars.OneOf('f', 'F', 'd', 'D', 'm', 'M', 'u', 'U', 'l', 'L')
+                        .Select(_ => _.ToString())
+                    ).Maybe()
+                        .Select(_ => _.Otherwise(() => String.Empty));
 
-            var numberSuffix = Combinator.Choice(
-                'u'.Satisfy().Right('l'.Satisfy()).Select(_ => "ul"),
-                'U'.Satisfy().Right('L'.Satisfy()).Select(_ => "UL"),
-                Chars.OneOf('f', 'F', 'd', 'D', 'm', 'M', 'u', 'U', 'l', 'L').Select(_ => _.ToString()))
-                .Maybe().Select(_ => _.Otherwise(() => String.Empty));
+            var punctuation =
+                Chars.OneOf(';', '\'', '\"', '`', '(', ')', '[', ']', '{', '}', ',', '.', ':');
 
-            var punctuation = Chars.OneOf(';', '\'', '\"', '`', '(', ')', '[', ']', '{', '}', ',', '.', ':');
+            var digit =
+                '_'.Satisfy().Many().Right(Chars.Digit());
 
-            var digit = '_'.Satisfy().Many().Right(Chars.Digit());
+            var hex =
+                '_'.Satisfy().Many().Right(Chars.Hex());
 
-            var hex = '_'.Satisfy().Many().Right(Chars.Hex());
+            var oct =
+                '_'.Satisfy().Many().Right(Chars.Oct());
 
-            var oct = '_'.Satisfy().Many().Right(Chars.Oct());
+            var bin =
+                '_'.Satisfy().Many().Right(Chars.OneOf('0', '1'));
 
-            var bin = '_'.Satisfy().Many().Right(Chars.OneOf('0', '1'));
 
-            var identifier = Combinator.Choice(
-                from s in position
-                from x in '.'.Satisfy().Many(1)
-                from e in position
-                select (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))
-                    .Apply(node => node.SetPosition(s, e)),
+            var identifier =
+                Combinator.Choice(
+                    Span('.'.Satisfy().Many(1)
+                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)),
+                    Span(':'.Satisfy().Many(1)
+                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)),
+                    Span(Chars.Digit().Not().Right(space.Or(punctuation).Not().Right(Chars.Any()).Many(1))
+                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end))
+                );
 
-                from s in position
-                from x in ':'.Satisfy().Many(1)
-                from e in position
-                select (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))
-                    .Apply(node => node.SetPosition(s, e)),
+            var number =
+                Combinator.Choice(
+                    Span('0'.Satisfy().Pipe('b'.Satisfy(), (x, y) => "0b").Pipe(bin.Many(1), numberSuffix,
+                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)),
+                    Span('0'.Satisfy().Pipe('o'.Satisfy(), (x, y) => "0o").Pipe(oct.Many(1), numberSuffix,
+                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)),
+                    Span('0'.Satisfy().Pipe('x'.Satisfy(), (x, y) => "0x").Pipe(hex.Many(1), numberSuffix,
+                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)),
+                    Span(
+                        from u in numberPrefix
+                        from w in digit.Many(1)
+                        from x in Combinator.Maybe('.'.Satisfy().Pipe(digit.Many(1),
+                            (a, b) => String.Concat(a, new String(b.ToArray()))))
+                                .Select(_ => _.Otherwise(() => String.Empty))
+                        from y in Combinator.Maybe(Chars.OneOf('e', 'E').Pipe(numberPrefix, digit.Many(1),
+                            (a, b, c) => String.Concat(a, b, new String(c.ToArray()))))
+                                .Select(_ => _.Otherwise(() => String.Empty))
+                        from z in numberSuffix
+                        select (YacqExpression)YacqExpression.Number(String.Concat(u, new String(w.ToArray()), x, y, z)),
+                            (start, end, t) => t.SetPosition(start, end))
+                );
 
-                from s in position
-                from y in Chars.Digit().Not()
-                from z in space.Or(punctuation).Not().Right(Chars.Any()).Many(1)
-                from e in position
-                select (YacqExpression)YacqExpression.Identifier(new StringBuilder().Append(z.ToArray()).ToString())
-                    .Apply(node => node.SetPosition(s, e)));
-
-            var number = Combinator.Choice(
-                 from s in position
-                 from x in Combinator.Sequence('0'.Satisfy(), 'b'.Satisfy())
-                 from y in bin.Many(1)
-                 from z in numberPrefix
-                 from e in position
-                 select (YacqExpression)YacqExpression.Number(
-                     new StringBuilder().Append(x.ToArray()).Append(y.ToArray()).Append(z).ToString())
-                        .Apply(node => node.SetPosition(s, e)),
-
-                 from s in position
-                 from x in Combinator.Sequence('0'.Satisfy(), 'o'.Satisfy())
-                 from y in oct.Many(1)
-                 from z in numberSuffix
-                 from e in position
-                 select (YacqExpression)YacqExpression.Number(
-                     new StringBuilder().Append(x.ToArray()).Append(y.ToArray()).Append(z).ToString())
-                        .Apply(node => node.SetPosition(s, e)),
-
-                 from s in position
-                 from x in Combinator.Sequence('0'.Satisfy(), 'x'.Satisfy())
-                 from y in hex.Many(1)
-                 from z in numberSuffix
-                 from e in position
-                 select (YacqExpression)YacqExpression.Number(
-                     new StringBuilder().Append(x.ToArray()).Append(y.ToArray()).Append(z).ToString())
-                        .Apply(node => node.SetPosition(s, e)),
-
-                 from s in position
-                 from u in numberPrefix
-                 from w in digit.Many(1)
-                 from x in
-                     Combinator.Maybe(from a in '.'.Satisfy()
-                                      from b in digit.Many(1)
-                                      select new StringBuilder().Append(a).Append(b.ToArray()).ToString())
-                               .Select(_ => _.Otherwise(() => String.Empty))
-
-                 from y in
-                     Combinator.Maybe(from a in Chars.OneOf('e', 'E')
-                                      from b in numberPrefix
-                                      from c in digit.Many(1)
-                                      select new StringBuilder().Append(a).Append(b).Append(c.ToArray()).ToString())
-                               .Select(_ => _.Otherwise(() => String.Empty))
-
-                 from z in numberSuffix
-                 from e in position
-                 select (YacqExpression)YacqExpression.Number(
-                     new StringBuilder().Append(u).Append(w.ToArray()).Append(x).Append(y).Append(z).ToString())
-                        .Apply(node => node.SetPosition(s, e)));
-
-            var text = from x in Chars.OneOf('\'', '\"', '`')
-                       from y in (x.Satisfy().Not().Right(Chars.Any())).Many()
-                       from z in x.Satisfy()
-                       select (YacqExpression)YacqExpression.Text(
-                           new StringBuilder().Append(x).Append(y.ToArray()).Append(x).ToString());
-
-            var eolComment = from x in ';'.Satisfy()
-                             from y in '\n'.Satisfy().Not().Right(Chars.Any()).Many()
-                             from z in '\n'.Satisfy()
-                             select Unit.Instance;
-
+            var text =
+                Span(
+                    from x in Chars.OneOf('\'', '\"', '`')
+                    let quote = x.Satisfy()
+                    from y in quote.Not().Right(Chars.Any()).Many()
+                    from z in quote
+                    select (YacqExpression)YacqExpression.Text(String.Concat(x, new String(y.ToArray()), z)),
+                        (start, end, t) => t.SetPosition(start, end)
+                );
 
             Parser<Char, YacqExpression> expressionRef = null;
-            Parser<Char, YacqExpression> expressionRestRef = null;
 
             var expression = new Lazy<Parser<Char, YacqExpression>>(
-                () => expressionRef);
+                () => stream => expressionRef(stream));
 
-            var expressionRest = new Lazy<Parser<Char, YacqExpression>>(
-                () => expressionRestRef);
+            var list =
+                Span(
+                    expression.Value.Between(spaces, spaces).Many().Between('('.Satisfy(), ')'.Satisfy())
+                        .Select(x => (YacqExpression)YacqExpression.List(x.ToArray())),
+                            (start, end, t) => t.SetPosition(start, end)
+                );
 
-            var list = from start in position
-                       from x in '('.Satisfy().Left(spaces)
-                       from y in expression.Value.Between(spaces, spaces).Many()
-                       from z in ')'.Satisfy().Left(spaces)
-                       from end in position
-                       select (YacqExpression)YacqExpression.List(y.ToArray())
-                            .Apply(node => node.SetPosition(start, end));
+            var vector =
+                Span(
+                    expression.Value.Between(spaces, spaces).Many().Between('['.Satisfy(), ']'.Satisfy())
+                        .Select(x => (YacqExpression)YacqExpression.Vector(x.ToArray())),
+                            (start, end, t) => t.SetPosition(start, end)
+                );
 
-            var vector = from start in position
-                         from x in '['.Satisfy()
-                         from y in expression.Value.Between(spaces, spaces).Many()
-                         from z in ']'.Satisfy()
-                         from end in position
-                         select (YacqExpression)YacqExpression.Vector(y.ToArray())
-                            .Apply(node => node.SetPosition(start, end));
-
-            var lambda = from start in position
-                         from x in '{'.Satisfy().Left(spaces)
-                         from y in expression.Value.Between(spaces, spaces).Many()
-                         from z in '}'.Satisfy().Left(spaces)
-                         from end in position
-                         select (YacqExpression)YacqExpression.LambdaList(y.ToArray())
-                            .Apply(node => node.SetPosition(start,end));
+            var lambda =
+                Span(
+                    expression.Value.Between(spaces, spaces).Many().Between('{'.Satisfy(), '}'.Satisfy())
+                        .Select(x => (YacqExpression)YacqExpression.LambdaList(x.ToArray())),
+                            (start, end, t) => t.SetPosition(start, end)
+                );
 
             var term = Combinator.Choice(text, number, list, vector, lambda, identifier)
-                .Between(spaces, spaces);
+               .Between(spaces, spaces);
 
-            expressionRef =
-                term.Pipe('.'.Satisfy().Right(term).Many(), (x, y) => Enumerable.Aggregate(y, x,
+            var factor =
+                term.Pipe('.'.Satisfy(), (term).Many(), (x, y, z) => Enumerable.Aggregate(z, x,
                     (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier("."), a, b)))
                     .Or(term);
 
+            expressionRef =
+                factor.Pipe(':'.Satisfy(), (factor).Many(), (x, y, z) => Enumerable.Aggregate(z, x,
+                    (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier(":"), a, b)))
+                    .Or(factor);
 
-            this.Parser = expression.Value.Between(spaces, spaces).Many(1);
+
+            this.Parser = eolComment.Maybe().Right(expression.Value.Between(spaces, spaces)).Many();
+            //(let [x:Func.[Int32 Int32]] x) 
+        }
+
+        private static Parser<Char, T> Span<T>(Parser<Char, T> parser,
+            Action<Position,Position,T> action)
+        {
+            if (parser == null)
+                throw new ArgumentNullException("parser");
+            if (action == null)
+                throw new ArgumentNullException("action");
+
+            var pos = (Parser<Char, Position>)(stream => Reply.Success(stream, stream.Position));
+            return from x in pos
+                   from y in parser
+                   from z in pos
+                   select y.Apply(_ => action(x, z, _));
         }
     }
 }

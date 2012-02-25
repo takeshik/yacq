@@ -44,7 +44,7 @@ namespace XSpect.Yacq.LanguageServices
         /// <summary>
         /// Gets the parser of Yacq.
         /// </summary>
-        /// <value>The lparser of Yacq.</value>
+        /// <value>The parser of Yacq.</value>
         public Parser<Char,IEnumerable<YacqExpression>> Parser {
             get;
             private set;
