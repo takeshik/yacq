@@ -99,19 +99,26 @@ namespace XSpect.Yacq.Expressions
         private Object Parse()
         {
             var text = this.SourceText.Replace("_", "").ToUpper();
+            var b = text[0] != '-'
+                ? text.Length > 2
+                      ? GetBase(text.Substring(0, 2))
+                      : 10
+                : text.Length > 3
+                      ? GetBase(text.Substring(1, 3))
+                      : 10;
             var suffix = text.Length > 1
                 ? new String(text
                       .Substring(text.Length - 2)
-                      .Where(_ => _ == 'D' || _ == 'F' || _ == 'L' || _ == 'M' || _ == 'U')
+                      .Where(_ => _ == 'L' || _ == 'U' || (b == 10 && (_ == 'D' || _ == 'F' || _ == 'M')))
                       .ToArray()
                   )
                 : "";
             text = text.Substring(0, text.Length - suffix.Length);
-            if (suffix == "M")
+            if (b == 10 && suffix == "M")
             {
                 return Decimal.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
             }
-            if (text.Contains(".") || suffix == "D" || suffix == "F")
+            else if (b == 10 && (text.Contains(".") || suffix == "D" || suffix == "F"))
             {
                 return suffix == "F"
                     ? (Object) Single.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture)
@@ -125,9 +132,6 @@ namespace XSpect.Yacq.Expressions
                     {
                         text = text.Substring(1);
                     }
-                    var b = text.Length > 2
-                        ? GetBase(text.Substring(0, 2))
-                        : 10;
                     var value = b != 10
                         ? System.Convert.ToUInt64(text.Substring(2), b)
                         : UInt64.Parse(text, NumberStyles.AllowExponent | NumberStyles.Number, CultureInfo.InvariantCulture);
@@ -158,9 +162,6 @@ namespace XSpect.Yacq.Expressions
                 }
                 else
                 {
-                    var b = text.Length > 3
-                        ? GetBase(text.Substring(1, 3))
-                        : 10;
                     var value = b != 10
                         ? System.Convert.ToInt64("-" + text.Substring(3), b)
                         : Int64.Parse(text, CultureInfo.InvariantCulture);
