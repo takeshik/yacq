@@ -1445,29 +1445,35 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "def")]
             public static Expression DefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Empty().Apply(_ =>
-                    e.Left.Reduce(s).Const<SymbolTable>().Add(
-                        e.Arguments[0].Id(),
-                        e.Arguments[1].Reduce(s)
-                    )
-                );
+                var body = e.Arguments[1].Reduce(s);
+                var isLiteral = !(body as AmbiguousLambdaExpression).Null(l => l.UnfixedParameters.Count() == 3);
+                (isLiteral
+                    ? (e_, s_, t_) => body
+                    : ((Expression<SymbolDefinition>) body.Reduce(s, typeof(SymbolDefinition))).Compile()
+                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>().Add(GetSymbolEntry(e.Arguments[0], s, isLiteral), d));
+                return Expression.Empty();
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "def!")]
             public static Expression ForceDefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Empty().Apply(_ =>
-                    e.Left.Reduce(s).Const<SymbolTable>()[e.Arguments[0].Id()]
-                        = e.Arguments[1].Reduce(s)
-                );
+                var body = e.Arguments[1].Reduce(s);
+                var isLiteral = !(body as AmbiguousLambdaExpression).Null(l => l.UnfixedParameters.Count() == 3);
+                (isLiteral
+                    ? (e_, s_, t_) => body
+                    : ((Expression<SymbolDefinition>) body.Reduce(s, typeof(SymbolDefinition))).Compile()
+                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>()[GetSymbolEntry(e.Arguments[0], s, isLiteral)] = d);
+                return Expression.Empty();
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "undef")]
             public static Expression UndefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Empty().Apply(_ =>
-                    e.Left.Reduce(s).Const<SymbolTable>().Remove(e.Arguments[0].Id())
+                e.Left.Reduce(s).Const<SymbolTable>().Apply(_ =>
+                    new[] { GetSymbolEntry(e.Arguments[0], s, true), GetSymbolEntry(e.Arguments[0], s, false), }
+                        .ForEach(k => _.Remove(k))
                 );
+                return Expression.Empty();
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "load")]
@@ -1965,6 +1971,20 @@ namespace XSpect.Yacq
                             )
                         )
                         .ToArray()
+                );
+            }
+
+            private static SymbolEntry GetSymbolEntry(Expression arg, SymbolTable s, Boolean isLiteral)
+            {
+                return (arg.List(".").Null(l => Tuple.Create(
+                    (l.First() as VectorExpression).Null(v => Static.MakeType(((TypeCandidateExpression) v.Elements.First().Reduce(s)).ElectedType))
+                        ?? ((TypeCandidateExpression) l.First().Reduce(s)).ElectedType,
+                    l.Last()
+                ))
+                    ?? Tuple.Create(default(Type), arg)
+                ).Let(_ => _.Item2 is ListExpression
+                    ? new SymbolEntry(DispatchTypes.Method | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.List().First().Id())
+                    : new SymbolEntry(DispatchTypes.Member | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.Id())
                 );
             }
 

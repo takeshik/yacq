@@ -137,7 +137,7 @@ namespace XSpect.Yacq
         public override Int32 GetHashCode()
         {
             return unchecked(
-                this.DispatchType.GetHashCode() ^
+                (this.DispatchType & DispatchTypes.TargetMask).GetHashCode() ^
                 (this.LeftType != null ? this.LeftType.GetHashCode() : 0) ^
                 (this.Name != null ? this.Name.GetHashCode() : 0)
             );
@@ -173,7 +173,7 @@ namespace XSpect.Yacq
         public Boolean Equals(SymbolEntry other)
         {
             return
-                this.DispatchType == other.DispatchType &&
+                (this.DispatchType & DispatchTypes.TargetMask) == (other.DispatchType & DispatchTypes.TargetMask) &&
                 this.LeftType == other.LeftType &&
                 this.Name == other.Name;
         }
