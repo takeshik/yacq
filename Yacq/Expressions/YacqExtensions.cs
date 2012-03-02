@@ -202,12 +202,16 @@ namespace XSpect.Yacq.Expressions
             return YacqExpression.Dispatch(DispatchTypes.Method, left, name, arguments);
         }
 
-        internal static IEnumerable<Expression> List(this Expression expression, String head)
+        internal static IEnumerable<Expression> List(this Expression expression, String head = null)
         {
-            return (expression as ListExpression).If(
-                l => l != null && (l[0] as IdentifierExpression).Null(_ => _.Name) == head,
-                l => l.Elements.Skip(1),
-                l => null
+            return (expression as ListExpression).Let(l =>
+                l != null
+                    ? head == null
+                          ? l.Elements
+                          : (l[0] as IdentifierExpression).Null(_ => _.Name) == head
+                                ? l.Elements.Skip(1)
+                                : null
+                    : null
             );
         }
 

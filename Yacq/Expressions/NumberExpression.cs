@@ -109,7 +109,10 @@ namespace XSpect.Yacq.Expressions
             var suffix = text.Length > 1
                 ? new String(text
                       .Substring(text.Length - 2)
-                      .Where(_ => _ == 'L' || _ == 'U' || (b == 10 && (_ == 'D' || _ == 'F' || _ == 'M')))
+                      .Where(b == 10
+                          ? (_ => _ == 'D' || _ == 'F' || _ == 'M' || _ == 'L' || _ == 'U')
+                          : ((Func<Char, Boolean>) (_ => _ == 'L' || _ == 'U'))
+                      )
                       .ToArray()
                   )
                 : "";
