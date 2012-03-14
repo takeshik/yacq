@@ -301,21 +301,23 @@ namespace XSpect.Yacq.Expressions
 
         private Candidate CreateCandidate(MemberInfo member)
         {
-            return (member as MethodInfo).Null(m => m.IsExtensionMethod()).Let(_ => new Candidate(
-                this._left is TypeCandidateExpression || _
-                    ? null
-                    : this._left,
-                member,
-                this.TypeArguments,
-                this.Arguments
-                    .Select(e => e.List(":").Null(l => l.First().Id()))
-                    .If(es => _, es => es.StartWith(new String[1]))
-                    .ToArray(),
-                this.Arguments
-                    .Select(e => e.List(":").Null(l => l.Last(), e))
-                    .If(es => _, es => es.StartWith(this._left))
-                    .ToArray()
-            ));
+            return (member as MethodInfo)
+                .Null(m => m.IsExtensionMethod() && !(this._left is TypeCandidateExpression))
+                .Let(_ => new Candidate(
+                    this._left is TypeCandidateExpression || _
+                        ? null
+                        : this._left,
+                    member,
+                    this.TypeArguments,
+                    this.Arguments
+                        .Select(e => e.List(":").Null(l => l.First().Id()))
+                        .If(es => _, es => es.StartWith(new String[1]))
+                        .ToArray(),
+                    this.Arguments
+                        .Select(e => e.List(":").Null(l => l.Last(), e))
+                        .If(es => _, es => es.StartWith(this._left))
+                        .ToArray()
+                ));
         }
 
         private Candidate InferTypeArguments(Candidate candidate, IDictionary<Type, Type> typeArgumentMap, SymbolTable symbols)
