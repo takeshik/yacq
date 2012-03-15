@@ -862,7 +862,7 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "!-")]
             public static Expression Ignore(DispatchExpression e, SymbolTable s, Type t)
             {
-                return e.Arguments.ReduceAll(s).ToArray().Let(_ => YacqExpression.Ignored(s));
+                return e.Arguments.ReduceAll(s).ToArray().Let(_ => YacqExpression.Ignore(s));
             }
 
             [YacqSymbol(DispatchTypes.Method, "throw")]
@@ -1062,7 +1062,7 @@ namespace XSpect.Yacq
                                               .If(
                                                   _ => _.Any() && _.First().Id() != "set",
                                                   _ => _.First(),
-                                                  _ => YacqExpression.Ignored()
+                                                  _ => YacqExpression.Ignore()
                                               )
                                         : null,
                                     rest.Any(_ => _.Id() == "set")
@@ -1072,7 +1072,7 @@ namespace XSpect.Yacq
                                               .If(
                                                   _ => _.Any() && _.First().Id() != "get",
                                                   _ => _.First(),
-                                                  _ => YacqExpression.Ignored()
+                                                  _ => YacqExpression.Ignore()
                                               )
                                         : null
                                 ));
@@ -1144,6 +1144,16 @@ namespace XSpect.Yacq
             {
                 return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
                     .Method(s, "import", e.Arguments);
+            }
+
+            #endregion
+
+            #region Function - Expressions
+
+            [YacqSymbol(DispatchTypes.Method, "quote")]
+            public static Expression Quote(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Quote(s, e.Arguments[0]);
             }
 
             #endregion
