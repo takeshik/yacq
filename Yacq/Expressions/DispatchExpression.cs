@@ -62,9 +62,9 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets an <see cref="Expression"/> that representts the receiver or static reference for dispatching.
+        /// Gets an <see cref="Expression"/> that represents the receiver or static reference for dispatching.
         /// </summary>
-        /// <value>An <see cref="Expression"/> that representts the receiver or static reference for dispatching.</value>
+        /// <value>An <see cref="Expression"/> that represents the receiver or static reference for dispatching.</value>
         public Expression Left
         {
             get;

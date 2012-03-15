@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Expressions\IgnoredExpression.cs" />
+    <Compile Include="Expressions\QuotedExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
     <Compile Include="LanguageServices\Reader.DefaultRules.cs" />
     <Compile Include="LanguageServices\ReaderCursor.cs" />
