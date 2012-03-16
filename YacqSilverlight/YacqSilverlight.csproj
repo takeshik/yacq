@@ -162,8 +162,8 @@
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\Reader.DefaultRules.cs">
-      <Link>LanguageServices\Reader.DefaultRules.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\Reader.Defaults.cs">
+      <Link>LanguageServices\Reader.Defaults.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\LanguageServices\ReaderStream.cs">
       <Link>LanguageServices\ReaderStream.cs</Link>

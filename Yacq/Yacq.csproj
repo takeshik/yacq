@@ -85,7 +85,7 @@
   <ItemGroup>
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
-    <Compile Include="LanguageServices\Reader.DefaultRules.cs" />
+    <Compile Include="LanguageServices\Reader.Defaults.cs" />
     <Compile Include="LanguageServices\ReaderStream.cs" />
     <Compile Include="MemberAccessibilities.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

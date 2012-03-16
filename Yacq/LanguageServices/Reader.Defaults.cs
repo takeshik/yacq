@@ -1,0 +1,267 @@
+﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
+// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
+// $Id$
+/* YACQ
+ *   Yet Another Compilable Query Language, based on Expression Trees API
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+ * All rights reserved.
+ * 
+ * This file is part of YACQ.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+
+using XSpect.Yacq.Expressions;
+
+using Parseq;
+using Parseq.Combinators;
+
+namespace XSpect.Yacq.LanguageServices
+{
+    partial class Reader {
+
+        public class Defaults {
+
+            static Defaults(){
+
+                var newline = Combinator.Choice(
+                    '\r'.Satisfy().Pipe('\n'.Satisfy(), (a, b) => '\n'),
+                    '\r'.Satisfy().Select(_ => '\n'),
+                    '\n'.Satisfy()
+                );
+
+                var space = Chars.Space();
+
+                var tab = Chars.OneOf('\t', '\v');
+
+                var eolComment = ';'.Satisfy().Pipe(newline.Not().Right(Chars.Any()).Many(), newline,
+                        (a, b, c) => String.Concat(a, new String(b.ToArray()), c));
+
+                Parser<Char, String> blockCommentRef = null;
+                Parser<Char, String> blockCommentRestRef = null;
+
+                var blockComment = new Lazy<Parser<Char, String>>(
+                    () => stream => blockCommentRef(stream)
+                );
+
+                var blockCommentRest = new Lazy<Parser<Char, String>>(
+                    () => stream => blockCommentRestRef(stream)
+                );
+
+                var blockCommentPrefix = '#'.Satisfy().Pipe('|'.Satisfy(), (a, b) => "#|");
+                var blockCommentSuffix = '|'.Satisfy().Pipe('#'.Satisfy(), (a, b) => "|#");
+
+                blockCommentRestRef = blockCommentPrefix.Not().Right(blockCommentSuffix.Not()).Right(Chars.Any())
+                    .Select(_ => _.ToString())
+                    .Or(blockComment.Value);
+
+                blockCommentRef = blockCommentPrefix.Right(blockCommentRest.Value.Many()).Left(blockCommentSuffix)
+                    .Select(t => t.Aggregate(new StringBuilder(), (x, y) => x.Append(y)).ToString());
+
+                var comment = eolComment.Or(blockComment.Value);
+
+                var ignore = comment.Ignore().Or(space.Ignore()).Or(tab.Ignore()).Or(newline.Ignore()).Many();
+
+                var numberPrefix = Chars.OneOf('+', '-');
+
+                var numberSuffix = Combinator.Choice(
+                    Prims.Pipe('u'.Satisfy(), 'l'.Satisfy(), (x, y) => "ul"),
+                    Prims.Pipe('U'.Satisfy(), 'L'.Satisfy(), (x, y) => "UL"),
+                    Chars.OneOf('f', 'F', 'd', 'D', 'm', 'M', 'u', 'U', 'l', 'L').Select(_ => _.ToString())
+                );
+
+                var punctuation = Chars.OneOf(';', '\'', '\"', '`', '(', ')', '[', ']', '{', '}', ',', '.', ':');
+
+                var digit =
+                    '_'.Satisfy().Many().Right(Chars.Digit());
+
+                var hexPrefix = Prims.Pipe('0'.Satisfy(), 'x'.Satisfy(), (x, y) => "0x");
+
+                var hex =
+                    '_'.Satisfy().Many().Right(Chars.Hex());
+
+                var octPrefix = Prims.Pipe('0'.Satisfy(), 'o'.Satisfy(), (x, y) => "0o");
+
+                var oct =
+                    '_'.Satisfy().Many().Right(Chars.Oct());
+
+                var binPrefix = Prims.Pipe('0'.Satisfy(), 'b'.Satisfy(), (x, y) => "0b");
+
+                var bin =
+                    '_'.Satisfy().Many().Right(Chars.OneOf('0', '1'));
+
+                var fraction = Prims.Pipe('.'.Satisfy(), digit.Many(1),
+                    (x, y) => String.Concat(x, new String(y.ToArray())));
+
+                var exponent = Prims.Pipe(Chars.OneOf('e', 'E'), Chars.OneOf('+', '-').Maybe(), digit.Many(1),
+                    (x, y, z) => y.Select(t => String.Concat(x, t, new String(z.ToArray())))
+                        .Otherwise(() => String.Concat(x, new String(z.ToArray()))));
+
+                Parser<Char, YacqExpression> expressionRef = null;
+
+                var expression = new Lazy<Parser<Char, YacqExpression>>(
+                    () => stream => expressionRef(stream));
+
+                var identifier = Combinator.Choice(
+                    Span('.'.Satisfy().Many(1)
+                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)),
+                    Span(':'.Satisfy().Many(1)
+                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)),
+                    Span(Chars.Digit().Not().Right(space.Or(punctuation).Not().Right(Chars.Any()).Many(1))
+                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end))
+                );
+
+                var number = Combinator.Choice(
+                    Span(Prims.Pipe(binPrefix, bin.Many(1), numberSuffix.Maybe(),
+                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)),
+                    Span(Prims.Pipe(octPrefix, oct.Many(1), numberSuffix,
+                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)),
+                    Span(Prims.Pipe(hexPrefix, hex.Many(1), numberSuffix,
+                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)),
+                    Span(
+                        from u in numberPrefix.Maybe()
+                        from w in digit.Many(1).Select(_ => new String(_.ToArray()))
+                        from x in fraction.Maybe().Select(_ => _.Otherwise(() => string.Empty))
+                        from y in exponent.Maybe().Select(_ => _.Otherwise(() => string.Empty))
+                        from z in numberSuffix.Maybe().Select(_ => _.Otherwise(() => string.Empty))
+                        select u.Select(t => (YacqExpression)YacqExpression.Number(String.Concat(t, w, x, y, z)))
+                            .Otherwise(() => (YacqExpression)YacqExpression.Number(String.Concat(w, x, y, z))),
+                                (start, end, t) => t.SetPosition(start, end))
+                );
+
+                var text =
+                    Span(
+                        from x in Chars.OneOf('\'', '\"', '`')
+                        let quote = x.Satisfy()
+                        from y in quote.Not().Right(Chars.Any()).Many().Select(_ => new String(_.ToArray()))
+                        from z in quote
+                        select (YacqExpression)YacqExpression.Text(String.Concat(x, y, z)),
+                            (start, end, t) => t.SetPosition(start, end)
+                    );
+
+                var list =
+                    Span(
+                        expression.Value.Between(ignore, ignore).Many().Between('('.Satisfy(), ')'.Satisfy())
+                            .Select(x => (YacqExpression)YacqExpression.List(x.ToArray())),
+                                (start, end, t) => t.SetPosition(start, end)
+                    );
+
+                var vector =
+                    Span(
+                        expression.Value.Between(ignore, ignore).Many().Between('['.Satisfy(), ']'.Satisfy())
+                            .Select(x => (YacqExpression)YacqExpression.Vector(x.ToArray())),
+                                (start, end, t) => t.SetPosition(start, end)
+                    );
+
+                var lambda =
+                    Span(
+                        expression.Value.Between(ignore, ignore).Many().Between('{'.Satisfy(), '}'.Satisfy())
+                            .Select(x => (YacqExpression)YacqExpression.LambdaList(x.ToArray())),
+                                (start, end, t) => t.SetPosition(start, end)
+                    );
+
+                var term = Combinator.Choice(text, number, list, vector, lambda, identifier)
+                   .Between(ignore, ignore);
+
+                var factor =
+                    term.Pipe('.'.Satisfy().Right(term).Many(),
+                        (x, y) => Enumerable.Aggregate(y, x,
+                            (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier("."), a, b)))
+                        .Or(term);
+
+                expressionRef =
+                    factor.Pipe(':'.Satisfy().Right(factor).Many(),
+                        (x, y) => Enumerable.Aggregate(y, x,
+                            (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier(":"), a, b)))
+                        .Or(factor);
+
+
+                Comment = comment;
+                Identifier = identifier;
+                Number = number;
+                Text = text;
+                List = list;
+                Vector = vector;
+                Lambda = lambda;
+                Yacq = expression.Value.Many()
+                    .Left(Errors.FollowedBy(Chars.Eof()));
+
+            }
+
+            public static Parser<Char, String> Comment {
+                get; private set;
+            }
+
+            public static Parser<Char, YacqExpression> Identifier {
+                get; private set; 
+            }
+
+            public static Parser<Char, YacqExpression> Number { 
+                get; private set; 
+            }
+
+            public static Parser<Char, YacqExpression> Text {
+                get; private set;
+            }
+
+            public static Parser<Char, YacqExpression> List {
+                get; private set;
+            }
+
+            public static Parser<Char, YacqExpression> Vector {
+                get; private set;
+            }
+
+            public static Parser<Char, YacqExpression> Lambda {
+                get; private set;
+            }
+
+            public static Parser<Char, IEnumerable<YacqExpression>> Yacq {
+                get; private set;
+            }
+
+            private static Parser<Char, T> Span<T>(Parser<Char, T> parser,
+                Action<Position, Position, T> action)
+            {
+                if (parser == null)
+                    throw new ArgumentNullException("parser");
+                if (action == null)
+                    throw new ArgumentNullException("action");
+
+                var pos = (Parser<Char, Position>)(stream => Reply.Success(stream, stream.Position));
+                return from x in pos
+                       from y in parser
+                       from z in pos
+                       select y.Apply(_ => action(x, z, _));
+            }
+        }
+    }
+}

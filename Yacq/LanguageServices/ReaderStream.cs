@@ -88,6 +88,6 @@ namespace XSpect.Yacq.LanguageServices
         private readonly String _source;
         private Stream<Char> _next;
         private Stream<Char> _prev;
-        private readonly static Regex _regex = new Regex("\r\n|\r|\n");
+        private readonly static Regex _regex = new Regex("^(\r\n|\r|\n)");
     }
 }
