@@ -33,6 +33,7 @@ using System.Linq;
 using XSpect.Yacq.Expressions;
 
 using Parseq;
+using Parseq.Combinators;
 
 namespace XSpect.Yacq.LanguageServices
 {
@@ -47,7 +48,7 @@ namespace XSpect.Yacq.LanguageServices
         /// <value>The parser of Yacq.</value>
         public Parser<Char,IEnumerable<YacqExpression>> Parser {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -64,7 +65,7 @@ namespace XSpect.Yacq.LanguageServices
         public Reader()
             : this(null)
         {
-            this.InitializeRules();
+            this.Parser = Reader.Defaults.Yacq;
         }
 
         /// <summary>
@@ -74,7 +75,6 @@ namespace XSpect.Yacq.LanguageServices
         /// <returns>Generated expressions.</returns>
         public YacqExpression[] Read(String input){
             var stream = new ReaderStream(input);
-
             Reply<Char,IEnumerable<YacqExpression>> reply;
             IEnumerable<YacqExpression> result;
             ErrorMessage message;
@@ -84,7 +84,7 @@ namespace XSpect.Yacq.LanguageServices
                 case ReplyStatus.Success:
                     return result.ToArray();
                 case ReplyStatus.Failure:
-                    throw new ParseException("syntax error.", reply.Stream.Position, reply.Stream.Position);
+                    throw new ParseException("Syntax Error", reply.Stream.Position, reply.Stream.Position);
                 default:
                     throw new ParseException(message.MessageDetails, message.Beginning, message.End);
             }
