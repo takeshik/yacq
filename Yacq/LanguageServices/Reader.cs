@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+ * Copyright © 2012 linerlock <x.linerlock@gmail.com>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -31,9 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using XSpect.Yacq.Expressions;
-
 using Parseq;
-using Parseq.Combinators;
 
 namespace XSpect.Yacq.LanguageServices
 {
@@ -46,7 +44,8 @@ namespace XSpect.Yacq.LanguageServices
         /// Gets the parser of Yacq.
         /// </summary>
         /// <value>The parser of Yacq.</value>
-        public Parser<Char,IEnumerable<YacqExpression>> Parser {
+        public Parser<Char, IEnumerable<YacqExpression>> Parser
+        {
             get;
             set;
         }
@@ -55,7 +54,8 @@ namespace XSpect.Yacq.LanguageServices
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
         /// <param name="parser">The sequence of additional rules.</param>
-        public Reader(Parser<Char,IEnumerable<YacqExpression>> parser){
+        public Reader(Parser<Char, IEnumerable<YacqExpression>> parser)
+        {
             this.Parser = parser;
         }
 
@@ -65,7 +65,7 @@ namespace XSpect.Yacq.LanguageServices
         public Reader()
             : this(null)
         {
-            this.Parser = Reader.Defaults.Yacq;
+            this.Parser = Defaults.Yacq;
         }
 
         /// <summary>
@@ -79,7 +79,8 @@ namespace XSpect.Yacq.LanguageServices
             IEnumerable<YacqExpression> result;
             ErrorMessage message;
             switch ((reply = this.Parser(stream))
-                .TryGetValue(out result, out message))
+                .TryGetValue(out result, out message)
+            )
             {
                 case ReplyStatus.Success:
                     return result.ToArray();
