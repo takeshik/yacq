@@ -70,7 +70,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Reduces this node to a simpler expression with additioしかし、Parseq を使うとなると、Yacq の「依存ライブラリは Rx / Ix 以外無し！」の文言を消さないといけない…とはいえ、Rx / Ix だけ！っていっても、全部で 4 アセンブリなわけで、半分詐欺ですけど。nal symbol tables.
+        /// Reduces this node to a simpler expression with additional symbol tables.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
@@ -98,7 +98,7 @@ namespace XSpect.Yacq.Expressions
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression.
         /// </summary>
         /// <returns>An <see cref="QuotedExpression"/>.</returns>
-        public static QuotedExpression Quote(Expression expression)
+        public static new QuotedExpression Quote(Expression expression)
         {
             return Quote(null, expression);
         }
