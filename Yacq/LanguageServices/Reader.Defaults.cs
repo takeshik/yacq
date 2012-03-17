@@ -56,7 +56,9 @@ namespace XSpect.Yacq.LanguageServices
 
                 var tab = Chars.OneOf('\t', '\v');
 
-                var eolComment = ';'.Satisfy().Pipe(newline.Not().Right(Chars.Any()).Many(), newline,
+                var eof = Chars.Eof();
+
+                var eolComment = ';'.Satisfy().Pipe(newline.Not().Right(Chars.Any()).Many(), newline.Ignore().Or(eof),
                         (a, b, c) => String.Concat(a, new String(b.ToArray()), c));
 
                 Parser<Char, String> blockCommentRef = null;
@@ -195,13 +197,15 @@ namespace XSpect.Yacq.LanguageServices
                     term.Pipe('.'.Satisfy().Right(term).Many(),
                         (x, y) => Enumerable.Aggregate(y, x,
                             (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier("."), a, b)))
-                        .Or(term);
+                        .Or(term)
+                        .Between(ignore, ignore);
 
                 expressionRef =
                     factor.Pipe(':'.Satisfy().Right(factor).Many(),
                         (x, y) => Enumerable.Aggregate(y, x,
                             (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier(":"), a, b)))
-                        .Or(factor);
+                        .Or(factor)
+                        .Between(ignore, ignore);
 
 
                 Comment = comment;
@@ -212,6 +216,7 @@ namespace XSpect.Yacq.LanguageServices
                 Vector = vector;
                 Lambda = lambda;
                 Yacq = expression.Value.Many()
+                    .Between(ignore,ignore)
                     .Left(Errors.FollowedBy(Chars.Eof()));
 
             }
