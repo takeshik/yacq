@@ -33,6 +33,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using XSpect.Yacq.LanguageServices;
 
+using Parseq;
+
 namespace XSpect.Yacq.Expressions
 {
     /// <summary>
@@ -100,7 +102,7 @@ namespace XSpect.Yacq.Expressions
         /// Gets the start position in the source for this expression.
         /// </summary>
         /// <value>The start position in the source for this expression.</value>
-        public TextPosition StartPosition
+        public Position StartPosition
         {
             get;
             private set;
@@ -110,7 +112,7 @@ namespace XSpect.Yacq.Expressions
         /// Gets the end position in the source for this expression.
         /// </summary>
         /// <value>The end position in the source for this expression.</value>
-        public TextPosition EndPosition
+        public Position EndPosition
         {
             get;
             private set;
@@ -191,19 +193,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected abstract Expression ReduceImpl(SymbolTable symbols, Type expectedType);
 
-        internal void SetPosition(ReaderCursor cursor, Int32 length)
-        {
-            var start = cursor.Position;
-            cursor.MoveForward(length);
-            this.SetPosition(start, new TextPosition(
-                cursor.Position.Index - 1,
-                cursor.Position.Line,
-                cursor.Position.Column - 1
-            ));
-        }
-
-        internal void SetPosition(TextPosition start, TextPosition end)
-        {
+        internal void SetPosition(Position start, Position end){
             this.StartPosition = start;
             this.EndPosition = end;
         }

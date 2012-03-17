@@ -33,6 +33,8 @@ using System.Runtime.Serialization;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 
+using Parseq;
+
 namespace XSpect.Yacq
 {
     /// <summary>
@@ -55,7 +57,7 @@ namespace XSpect.Yacq
         /// Gets the start position in the source for the exception.
         /// </summary>
         /// <value>The start position in the source for the exception.</value>
-        public Nullable<TextPosition> StartPosition
+        public Nullable<Position> StartPosition
         {
             get;
             private set;
@@ -65,7 +67,7 @@ namespace XSpect.Yacq
         /// Gets the end position in the source for the exception.
         /// </summary>
         /// <value>The end position in the source for the exception.</value>
-        public Nullable<TextPosition> EndPosition
+        public Nullable<Position> EndPosition
         {
             get;
             private set;
@@ -83,8 +85,8 @@ namespace XSpect.Yacq
         private ParseException(
             String message,
             Expression expression,
-            Nullable<TextPosition> startPosition,
-            Nullable<TextPosition> endPosition
+            Nullable<Position> startPosition,
+            Nullable<Position> endPosition
         )
             : base(message + " (at " + GetPositionString(expression, startPosition, endPosition) + ")")
         {
@@ -111,7 +113,7 @@ namespace XSpect.Yacq
         /// <param name="position">The position in the source for the exception.</param>
         public ParseException(
             String message,
-            TextPosition position
+            Position position
         )
             : this(message, null, position, null)
         {
@@ -125,8 +127,8 @@ namespace XSpect.Yacq
         /// <param name="endPosition">The end position in the source for the exception.</param>
         public ParseException(
             String message,
-            TextPosition startPosition,
-            TextPosition endPosition
+            Position startPosition,
+            Position endPosition
         )
             : this(message, null, startPosition, endPosition)
         {
@@ -142,10 +144,10 @@ namespace XSpect.Yacq
         public ParseException(
             String message,
             Expression expression,
-            TextPosition startPosition,
-            TextPosition endPosition
+            Position startPosition,
+            Position endPosition
         )
-            : this(message, expression, (Nullable<TextPosition>) startPosition, endPosition)
+            : this(message, expression, (Nullable<Position>) startPosition, endPosition)
         {
         }
 
@@ -161,7 +163,7 @@ namespace XSpect.Yacq
         }
 #endif
 
-        private static String GetPositionString(Expression expression, Nullable<TextPosition> startPosition, Nullable<TextPosition> endPosition)
+        private static String GetPositionString(Expression expression, Nullable<Position> startPosition, Nullable<Position> endPosition)
         {
             return ((expression as YacqExpression)
                 .Null(e => Tuple.Create(
