@@ -86,11 +86,8 @@
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\QuotedExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
-    <Compile Include="LanguageServices\Reader.DefaultRules.cs" />
-    <Compile Include="LanguageServices\ReaderCursor.cs" />
-    <Compile Include="LanguageServices\ReaderResult.cs" />
-    <Compile Include="LanguageServices\ReaderScope.cs" />
-    <Compile Include="LanguageServices\TextPosition.cs" />
+    <Compile Include="LanguageServices\Reader.Defaults.cs" />
+    <Compile Include="LanguageServices\ReaderStream.cs" />
     <Compile Include="MemberAccessibilities.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -142,7 +139,14 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Parseq\Parseq\Parseq.csproj">
+      <Project>{3DA79348-7C7D-432B-B415-D5E1D2705CCA}</Project>
+      <Name>Parseq</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
