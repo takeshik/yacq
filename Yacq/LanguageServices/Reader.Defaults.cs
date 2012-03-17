@@ -46,6 +46,11 @@ namespace XSpect.Yacq.LanguageServices
 
             static Defaults(){
 
+                Parser<Char, YacqExpression> expressionRef = null;
+
+                var expression = new Lazy<Parser<Char, YacqExpression>>(
+                    () => stream => expressionRef(stream));
+
                 var newline = Combinator.Choice(
                     '\r'.Satisfy().Pipe('\n'.Satisfy(), (a, b) => '\n'),
                     '\r'.Satisfy().Select(_ => '\n'),
@@ -59,16 +64,17 @@ namespace XSpect.Yacq.LanguageServices
                 var eof = Chars.Eof();
 
                 var eolComment = ';'.Satisfy().Pipe(newline.Not().Right(Chars.Any()).Many(), newline.Ignore().Or(eof),
-                        (a, b, c) => String.Concat(a, new String(b.ToArray()), c));
+                        (a, b, c) => Unit.Instance
+                );
 
-                Parser<Char, String> blockCommentRef = null;
-                Parser<Char, String> blockCommentRestRef = null;
+                Parser<Char, Unit> blockCommentRef = null;
+                Parser<Char, Unit> blockCommentRestRef = null;
 
-                var blockComment = new Lazy<Parser<Char, String>>(
+                var blockComment = new Lazy<Parser<Char, Unit>>(
                     () => stream => blockCommentRef(stream)
                 );
 
-                var blockCommentRest = new Lazy<Parser<Char, String>>(
+                var blockCommentRest = new Lazy<Parser<Char, Unit>>(
                     () => stream => blockCommentRestRef(stream)
                 );
 
@@ -76,15 +82,18 @@ namespace XSpect.Yacq.LanguageServices
                 var blockCommentSuffix = '|'.Satisfy().Pipe('#'.Satisfy(), (a, b) => "|#");
 
                 blockCommentRestRef = blockCommentPrefix.Not().Right(blockCommentSuffix.Not()).Right(Chars.Any())
-                    .Select(_ => _.ToString())
+                    .Select(_ => Unit.Instance)
                     .Or(blockComment.Value);
 
                 blockCommentRef = blockCommentPrefix.Right(blockCommentRest.Value.Many()).Left(blockCommentSuffix)
-                    .Select(t => t.Aggregate(new StringBuilder(), (x, y) => x.Append(y)).ToString());
+                    .Select(_ => Unit.Instance);
 
-                var comment = eolComment.Or(blockComment.Value);
+                var expressionComment = '#'.Satisfy().Pipe(';'.Satisfy(), expression.Value,
+                    (a, b, c) => Unit.Instance);
 
-                var ignore = comment.Ignore().Or(space.Ignore()).Or(tab.Ignore()).Or(newline.Ignore()).Many();
+                var comment = eolComment.Or(blockComment.Value).Or(expressionComment);
+
+                var ignore = comment.Or(space.Ignore()).Or(tab.Ignore()).Or(newline.Ignore()).Many();
 
                 var numberPrefix = Chars.OneOf('+', '-');
 
@@ -121,10 +130,6 @@ namespace XSpect.Yacq.LanguageServices
                     (x, y, z) => y.Select(t => String.Concat(x, t, new String(z.ToArray())))
                         .Otherwise(() => String.Concat(x, new String(z.ToArray()))));
 
-                Parser<Char, YacqExpression> expressionRef = null;
-
-                var expression = new Lazy<Parser<Char, YacqExpression>>(
-                    () => stream => expressionRef(stream));
 
                 var identifier = Combinator.Choice(
                     Span('.'.Satisfy().Many(1)
@@ -221,7 +226,7 @@ namespace XSpect.Yacq.LanguageServices
 
             }
 
-            public static Parser<Char, String> Comment {
+            public static Parser<Char, Unit> Comment {
                 get; private set;
             }
 
