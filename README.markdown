@@ -8,6 +8,14 @@ YACQ は、.NET Framework 4、Silverlight 4、または Mono 2.10 上で動作�
 
 > For more details and documents, please visit [the Project Website](http://www.yacq.net/).
 
+## Acknowledgement
+
+YACQ は構文解析器に [Parseq](https://github.com/linerlock/parseq) を利用しています。
+Parseq および YACQ における既定の標準構文定義コードは linerlock 氏によって書かれ、MIT ライセンスが適用されています。
+
+> YACQ uses [Parseq](https://github.com/linerlock/parseq) as the parser.
+> Parseq and default grammer rule defining codes in YACQ is written by linerlock, and its codes are licensed under the MIT license.
+
 ## Licensing
 
 YACQ は MIT ライセンスを適用しています。このリポジトリ内にある LICENSE.txt をご覧下さい。

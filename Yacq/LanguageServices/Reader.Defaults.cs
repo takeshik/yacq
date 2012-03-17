@@ -3,7 +3,7 @@
 // $Id$
 /* YACQ
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+ * Copyright © 2012 linerlock <x.linerlock@gmail.com>
  * All rights reserved.
  * 
  * This file is part of YACQ.
@@ -27,29 +27,76 @@
  * THE SOFTWARE.
  */
 
+#pragma warning disable 1591
+
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-
 using XSpect.Yacq.Expressions;
-
 using Parseq;
 using Parseq.Combinators;
 
 namespace XSpect.Yacq.LanguageServices
 {
-    partial class Reader {
+    partial class Reader
+    {
+        public class Defaults
+        {
+            public static Parser<Char, Unit> Comment
+            {
+                get;
+                private set;
+            }
 
-        public class Defaults {
+            public static Parser<Char, YacqExpression> Identifier
+            {
+                get;
+                private set;
+            }
 
-            static Defaults(){
+            public static Parser<Char, YacqExpression> Number
+            {
+                get;
+                private set;
+            }
 
+            public static Parser<Char, YacqExpression> Text
+            {
+                get;
+                private set;
+            }
+
+            public static Parser<Char, YacqExpression> List
+            {
+                get;
+                private set;
+            }
+
+            public static Parser<Char, YacqExpression> Vector
+            {
+                get;
+                private set;
+            }
+
+            public static Parser<Char, YacqExpression> Lambda
+            {
+                get;
+                private set;
+            }
+
+            public static Parser<Char, IEnumerable<YacqExpression>> Yacq
+            {
+                get;
+                private set;
+            }
+
+            static Defaults()
+            {
                 Parser<Char, YacqExpression> expressionRef = null;
 
                 var expression = new Lazy<Parser<Char, YacqExpression>>(
-                    () => stream => expressionRef(stream));
+                    () => stream => expressionRef(stream)
+                );
 
                 var newline = Combinator.Choice(
                     '\r'.Satisfy().Pipe('\n'.Satisfy(), (a, b) => '\n'),
@@ -64,7 +111,7 @@ namespace XSpect.Yacq.LanguageServices
                 var eof = Chars.Eof();
 
                 var eolComment = ';'.Satisfy().Pipe(newline.Not().Right(Chars.Any()).Many(), newline.Ignore().Or(eof),
-                        (a, b, c) => Unit.Instance
+                    (a, b, c) => Unit.Instance
                 );
 
                 Parser<Char, Unit> blockCommentRef = null;
@@ -128,40 +175,48 @@ namespace XSpect.Yacq.LanguageServices
 
                 var exponent = Prims.Pipe(Chars.OneOf('e', 'E'), Chars.OneOf('+', '-').Maybe(), digit.Many(1),
                     (x, y, z) => y.Select(t => String.Concat(x, t, new String(z.ToArray())))
-                        .Otherwise(() => String.Concat(x, new String(z.ToArray()))));
+                        .Otherwise(() => String.Concat(x, new String(z.ToArray())))
+                );
 
 
                 var identifier = Combinator.Choice(
                     Span('.'.Satisfy().Many(1)
-                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
-                        (start, end, t) => t.SetPosition(start, end)),
+                        .Select(x => (YacqExpression) YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)
+                    ),
                     Span(':'.Satisfy().Many(1)
-                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
-                        (start, end, t) => t.SetPosition(start, end)),
+                        .Select(x => (YacqExpression) YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)
+                    ),
                     Span(Chars.Digit().Not().Right(space.Or(punctuation).Not().Right(Chars.Any()).Many(1))
-                        .Select(x => (YacqExpression)YacqExpression.Identifier(new String(x.ToArray()))),
-                        (start, end, t) => t.SetPosition(start, end))
+                        .Select(x => (YacqExpression) YacqExpression.Identifier(new String(x.ToArray()))),
+                        (start, end, t) => t.SetPosition(start, end)
+                    )
                 );
 
                 var number = Combinator.Choice(
                     Span(Prims.Pipe(binPrefix, bin.Many(1), numberSuffix.Maybe(),
-                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
-                            (start, end, t) => t.SetPosition(start, end)),
+                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)
+                    ),
                     Span(Prims.Pipe(octPrefix, oct.Many(1), numberSuffix,
-                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
-                            (start, end, t) => t.SetPosition(start, end)),
+                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)
+                    ),
                     Span(Prims.Pipe(hexPrefix, hex.Many(1), numberSuffix,
-                        (x, y, z) => (YacqExpression)YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
-                            (start, end, t) => t.SetPosition(start, end)),
+                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                            (start, end, t) => t.SetPosition(start, end)
+                    ),
                     Span(
                         from u in numberPrefix.Maybe()
                         from w in digit.Many(1).Select(_ => new String(_.ToArray()))
                         from x in fraction.Maybe().Select(_ => _.Otherwise(() => string.Empty))
                         from y in exponent.Maybe().Select(_ => _.Otherwise(() => string.Empty))
                         from z in numberSuffix.Maybe().Select(_ => _.Otherwise(() => string.Empty))
-                        select u.Select(t => (YacqExpression)YacqExpression.Number(String.Concat(t, w, x, y, z)))
-                            .Otherwise(() => (YacqExpression)YacqExpression.Number(String.Concat(w, x, y, z))),
-                                (start, end, t) => t.SetPosition(start, end))
+                        select u.Select(t => (YacqExpression) YacqExpression.Number(String.Concat(t, w, x, y, z)))
+                            .Otherwise(() => (YacqExpression) YacqExpression.Number(String.Concat(w, x, y, z))),
+                                (start, end, t) => t.SetPosition(start, end)
+                    )
                 );
 
                 var text =
@@ -170,28 +225,28 @@ namespace XSpect.Yacq.LanguageServices
                         let quote = x.Satisfy()
                         from y in quote.Not().Right(Chars.Any()).Many().Select(_ => new String(_.ToArray()))
                         from z in quote
-                        select (YacqExpression)YacqExpression.Text(String.Concat(x, y, z)),
+                        select (YacqExpression) YacqExpression.Text(String.Concat(x, y, z)),
                             (start, end, t) => t.SetPosition(start, end)
                     );
 
                 var list =
                     Span(
                         expression.Value.Between(ignore, ignore).Many().Between('('.Satisfy(), ')'.Satisfy())
-                            .Select(x => (YacqExpression)YacqExpression.List(x.ToArray())),
+                            .Select(x => (YacqExpression) YacqExpression.List(x.ToArray())),
                                 (start, end, t) => t.SetPosition(start, end)
                     );
 
                 var vector =
                     Span(
                         expression.Value.Between(ignore, ignore).Many().Between('['.Satisfy(), ']'.Satisfy())
-                            .Select(x => (YacqExpression)YacqExpression.Vector(x.ToArray())),
+                            .Select(x => (YacqExpression) YacqExpression.Vector(x.ToArray())),
                                 (start, end, t) => t.SetPosition(start, end)
                     );
 
                 var lambda =
                     Span(
                         expression.Value.Between(ignore, ignore).Many().Between('{'.Satisfy(), '}'.Satisfy())
-                            .Select(x => (YacqExpression)YacqExpression.LambdaList(x.ToArray())),
+                            .Select(x => (YacqExpression) YacqExpression.LambdaList(x.ToArray())),
                                 (start, end, t) => t.SetPosition(start, end)
                     );
 
@@ -201,17 +256,16 @@ namespace XSpect.Yacq.LanguageServices
                 var factor =
                     term.Pipe('.'.Satisfy().Right(term).Many(),
                         (x, y) => Enumerable.Aggregate(y, x,
-                            (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier("."), a, b)))
+                            (a, b) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("."), a, b)))
                         .Or(term)
                         .Between(ignore, ignore);
 
                 expressionRef =
                     factor.Pipe(':'.Satisfy().Right(factor).Many(),
                         (x, y) => Enumerable.Aggregate(y, x,
-                            (a, b) => (YacqExpression)YacqExpression.List(YacqExpression.Identifier(":"), a, b)))
+                            (a, b) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier(":"), a, b)))
                         .Or(factor)
                         .Between(ignore, ignore);
-
 
                 Comment = comment;
                 Identifier = identifier;
@@ -221,52 +275,23 @@ namespace XSpect.Yacq.LanguageServices
                 Vector = vector;
                 Lambda = lambda;
                 Yacq = expression.Value.Many()
-                    .Between(ignore,ignore)
+                    .Between(ignore, ignore)
                     .Left(Errors.FollowedBy(Chars.Eof()));
-
-            }
-
-            public static Parser<Char, Unit> Comment {
-                get; private set;
-            }
-
-            public static Parser<Char, YacqExpression> Identifier {
-                get; private set; 
-            }
-
-            public static Parser<Char, YacqExpression> Number { 
-                get; private set; 
-            }
-
-            public static Parser<Char, YacqExpression> Text {
-                get; private set;
-            }
-
-            public static Parser<Char, YacqExpression> List {
-                get; private set;
-            }
-
-            public static Parser<Char, YacqExpression> Vector {
-                get; private set;
-            }
-
-            public static Parser<Char, YacqExpression> Lambda {
-                get; private set;
-            }
-
-            public static Parser<Char, IEnumerable<YacqExpression>> Yacq {
-                get; private set;
             }
 
             private static Parser<Char, T> Span<T>(Parser<Char, T> parser,
                 Action<Position, Position, T> action)
             {
                 if (parser == null)
+                {
                     throw new ArgumentNullException("parser");
+                }
                 if (action == null)
+                {
                     throw new ArgumentNullException("action");
+                }
 
-                var pos = (Parser<Char, Position>)(stream => Reply.Success(stream, stream.Position));
+                Parser<Char, Position> pos = stream => Reply.Success(stream, stream.Position);
                 return from x in pos
                        from y in parser
                        from z in pos
@@ -275,3 +300,5 @@ namespace XSpect.Yacq.LanguageServices
         }
     }
 }
+
+#pragma warning restore 1591
