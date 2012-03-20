@@ -161,6 +161,12 @@ namespace XSpect.Yacq
                 : Expression.Convert(expr, type);
         }
 
+        internal static Expression ReduceAndTryConvert(this Expression expr, SymbolTable symbols, Type expectedType)
+        {
+            return expr.Reduce(symbols, expectedType)
+                ?? expr.Reduce(symbols).TryConvert(expectedType);
+        }
+
         internal static IEnumerable<Expression> GetDescendants(this Expression self)
         {
             return self.GetType().GetConvertibleTypes()
