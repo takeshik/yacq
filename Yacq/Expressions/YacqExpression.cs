@@ -31,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using XSpect.Yacq.LanguageServices;
 
 using Parseq;
@@ -213,7 +214,9 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                if (expectedType.IsAppropriate(expression.Type) && expression.Type.IsValueType && !expectedType.IsValueType)
+                if ((expectedType.IsAppropriate(expression.Type) && expression.Type.IsValueType && !expectedType.IsValueType)
+                    || expectedType.GetMethod("op_Implicit", BindingFlags.Public | BindingFlags.Static, null, new [] { expression.Type, }, null) != null
+                )
                 {
                     return Convert(expression, expectedType);
                 }
