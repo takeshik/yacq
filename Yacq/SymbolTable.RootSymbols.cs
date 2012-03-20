@@ -723,15 +723,20 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "!=")]
             public static Expression NotEqual(DispatchExpression e, SymbolTable s, Type t)
             {
-                return e.Arguments.Count == 2
-                    ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.NotEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
-                    : YacqExpression.Function(s, "&&",
-                          YacqExpression.Function(s, "!=", e.Arguments[0], e.Arguments[1]),
-                          YacqExpression.Function(s, "!=", e.Arguments.Skip(1))
-                      );
+                return e.Arguments.Count == 1
+                    ? e.Arguments[0].Reduce(s).Let(a => YacqExpression.Function(s, "=",
+                          a,
+                          YacqExpression.Function(s, "!", a)
+                      ))
+                    : e.Arguments.Count == 2
+                          ? (Expression) new[] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.NotEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
+                          : YacqExpression.Function(s, "&&",
+                                YacqExpression.Function(s, "!=", e.Arguments[0], e.Arguments[1]),
+                                YacqExpression.Function(s, "!=", e.Arguments.Skip(1))
+                            );
             }
             
             [YacqSymbol(DispatchTypes.Method, "===")]
