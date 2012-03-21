@@ -29,6 +29,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -42,7 +43,7 @@ namespace XSpect.Yacq.Runner
 {
     internal static class Program
     {
-        private static SymbolTable _symbols = new SymbolTable(typeof(ReplSymbols));
+        private static SymbolTable _symbols;
 
         private static readonly Stopwatch _stopwatch = new Stopwatch();
 
@@ -136,10 +137,6 @@ Type (!help) [ENTER] to show help."
                 else if (!String.IsNullOrWhiteSpace(input))
                 {
                     Run(input, ReplSymbols.ReplVerbose);
-                    if (!ReplSymbols.ReplContinuous)
-                    {
-                        _symbols = new SymbolTable(typeof(ReplSymbols));
-                    }
                     code = "";
                 }
             }
@@ -151,7 +148,7 @@ Type (!help) [ENTER] to show help."
             {
                 Object ret = null;
                 _stopwatch.Restart();
-                var exprs = YacqServices.ParseAll(_symbols, code).ToArray();
+                var exprs = YacqServices.ParseAll(_symbols ?? (_symbols = new SymbolTable(typeof(ReplSymbols))), code).ToArray();
                 _stopwatch.Stop();
                 if (showInfo)
                 {
@@ -278,6 +275,12 @@ Type (!help) [ENTER] to show help."
                         ) + "<" + String.Join(",", type.GetGenericArguments().Select(GetTypeName)) + ">"
                       : type.Name
                   );
+        }
+
+        public static void Reset()
+        {
+            _symbols = null;
+            ReplSymbols.ReplHistory.Clear();
         }
     }
 }
