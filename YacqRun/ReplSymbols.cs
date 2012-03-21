@@ -41,7 +41,7 @@ namespace XSpect.Yacq.Runner
     {
         private const String _help =
             #region String
-@"Commands:
+ @"Commands:
   (!exit)
     Exit this program.
   (!help)
@@ -52,6 +52,8 @@ namespace XSpect.Yacq.Runner
     Open the reference manual web page.
   (!about)
     Show general and copyright description.
+  (!reset)
+    Reset the REPL Environment (global symbol table and history list).
   (!gc)
     Run GC manually.
   !history
@@ -62,9 +64,6 @@ namespace XSpect.Yacq.Runner
     Get parsed expression history list.
   !results
     Get result value history list.
-  !continuous
-    Boolean member. Get or set whether the symbols is continuous during REPL.
-    ex) (= !continuous true) ; Default is false.
   !verbose
     Boolean member. Get or set whether REPL shows verbose messages.
     ex) (= !verbosed false) ; Default is true.
@@ -130,12 +129,6 @@ under the MIT license, for parser implementation.";
 
         private static readonly String _assemblyName = typeof(YacqServices).Assembly.GetName().ToString();
 
-        internal static Boolean ReplContinuous
-        {
-            get;
-            set;
-        }
-
         internal static Boolean ReplVerbose
         {
             get;
@@ -149,27 +142,19 @@ under the MIT license, for parser implementation.";
         public static readonly Expression History
             = Expression.Constant(ReplHistory);
 
-        [YacqSymbol("!continuous")]
-        public static readonly Expression Continuous
-            = Expression.Property(null, typeof(ReplSymbols), "ReplContinuous");
-
         [YacqSymbol("!verbose")]
         public static readonly Expression Verbose
             = Expression.Property(null, typeof(ReplSymbols), "ReplVerbose");
 
         static ReplSymbols()
         {
-            ReplContinuous = false;
             ReplVerbose = true;
         }
 
         [YacqSymbol(DispatchTypes.Method, "!exit")]
         public static Expression ExitRepl(DispatchExpression e, SymbolTable s, Type t)
         {
-            return YacqExpression.Dispatch(
-                DispatchTypes.Method,
-                YacqExpression.TypeCandidate(typeof(Environment)),
-                "Exit",
+            return YacqExpression.TypeCandidate(typeof(Environment)).Method(s, "Exit",
                 Expression.Constant(0)
             );
         }
@@ -177,10 +162,7 @@ under the MIT license, for parser implementation.";
         [YacqSymbol(DispatchTypes.Method, "!help")]
         public static Expression ShowHelp(DispatchExpression e, SymbolTable s, Type t)
         {
-            return YacqExpression.Dispatch(
-                DispatchTypes.Method,
-                YacqExpression.TypeCandidate(typeof(Console)),
-                "WriteLine",
+            return YacqExpression.TypeCandidate(typeof(Console)).Method(s, "WriteLine",
                 Expression.Field(null, typeof(ReplSymbols).GetField("_help", BindingFlags.NonPublic | BindingFlags.Static))
             );
         }
@@ -188,10 +170,7 @@ under the MIT license, for parser implementation.";
         [YacqSymbol(DispatchTypes.Method, "!chelp")]
         public static Expression ShowCommandHelp(DispatchExpression e, SymbolTable s, Type t)
         {
-            return YacqExpression.Dispatch(
-                DispatchTypes.Method,
-                YacqExpression.TypeCandidate(typeof(Console)),
-                "WriteLine",
+            return YacqExpression.TypeCandidate(typeof(Console)).Method(s, "WriteLine",
                 Expression.Field(null, typeof(ReplSymbols).GetField("_chelp", BindingFlags.NonPublic | BindingFlags.Static))
             );
         }
@@ -199,10 +178,7 @@ under the MIT license, for parser implementation.";
         [YacqSymbol(DispatchTypes.Method, "!man")]
         public static Expression ShowManualPage(DispatchExpression e, SymbolTable s, Type t)
         {
-            return YacqExpression.Dispatch(
-                DispatchTypes.Method,
-                YacqExpression.TypeCandidate(typeof(Process)),
-                "Start",
+            return YacqExpression.TypeCandidate(typeof(Process)).Method(s, "Start",
                 Expression.Constant("http://www.yacq.net/")
             );
         }
@@ -210,23 +186,22 @@ under the MIT license, for parser implementation.";
         [YacqSymbol(DispatchTypes.Method, "!about")]
         public static Expression ShowCopying(DispatchExpression e, SymbolTable s, Type t)
         {
-            return YacqExpression.Dispatch(
-                DispatchTypes.Method,
-                YacqExpression.TypeCandidate(typeof(Console)),
-                "WriteLine",
+            return YacqExpression.TypeCandidate(typeof(Console)).Method(s, "WriteLine",
                 Expression.Field(null, typeof(ReplSymbols).GetField("_about", BindingFlags.NonPublic | BindingFlags.Static)),
                 Expression.Field(null, typeof(ReplSymbols).GetField("_assemblyName", BindingFlags.NonPublic | BindingFlags.Static))
             );
         }
 
+        [YacqSymbol(DispatchTypes.Method, "!reset")]
+        public static Expression Reset(DispatchExpression e, SymbolTable s, Type t)
+        {
+            return YacqExpression.TypeCandidate(typeof(Program)).Method(s, "Reset");
+        }
+
         [YacqSymbol(DispatchTypes.Method, "!gc")]
         public static Expression CollectGarbage(DispatchExpression e, SymbolTable s, Type t)
         {
-            return YacqExpression.Dispatch(
-                DispatchTypes.Method,
-                YacqExpression.TypeCandidate(typeof(GC)),
-                "Collect"
-            );
+            return YacqExpression.TypeCandidate(typeof(GC)).Method(s, "Collect");
         }
 
         [YacqSymbol(DispatchTypes.Member, "!inputs")]
