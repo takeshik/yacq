@@ -88,6 +88,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
+    <Reference Include="Parseq.Silverlight, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Parseq.0.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
+    </Reference>
     <Reference Include="system" />
     <Reference Include="System.Core" />
     <Reference Include="System.Interactive, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -245,12 +248,6 @@
       <Link>Libraries\csharp-aliases.yacq</Link>
     </EmbeddedResource>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Parseq\Parseq.Silverlight\Parseq.Silverlight.csproj">
-      <Project>{8FC20CBB-88B8-4E6E-90F4-FD355C4B6468}</Project>
-      <Name>Parseq.Silverlight</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions>

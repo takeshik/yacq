@@ -62,6 +62,9 @@
     <DocumentationFile>bin\ReleaseNoSign\Yacq.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Parseq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Parseq.0.1\lib\net40\Parseq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -141,12 +144,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Parseq\Parseq\Parseq.csproj">
-      <Project>{3DA79348-7C7D-432B-B415-D5E1D2705CCA}</Project>
-      <Name>Parseq</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
