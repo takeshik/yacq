@@ -196,23 +196,23 @@ namespace XSpect.Yacq.LanguageServices
 
                 var number = Combinator.Choice(
                     Span(Prims.Pipe(binPrefix, bin.Many(1), numberSuffix.Maybe(),
-                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z.Otherwise(()=> "")))),
                             (start, end, t) => t.SetPosition(start, end)
                     ),
-                    Span(Prims.Pipe(octPrefix, oct.Many(1), numberSuffix,
-                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                    Span(Prims.Pipe(octPrefix, oct.Many(1), numberSuffix.Maybe(),
+                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z.Otherwise(() => "")))),
                             (start, end, t) => t.SetPosition(start, end)
                     ),
-                    Span(Prims.Pipe(hexPrefix, hex.Many(1), numberSuffix,
-                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z))),
+                    Span(Prims.Pipe(hexPrefix, hex.Many(1), numberSuffix.Maybe(),
+                        (x, y, z) => (YacqExpression) YacqExpression.Number(String.Concat(x, new String(y.ToArray()), z.Otherwise(() => "")))),
                             (start, end, t) => t.SetPosition(start, end)
                     ),
                     Span(
                         from u in numberPrefix.Maybe()
                         from w in digit.Many(1).Select(_ => new String(_.ToArray()))
-                        from x in fraction.Maybe().Select(_ => _.Otherwise(() => string.Empty))
-                        from y in exponent.Maybe().Select(_ => _.Otherwise(() => string.Empty))
-                        from z in numberSuffix.Maybe().Select(_ => _.Otherwise(() => string.Empty))
+                        from x in fraction.Maybe().Select(_ => _.Otherwise(() => ""))
+                        from y in exponent.Maybe().Select(_ => _.Otherwise(() => ""))
+                        from z in numberSuffix.Maybe().Select(_ => _.Otherwise(() => ""))
                         select u.Select(t => (YacqExpression) YacqExpression.Number(String.Concat(t, w, x, y, z)))
                             .Otherwise(() => (YacqExpression) YacqExpression.Number(String.Concat(w, x, y, z))),
                                 (start, end, t) => t.SetPosition(start, end)
