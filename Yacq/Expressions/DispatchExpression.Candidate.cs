@@ -191,7 +191,7 @@ namespace XSpect.Yacq.Expressions
                     return this.IsParamArray &&
                         this.Arguments.Last().Let(e => e is YacqExpression
                             // Suppress reducing by Type property (this test not indicates whether surely in ParamArray context)
-                            ? this.ArgumentNames.All(n => n == null) && this.Arguments.Count != this.Parameters.Count
+                            ? this.ArgumentNames.All(n => n == null) && this.Arguments.Count >= this.Parameters.Count
                             : !this.Parameters.Last().ParameterType.IsAssignableFrom(e.Type)
                         );
                 }

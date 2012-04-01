@@ -96,17 +96,7 @@ namespace XSpect.Yacq.Expressions
                 .Let(es => es
                     .Select(e => e.Type)
                     .Distinct()
-                    .Let(ts => ts
-                        .SelectMany(t => t.GetConvertibleTypes())
-                        .Distinct()
-                        .Except(EnumerableEx.Return(typeof(Object)))
-                        .OrderByDescending(t => EnumerableEx
-                            .Generate(t, _ => _.BaseType != null, _ => _.BaseType, _ => _)
-                            .Count()
-                        )
-                        .Concat(EnumerableEx.Return(typeof(Object)))
-                        .First(t => ts.All(t.IsAssignableFrom))
-                    )
+                    .GetCommonType()
                     .Let(t => NewArrayInit(t, es.Select(e => ImplicitConvert(e, t))))
                 );
         }

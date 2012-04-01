@@ -413,7 +413,7 @@ namespace XSpect.Yacq.Expressions
                                 typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
                                     typeof(Observable),
                                     "FromEventPattern",
-                                    new[]
+                                    new []
                                     {
                                         c.Event.EventHandlerType,
                                         c.Event.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType,

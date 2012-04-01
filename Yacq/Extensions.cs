@@ -402,9 +402,24 @@ namespace XSpect.Yacq
 
         internal static Type GetEnumerableElementType(this Type type)
         {
-            return type
-                .GetInterface("IEnumerable`1", false)
-                .GetGenericArguments()[0];
+            return (type.IsInterface && type.TryGetGenericTypeDefinition() == typeof(IEnumerable<>)
+                ? type
+                : type.GetInterface("IEnumerable`1", false)
+            ).GetGenericArguments()[0];
+        }
+
+        internal static Type GetCommonType(this IEnumerable<Type> types)
+        {
+            return types
+                .SelectMany(t => t.GetConvertibleTypes())
+                .Distinct()
+                .Except(EnumerableEx.Return(typeof(Object)))
+                .OrderByDescending(t => EnumerableEx
+                    .Generate(t, _ => _.BaseType != null, _ => _.BaseType, _ => _)
+                    .Count()
+                )
+                .Concat(EnumerableEx.Return(typeof(Object)))
+                .First(t => types.All(t.IsAssignableFrom));
         }
 
         internal static ParameterInfo[] GetParameters(this MemberInfo member)
