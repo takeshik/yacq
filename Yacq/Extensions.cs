@@ -207,9 +207,9 @@ namespace XSpect.Yacq
         private static Boolean EqualsExact(this Object self, Object other)
         {
             return self == other || (self != null && other != null &&
-                typeof(Expression).IsAssignableFrom(self.GetType())
+                self is Expression
                     ? EqualsExact((Expression) self, (Expression) other)
-                    : typeof(IEnumerable<Object>).IsAssignableFrom(self.GetType())
+                    : self is IEnumerable<object>
                           ? ((IEnumerable<Object>) self).Zip((IEnumerable<Object>) other, EqualsExact).All(_ => _)
                           : self.Equals(other)
             );
@@ -348,6 +348,7 @@ namespace XSpect.Yacq
                 : Enumerable.Empty<Type>();
         }
 
+
         internal static Type GetCorrespondingType(this Type type, Type targetType)
         {
             return targetType.TryGetGenericTypeDefinition()
@@ -398,6 +399,15 @@ namespace XSpect.Yacq
                       ? type.GetGenericArguments().Single()
                       : null
             ).Null(t => t.GetMethod("Invoke"));
+        }
+
+        internal static Type GetDelegateType(this MethodInfo method)
+        {
+            return Expression.GetDelegateType(method.GetParameters()
+                .Select(p => p.ParameterType)
+                .Concat(EnumerableEx.Return(method.ReturnType))
+                .ToArray()
+            );
         }
 
         internal static Type GetEnumerableElementType(this Type type)
@@ -453,6 +463,11 @@ namespace XSpect.Yacq
                 : expr is LambdaExpression
                       ? ((LambdaExpression) expr).Parameters.Count
                       : expr.Type.GetDelegateSignature().Null(m => m.GetParameters().Length);
+        }
+
+        internal static IEnumerable<ParameterInfo> GetAllParameters(this MethodInfo method)
+        {
+            return method.GetParameters().Concat(EnumerableEx.Return(method.ReturnParameter));
         }
     }
 }

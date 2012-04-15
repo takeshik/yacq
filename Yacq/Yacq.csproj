@@ -86,6 +86,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Expressions\DispatchExpression.TypeNode.cs" />
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\QuotedExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />

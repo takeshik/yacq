@@ -232,6 +232,12 @@ namespace XSpect.Yacq.Expressions
                           )
                     : null
                 )
+                .Where(c => c.ParameterMap.Select(_ => _.Item1.GetDelegateSignature().Null(m => m.GetParameters().Length))
+                    .SequenceEqual(c.ParameterMap.Select(_ => Math.Max(
+                        (_.Item2 as LambdaExpression).Null(e => e.Parameters.Count),
+                        (_.Item2 as AmbiguousLambdaExpression).Null(e => e.Parameters.Count)
+                    )))
+                )
                 .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
                 .Where(c => !c.Arguments.Any(e => e == null || e is YacqExpression))
                 .Choose(c => c.TypeArgumentMap.All(p => p.Key.IsAppropriate(p.Value))
@@ -346,31 +352,39 @@ namespace XSpect.Yacq.Expressions
                       else
                       {
                           candidate.ParameterMap
-                              .Where(_ => (_.Item1.IsGenericParameter
+                              .Where(_ => !(_.Item1.IsGenericParameter
                                   ? EnumerableEx.Return(_.Item1)
                                   : _.Item1.GetGenericArguments()
-                              )
-                                  .Any(t => !map.ContainsKey(t))
-                              )
+                              ).All(map.ContainsKey))
                               .ForEach(_ =>
                               {
-                                  if (_.Item2 is AmbiguousLambdaExpression && _.Item1.GetDelegateSignature() != null)
+                                  if (_.Item1.GetDelegateSignature() != null)
                                   {
-                                      if (_.Item1.GetDelegateSignature().ReturnType.Let(r =>
-                                          r.IsGenericParameter && !map.ContainsKey(r)
-                                      ))
+                                      if (_.Item2 is AmbiguousLambdaExpression)
                                       {
-                                          _.Item1.GetDelegateSignature().GetParameters()
-                                              .Select(p => p.ParameterType)
-                                              .Where(t => t.IsGenericParameter)
-                                              .Select(t => map.ContainsKey(t) ? map[t] : null)
-                                              .If(ts => ts.All(t => t != null), ts =>
-                                                  map[_.Item1.GetDelegateSignature().ReturnType] = ((AmbiguousLambdaExpression) _.Item2)
-                                                      .ApplyTypeArguments(ts)
-                                                      .Type(symbols)
-                                                      .GetDelegateSignature()
-                                                      .ReturnType
-                                              );
+                                          var method = _.Item1.GetDelegateSignature();
+                                          if (!method.ReturnType.Let(r =>
+                                              (r.IsGenericParameter ? new [] { r, } : r.GetGenericArguments()).Let(ts => ts.All(map.ContainsKey))
+                                          ))
+                                          {
+                                              method.GetParameters()
+                                                  .Select(p => p.ParameterType.Let(t => t.IsGenericParameter
+                                                      ? map.ContainsKey(t) ? map[t] : null
+                                                      : t
+                                                  ))
+                                                  .If(ts => ts.All(t => t != null), ts =>
+                                                      map = new TypeNode(method.ReturnType).Match(map, ((AmbiguousLambdaExpression) _.Item2)
+                                                          .ApplyTypeArguments(ts)
+                                                          .Type(symbols)
+                                                          .GetDelegateSignature()
+                                                          .ReturnType
+                                                      )
+                                                  );
+                                          }
+                                      }
+                                      else if (_.Item2 is LambdaExpression)
+                                      {
+                                          map = new TypeNode(_.Item1).Match(map, _.Item2.Type.GetDelegateSignature().GetDelegateType());
                                       }
                                   }
                                   else if (_.Item1.ContainsGenericParameters)
@@ -380,12 +394,12 @@ namespace XSpect.Yacq.Expressions
                                           : _.Item1.GetAppearingTypes()
                                                 .Zip(_.Item2.Type.GetCorrespondingType(_.Item1).GetAppearingTypes(), Tuple.Create)
                                                 .Where(t => t.Item1.IsGenericParameter)
-                                      ).ForEach(t => map[t.Item1] = t.Item2);
+                                      ).ForEach(t => map = new TypeNode(t.Item1).Match(map, t.Item2));
                                   }
                               });
                           return map.Keys.All(typeArgumentMap.ContainsKey)
-                            ? null
-                            : this.InferTypeArguments(candidate, map, symbols);
+                              ? null
+                              : this.InferTypeArguments(candidate, map, symbols);
                     }
                   });
         }

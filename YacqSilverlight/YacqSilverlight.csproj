@@ -123,6 +123,9 @@
     <Compile Include="..\Yacq\Expressions\DispatchExpression.cs">
       <Link>Expressions\DispatchExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\DispatchExpression.TypeNode.cs">
+      <Link>Expressions\DispatchExpression.TypeNode.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\DispatchTypes.cs">
       <Link>Expressions\DispatchTypes.cs</Link>
     </Compile>

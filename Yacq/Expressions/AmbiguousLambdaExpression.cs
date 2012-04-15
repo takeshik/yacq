@@ -135,10 +135,22 @@ namespace XSpect.Yacq.Expressions
                                                   .Zip(ps, (p, a) => p.ParameterType.IsAppropriate(a.Type))
                                                   .All(_ => _)
                                               )
-                                              ? typeof(LambdaExpression).IsAssignableFrom(expectedType)
-                                                    ? (Expression) Quote(Lambda(expectedType.GetGenericArguments()[0], e, ps))
-                                                    : Lambda(expectedType, e, ps)
-                                              : null
+                                                  ? expectedType
+                                                        .If(et => et.ContainsGenericParameters, et =>
+                                                            et.ReplaceGenericArguments(et
+                                                                .GetDelegateSignature()
+                                                                .GetAllParameters()
+                                                                .Select(p => p.ParameterType)
+                                                                .Zip(ps.Select(p => p.Type).Concat(new [] { e.Type, }), Tuple.Create)
+                                                                .Where(_ => _.Item1.IsGenericParameter)
+                                                                .ToDictionary(_ => _.Item1, _ => _.Item2)
+                                                            )
+                                                        )
+                                                        .Let(et => typeof(LambdaExpression).IsAssignableFrom(expectedType)
+                                                            ? (Expression) Quote(Lambda(et.GetGenericArguments()[0], e, ps))
+                                                            : Lambda(et, e, ps)
+                                                        )
+                                                  : null
                               )
                       );
         }
