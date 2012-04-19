@@ -27,25 +27,21 @@
  * THE SOFTWARE.
  */
 
-using System;
-
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Expressions
 {
-    [Flags()]
-    internal enum MemberAccessibilities
+    /// <summary>
+    /// Specifies the type of the <see cref="QuotedExpression"/>.
+    /// </summary>
+    public enum QuoteType
     {
-        Unknown = 0,
-        
-        Private = 1,
-        
-        FamANDAssem = 2,
-        
-        Assembly = 3,
-        
-        Family = 4,
-        
-        FamORAssem = 5,
-        
-        Public = 6,
+        /// <summary>
+        /// The expression is quote expression.
+        /// </summary>
+        Quote = 1,
+
+        /// <summary>
+        /// The expression is quasiquote expression.
+        /// </summary>
+        Quasiquote = 2,
     }
 }

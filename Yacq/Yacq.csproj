@@ -63,7 +63,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Parseq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Parseq.0.1\lib\net40\Parseq.dll</HintPath>
+      <HintPath>..\packages\Parseq.0.1.1\lib\net40\Parseq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -89,6 +89,7 @@
     <Compile Include="Expressions\DispatchExpression.TypeNode.cs" />
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\QuotedExpression.cs" />
+    <Compile Include="Expressions\QuoteType.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
     <Compile Include="LanguageServices\Reader.Defaults.cs" />
     <Compile Include="LanguageServices\ReaderStream.cs" />

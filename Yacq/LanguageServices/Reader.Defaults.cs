@@ -222,9 +222,9 @@ namespace XSpect.Yacq.LanguageServices
                 var text =
                     Span(
                         from x in Chars.OneOf('\'', '\"', '`')
-                        let quote = x.Satisfy()
-                        from y in quote.Not().Right(Chars.Any()).Many().Select(_ => new String(_.ToArray()))
-                        from z in quote
+                        let quoteMark = x.Satisfy()
+                        from y in quoteMark.Not().Right(Chars.Any()).Many().Select(_ => new String(_.ToArray()))
+                        from z in quoteMark
                         select (YacqExpression) YacqExpression.Text(String.Concat(x, y, z)),
                             (start, end, t) => t.SetPosition(start, end)
                     );
@@ -250,7 +250,19 @@ namespace XSpect.Yacq.LanguageServices
                                 (start, end, t) => t.SetPosition(start, end)
                     );
 
-                var term = Combinator.Choice(text, number, list, vector, lambda, identifier)
+                var quote = '#'.Satisfy().Pipe('\''.Satisfy(), expression.Value,
+                    (x, y, t) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("quote"), t));
+
+                var quasiquote = '#'.Satisfy().Pipe('`'.Satisfy(), expression.Value,
+                    (x, y, t) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("quasiquote"), t));
+
+                var unquote = '#'.Satisfy().Pipe(','.Satisfy(), expression.Value,
+                    (x, y, t) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("unquote"), t));
+
+                var unquoteSplicing = Chars.Sequence("#,@").Pipe(expression.Value,
+                    (x, t) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("unquote-splicing"), t));
+
+                var term = Combinator.Choice(text, number, list, vector, lambda, quote, quasiquote, unquoteSplicing, unquote, identifier)
                    .Between(ignore, ignore);
 
                 var factor =

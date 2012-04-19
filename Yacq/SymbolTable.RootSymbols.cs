@@ -1444,10 +1444,25 @@ namespace XSpect.Yacq
                 );
             }
 
+            [YacqSymbol(DispatchTypes.Method, "list")]
+            public static Expression List(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "List",
+                    Expression.Constant(s),
+                    YacqExpression.Vector(e.Arguments)
+                );
+            }
+
             [YacqSymbol(DispatchTypes.Method, "quote")]
             public static Expression Quote(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Quote(s, e.Arguments[0]);
+            }
+
+            [YacqSymbol(DispatchTypes.Method, "quasiquote")]
+            public static Expression Quasiquote(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Quasiquote(s, e.Arguments[0]);
             }
 
             #endregion
@@ -1845,6 +1860,12 @@ namespace XSpect.Yacq
                     Expression.Constant(s),
                     Expression.Default(typeof(Type))
                 );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Expression), "eval")]
+            public static Expression Evaluate(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.Lambda<Func<Expression>>(e.Left.Reduce(s)).Compile()();
             }
 
             #endregion

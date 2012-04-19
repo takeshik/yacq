@@ -3,6 +3,6 @@
 /TestResults/
 /*.cache
 /*.suo
-/*.user
 bin/
 obj/
+*.user

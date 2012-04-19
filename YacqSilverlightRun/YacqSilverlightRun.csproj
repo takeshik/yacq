@@ -104,7 +104,7 @@
       <HintPath>..\packages\MvvmLightLibs.3.1.1\lib\SL4\GalaSoft.MvvmLight.SL4.dll</HintPath>
     </Reference>
     <Reference Include="Parseq.Silverlight, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Parseq.0.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
+      <HintPath>..\packages\Parseq.0.1.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
     </Reference>
     <Reference Include="System.Interactive, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Ix_Experimental-Main.1.1.10823\lib\SL4\System.Interactive.dll</HintPath>

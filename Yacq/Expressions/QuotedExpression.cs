@@ -28,6 +28,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -40,6 +41,16 @@ namespace XSpect.Yacq.Expressions
         : YacqExpression
     {
         /// <summary>
+        /// Gets the type of quoting of this expression.
+        /// </summary>
+        /// <value>The type of quoting of this expression</value>
+        public QuoteType QuoteType
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets an <see cref="Expression"/> that represents the return value of this expression.
         /// </summary>
         /// <value>An <see cref="Expression"/> that represents the return value of this expression.</value>
@@ -51,10 +62,12 @@ namespace XSpect.Yacq.Expressions
 
         internal QuotedExpression(
             SymbolTable symbols,
+            QuoteType quoteType,
             Expression expression
         )
             : base(symbols)
         {
+            this.QuoteType = quoteType;
             this.Expression = expression;
         }
 
@@ -66,7 +79,7 @@ namespace XSpect.Yacq.Expressions
         /// </returns>
         public override String ToString()
         {
-            return "'" + this.Expression;
+            return (this.QuoteType == QuoteType.Quote ? "#'" : "#`") + this.Expression;
         }
 
         /// <summary>
@@ -77,9 +90,49 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return this.Expression is LambdaExpression
-                ? (Expression) Quote(this.Expression)
-                : Constant(this.Expression);
+            return this.QuoteType == QuoteType.Quasiquote
+                ? Unquote(this.Expression, symbols, 1)
+                : this.Expression is LambdaExpression
+                      ? (Expression) Quote(this.Expression)
+                      : Constant(this.Expression);
+        }
+
+        private static Expression Unquote(Expression expression, SymbolTable symbols, Int32 level)
+        {
+            return (expression as ListExpression).Null(el => el[0].Id().Let(i => i == "quasiquote"
+                ? Unquote(el[1], symbols, ++level)
+                : i == "unquote"
+                      ? EnumerableEx.Generate(
+                            el,
+                            _ => _ != null && _[0].Id() == "unquote",
+                            _ => _[1] as ListExpression,
+                            _ => _[1]
+                        )
+                            .ToArray()
+                            .Let(es => MakeConstant(
+                                Enumerable.Range(0, level - es.Length)
+                                    .Aggregate(es.Last(), (e, _) => Quote(symbols, e)),
+                                symbols
+                            ))
+                      : i == "unquote-splicing"
+                            ? null // TODO: implement
+                            : Function(symbols, "list", el.Elements.Select(e => Unquote(e, symbols, level)))
+            ))
+                ?? (expression as VectorExpression).Null(ev => Vector(symbols, ev.Elements.Select(e => Unquote(e, symbols, level))))
+                ?? (expression as LambdaListExpression).Null(el => LambdaList(symbols, el.Elements.Select(e => Unquote(e, symbols, level))))
+                ?? (Expression) Quote(symbols, expression);
+        }
+
+        private static Expression MakeConstant(Expression expression, SymbolTable symbols)
+        {
+            return (expression as IdentifierExpression).Null(_ =>
+                _.Reduce(symbols).Type == typeof(IdentifierExpression)
+            )
+                ? expression
+                : expression.Reduce(symbols).Let(e => typeof(Expression).IsAppropriate(e.Type)
+                      ? e
+                      : Function(symbols, "const", e)
+                  );
         }
     }
 
@@ -88,19 +141,37 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression.
         /// </summary>
-        /// <returns>An <see cref="QuotedExpression"/>.</returns>
+        /// <returns>A <see cref="QuotedExpression"/>.</returns>
         public static QuotedExpression Quote(SymbolTable symbols, Expression expression)
         {
-            return new QuotedExpression(symbols, expression);
+            return new QuotedExpression(symbols, QuoteType.Quote, expression);
         }
 
         /// <summary>
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression.
         /// </summary>
-        /// <returns>An <see cref="QuotedExpression"/>.</returns>
+        /// <returns>A <see cref="QuotedExpression"/>.</returns>
         public static new QuotedExpression Quote(Expression expression)
         {
             return Quote(null, expression);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="QuotedExpression"/> that returns specified expression with unquoting.
+        /// </summary>
+        /// <returns>A <see cref="QuotedExpression"/>.</returns>
+        public static QuotedExpression Quasiquote(SymbolTable symbols, Expression expression)
+        {
+            return new QuotedExpression(symbols, QuoteType.Quasiquote, expression);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="QuotedExpression"/> that returns specified expression with unquoting.
+        /// </summary>
+        /// <returns>A <see cref="QuotedExpression"/>.</returns>
+        public static QuotedExpression Quasiquote(Expression expression)
+        {
+            return Quasiquote(null, expression);
         }
     }
 }

@@ -41,26 +41,32 @@ namespace XSpect.Yacq.Expressions
         /// Specifies the symbol has no targets, or no condition to search symbols. This is default value of <see cref="DispatchTypes"/>.
         /// </summary>
         Unknown = 0,
+        
         /// <summary>
         /// Specifies the symbol is targeted to member access (just a identifiers, fields, or properties).
         /// </summary>
         Member = 0x1,
+        
         /// <summary>
         /// Specifies the symbol is targeted to method call (just a functions or methods).
         /// </summary>
         Method = 0x2,
+        
         /// <summary>
         /// Specifies the symbol is targeted to constructor call.
         /// </summary>
         Constructor = 0x4,
+        
         /// <summary>
         /// Not implemented. This is a target flag.
         /// </summary>
         MethodGroup = 0x8,
+        
         /// <summary>
         /// Specifies symbol target information.
         /// </summary>
         TargetMask = 0xffff,
+        
         /// <summary>
         /// Specifies the symbol is literal; it means that its implementation constantly returns same expressions, regardless of arguments of <see cref="SymbolDefinition"/>.
         /// </summary>

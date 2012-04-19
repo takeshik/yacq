@@ -89,7 +89,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="Parseq.Silverlight, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Parseq.0.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
+      <HintPath>..\packages\Parseq.0.1.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
     </Reference>
     <Reference Include="system" />
     <Reference Include="System.Core" />
@@ -146,6 +146,9 @@
     </Compile>
     <Compile Include="..\Yacq\Expressions\QuotedExpression.cs">
       <Link>Expressions\QuotedExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\QuoteType.cs">
+      <Link>Expressions\QuoteType.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Expressions\SymbolTableExpression.cs">
       <Link>Expressions\SymbolTableExpression.cs</Link>
