@@ -111,6 +111,9 @@
     <Reference Include="System.Xml.Linq, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Yacq\Collections\YacqList.cs">
+      <Link>Collections\YacqList.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\AmbiguousLambdaExpression.cs">
       <Link>Expressions\AmbiguousLambdaExpression.cs</Link>
     </Compile>
@@ -167,6 +170,9 @@
     </Compile>
     <Compile Include="..\Yacq\Expressions\YacqExtensions.cs">
       <Link>Expressions\YacqExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqSequenceExpression.cs">
+      <Link>Expressions\YacqSequenceExpression.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Extensions.cs">
       <Link>Extensions.cs</Link>

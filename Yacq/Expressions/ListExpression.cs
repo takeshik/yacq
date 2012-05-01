@@ -29,9 +29,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using XSpect.Yacq.Collections;
 
 namespace XSpect.Yacq.Expressions
 {
@@ -39,38 +39,14 @@ namespace XSpect.Yacq.Expressions
     /// Represents a list, the basic expression of YACQ to call functions, methods and constructors.
     /// </summary>
     public class ListExpression
-        : YacqExpression
+        : YacqSequenceExpression
     {
-        /// <summary>
-        /// Gets a collection of expressions that represent elements of this expression.
-        /// </summary>
-        /// <value>A collection of expressions that represent elements of this expression.</value>
-        public ReadOnlyCollection<Expression> Elements
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets the element at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index of the element to get.</param>
-        /// <returns>The element at the specified index.</returns>
-        public Expression this[Int32 index]
-        {
-            get
-            {
-                return this.Elements[index];
-            }
-        }
-
         internal ListExpression(
             SymbolTable symbols,
-            IList<Expression> elements
+            YacqList elements
         )
-            : base(symbols)
+            : base(symbols, elements)
         {
-            this.Elements = new ReadOnlyCollection<Expression>(elements);
         }
 
         /// <summary>
@@ -130,7 +106,7 @@ namespace XSpect.Yacq.Expressions
                     this.Elements.Skip(1)
                 );
             }
-            if (value != null && this.Elements.Count == 1)
+            if (value != null && this.Length == 1)
             {
                 return value;
             }
@@ -145,8 +121,8 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
-        public static ListExpression List(SymbolTable symbols, params Expression[] elements)
+        /// <returns>A <see cref="ListExpression"/> that has specified elements.</returns>
+        public static ListExpression List(SymbolTable symbols, YacqList elements)
         {
             return new ListExpression(symbols, elements);
         }
@@ -156,18 +132,29 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
+        /// <returns>A <see cref="ListExpression"/> that has specified elements.</returns>
         public static ListExpression List(SymbolTable symbols, IEnumerable<Expression> elements)
         {
-            return List(symbols, elements.ToArray());
+            return List(symbols, YacqList.Create(elements));
         }
 
         /// <summary>
         /// Creates a <see cref="ListExpression"/> that represents the list.
         /// </summary>
-        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
-        public static ListExpression List(params Expression[] elements)
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>A <see cref="ListExpression"/> that has specified elements.</returns>
+        public static ListExpression List(SymbolTable symbols, params Expression[] elements)
+        {
+            return List(symbols, (IEnumerable<Expression>) elements);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ListExpression"/> that represents the list.
+        /// </summary>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>A <see cref="ListExpression"/> that has specified elements.</returns>
+        public static ListExpression List(YacqList elements)
         {
             return List(null, elements);
         }
@@ -176,10 +163,20 @@ namespace XSpect.Yacq.Expressions
         /// Creates a <see cref="ListExpression"/> that represents the list.
         /// </summary>
         /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <returns>An <see cref="ListExpression"/> that has specified elements.</returns>
+        /// <returns>A <see cref="ListExpression"/> that has specified elements.</returns>
         public static ListExpression List(IEnumerable<Expression> elements)
         {
-            return List(null, elements.ToArray());
+            return List(null, elements);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ListExpression"/> that represents the list.
+        /// </summary>
+        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <returns>A <see cref="ListExpression"/> that has specified elements.</returns>
+        public static ListExpression List(params Expression[] elements)
+        {
+            return List(null, elements);
         }
     }
 }

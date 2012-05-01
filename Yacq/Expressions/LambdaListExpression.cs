@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using XSpect.Yacq.Collections;
 
 namespace XSpect.Yacq.Expressions
 {
@@ -39,18 +40,8 @@ namespace XSpect.Yacq.Expressions
     /// Represents an lambda list, a list to be a <see cref="AmbiguousLambdaExpression"/>.
     /// </summary>
     public class LambdaListExpression
-        : YacqExpression
+        : YacqSequenceExpression
     {
-        /// <summary>
-        /// Gets a collection of expressions that represent elements of this expression.
-        /// </summary>
-        /// <value>A collection of expressions that represent elements of this expression.</value>
-        public ReadOnlyCollection<Expression> Elements
-        {
-            get;
-            private set;
-        }
-
         /// <summary>
         /// Gets the ambiguous parameters of this expression.
         /// </summary>
@@ -101,12 +92,11 @@ namespace XSpect.Yacq.Expressions
 
         internal LambdaListExpression(
             SymbolTable symbols,
-            IList<Expression> elements,
+            YacqList elements,
             IList<AmbiguousParameterExpression> parameters
         )
-            : base(symbols)
+            : base(symbols, elements)
         {
-            this.Elements = new ReadOnlyCollection<Expression>(elements);
             this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters);
         }
     }
@@ -117,12 +107,12 @@ namespace XSpect.Yacq.Expressions
         /// Creates a <see cref="LambdaListExpression"/> that represents the lambda list to be <see cref="AmbiguousLambdaExpression"/>.
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
-        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
         /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
         public static LambdaListExpression LambdaList(
             SymbolTable symbols,
-            Expression[] elements,
+            YacqList elements,
             params AmbiguousParameterExpression[] parameters
         )
         {
@@ -135,14 +125,30 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
         /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
         public static LambdaListExpression LambdaList(
             SymbolTable symbols,
             IEnumerable<Expression> elements,
             IEnumerable<AmbiguousParameterExpression> parameters
         )
         {
-            return LambdaList(symbols, elements.ToArray(), parameters.ToArray());
+            return LambdaList(symbols, YacqList.Create(elements), parameters.ToArray());
+        }
+
+        /// <summary>
+        /// Creates a <see cref="LambdaListExpression"/> that represents the lambda list to be <see cref="AmbiguousLambdaExpression"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
+        public static LambdaListExpression LambdaList(
+            SymbolTable symbols,
+            Expression[] elements,
+            params AmbiguousParameterExpression[] parameters
+        )
+        {
+            return LambdaList(symbols, (IEnumerable<Expression>) elements, parameters);
         }
 
         /// <summary>
@@ -150,13 +156,41 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <returns>An <see cref="LambdaListExpression"/> that has specified elements.</returns>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements.</returns>
         public static LambdaListExpression LambdaList(
             SymbolTable symbols,
             IEnumerable<Expression> elements
         )
         {
-            return LambdaList(symbols, elements.ToArray(), Enumerable.Empty<AmbiguousParameterExpression>());
+            return LambdaList(symbols, elements, Enumerable.Empty<AmbiguousParameterExpression>());
+        }
+
+        /// <summary>
+        /// Creates a <see cref="LambdaListExpression"/> that represents the lambda list to be <see cref="AmbiguousLambdaExpression"/>.
+        /// </summary>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
+        public static LambdaListExpression LambdaList(
+            YacqList elements,
+            params AmbiguousParameterExpression[] parameters
+        )
+        {
+            return LambdaList(null, elements, parameters);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="LambdaListExpression"/> that represents the lambda list to be <see cref="AmbiguousLambdaExpression"/>.
+        /// </summary>
+        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
+        /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
+        public static LambdaListExpression LambdaList(
+            IEnumerable<Expression> elements,
+            IEnumerable<AmbiguousParameterExpression> parameters
+        )
+        {
+            return LambdaList(null, elements, parameters.ToArray());
         }
 
         /// <summary>
@@ -164,7 +198,7 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="elements">An array of <see cref="Expression"/> objects that represents the elements of the expression.</param>
         /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
         public static LambdaListExpression LambdaList(
             Expression[] elements,
             params AmbiguousParameterExpression[] parameters
@@ -177,21 +211,7 @@ namespace XSpect.Yacq.Expressions
         /// Creates a <see cref="LambdaListExpression"/> that represents the lambda list to be <see cref="AmbiguousLambdaExpression"/>.
         /// </summary>
         /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="LambdaListExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="LambdaListExpression"/> that has specified elements and parameters.</returns>
-        public static LambdaListExpression LambdaList(
-            IEnumerable<Expression> elements,
-            IEnumerable<AmbiguousParameterExpression> parameters
-        )
-        {
-            return LambdaList(null, elements.ToArray(), parameters.ToArray());
-        }
-
-        /// <summary>
-        /// Creates a <see cref="LambdaListExpression"/> that represents the lambda list to be <see cref="AmbiguousLambdaExpression"/>.
-        /// </summary>
-        /// <param name="elements">A sequence of <see cref="Expression"/> objects that represents the elements of the expression.</param>
-        /// <returns>An <see cref="LambdaListExpression"/> that has specified elements.</returns>
+        /// <returns>A <see cref="LambdaListExpression"/> that has specified elements.</returns>
         public static LambdaListExpression LambdaList(
             IEnumerable<Expression> elements
         )

@@ -960,7 +960,7 @@ namespace XSpect.Yacq
                 {
                     // T.[foo bar]
                     return YacqExpression.TypeCandidate(s, ((TypeCandidateExpression) a0).Candidates
-                        .Single(c => c.GetGenericArguments().Length == ((VectorExpression) e.Arguments[1]).Elements.Count)
+                        .Single(c => c.GetGenericArguments().Length == ((VectorExpression) e.Arguments[1]).Length)
                             .MakeGenericType(((VectorExpression) e.Arguments[1]).Elements
                                 .ReduceAll(s)
                                 .OfType<TypeCandidateExpression>()
