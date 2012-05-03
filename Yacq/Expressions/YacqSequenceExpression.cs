@@ -100,5 +100,32 @@ namespace XSpect.Yacq.Expressions
         {
             this.Elements = elements;
         }
+
+        /// <summary>
+        /// Creates <see cref="ListExpression"/> from the symbol table and elements of this expression.
+        /// </summary>
+        /// <returns><see cref="ListExpression"/> which has same symbol table and elements of this expression.</returns>
+        public ListExpression AsList()
+        {
+            return List(this.Symbols, this.Elements);
+        }
+
+        /// <summary>
+        /// Creates <see cref="VectorExpression"/> from the symbol table and elements of this expression.
+        /// </summary>
+        /// <returns><see cref="VectorExpression"/> which has same symbol table and elements of this expression.</returns>
+        public VectorExpression AsVector()
+        {
+            return Vector(this.Symbols, this.Elements);
+        }
+
+        /// <summary>
+        /// Creates <see cref="LambdaListExpression"/> from the symbol table and elements of this expression.
+        /// </summary>
+        /// <returns><see cref="LambdaListExpression"/> which has same symbol table and elements of this expression.</returns>
+        public LambdaListExpression AsLambdaList()
+        {
+            return LambdaList(this.Symbols, this.Elements);
+        }
     }
 }

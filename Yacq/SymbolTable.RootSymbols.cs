@@ -1453,6 +1453,24 @@ namespace XSpect.Yacq
                 );
             }
 
+            [YacqSymbol(DispatchTypes.Method, "vector")]
+            public static Expression Vector(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "Vector",
+                    Expression.Constant(s),
+                    YacqExpression.Vector(e.Arguments)
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, "lambdaList")]
+            public static Expression LambdaList(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "LambdaList",
+                    Expression.Constant(s),
+                    YacqExpression.Vector(e.Arguments)
+                );
+            }
+
             [YacqSymbol(DispatchTypes.Method, "quote")]
             public static Expression Quote(DispatchExpression e, SymbolTable s, Type t)
             {
@@ -1847,6 +1865,24 @@ namespace XSpect.Yacq
             public static Expression ToList(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "List",
+                    Expression.Constant(s),
+                    e.Left
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(IEnumerable<Expression>), "vector")]
+            public static Expression ToVector(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "Vector",
+                    Expression.Constant(s),
+                    e.Left
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(IEnumerable<Expression>), "lambdaList")]
+            public static Expression ToLambdaList(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "LambdaList",
                     Expression.Constant(s),
                     e.Left
                 );
