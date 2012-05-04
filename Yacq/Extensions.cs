@@ -154,6 +154,29 @@ namespace XSpect.Yacq
             return source.Select(selector).Where(_ => _ != null);
         }
 
+        internal static IEnumerable<IList<TSource>> PartitionBy<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
+        {
+            var list = new List<TSource>();
+            var isInSplitter = false;
+            foreach (var e in source)
+            {
+                if (predicate(e) != isInSplitter)
+                {
+                    isInSplitter = !isInSplitter;
+                    if (list.Any())
+                    {
+                        yield return list;
+                        list = new List<TSource>();
+                    }
+                }
+                list.Add(e);
+            }
+            if (list.Any())
+            {
+                yield return list;
+            }
+        }
+
         internal static Expression TryConvert(this Expression expr, Type type)
         {
             return type == null || expr.Type == type

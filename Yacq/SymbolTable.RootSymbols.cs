@@ -28,6 +28,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -1487,14 +1488,14 @@ namespace XSpect.Yacq
 
             #region Method - Basic
 
-            [YacqSymbol(DispatchTypes.Method, typeof(IEnumerable<Object>), "+")]
+            [YacqSymbol(DispatchTypes.Method, typeof(IEnumerable), "+")]
             public static Expression ConcatList(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Left.Reduce(s).Let(l =>
-                    (e.Arguments.Count == 1 && typeof(IEnumerable<Object>).IsAppropriate(e.Arguments[0].Reduce(s).Type)
-                        ? e.Arguments[0].Reduce(s)
-                        : YacqExpression.Vector(s, e.Arguments).Reduce(s)
-                    ).Let(r =>
+                    (e.Arguments.ReduceAll(s).All(_ => typeof(IEnumerable).IsAppropriate(_.Type))
+                        ? e.Arguments[0].If(_ => e.Arguments.Count > 1, _ => _.Method(s, "+", e.Arguments.Skip(1)))
+                        : YacqExpression.Vector(s, e.Arguments)
+                    ).Reduce(s).Let(r =>
                         l.Type.GetEnumerableElementType().Let(lt =>
                             r.Type.GetEnumerableElementType().Let(rt =>
                                 new[] { lt, rt, }.GetCommonType().Let(ct =>

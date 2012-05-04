@@ -91,48 +91,58 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             return this.QuoteType == QuoteType.Quasiquote
-                ? Unquote(this.Expression, symbols, 1)
+                ? ProcessQuasiquote(this.Expression, symbols, 1)
                 : this.Expression is LambdaExpression
                       ? (Expression) Quote(this.Expression)
                       : Constant(this.Expression);
         }
 
-        private static Expression Unquote(Expression expression, SymbolTable symbols, Int32 level)
+        private static Expression ProcessQuasiquote(Expression expression, SymbolTable symbols, Int32 level)
         {
             return (expression as ListExpression).Null(el => el[0].Id().Let(i => i == "quasiquote"
-                ? Unquote(el[1], symbols, ++level)
+                ? ProcessQuasiquote(el[1], symbols, ++level)
                 : i == "unquote"
-                      ? EnumerableEx.Generate(
-                            el,
-                            _ => _ != null && _[0].Id() == "unquote",
-                            _ => _[1] as ListExpression,
-                            _ => _[1]
-                        )
+                      ? Unquote(el, symbols, level)
+                      : el.Elements
+                            .PartitionBy(_ => _.List("unquote-splicing") != null)
+                            .Select(p => (p.First().List("unquote-splicing") != null
+                                ? p.Select(e => ((ListExpression) e)[1]
+                                      .Reduce(symbols)
+                                      .If(_ => typeof(YacqSequenceExpression).IsAppropriate(_.Type), _ => _.Member(symbols, "Elements"))
+                                  )
+                                : p.Select(e => Unquote(e, symbols, level))
+                            ).ToArray())
                             .ToArray()
-                            .Let(es => MakeConstant(
-                                Enumerable.Range(0, level - es.Length)
-                                    .Aggregate(es.Last(), (e, _) => Quote(symbols, e)),
-                                symbols
-                            ))
-                      : i == "unquote-splicing"
-                            ? null // TODO: implement
-                            : Function(symbols, "list", el.Elements.Select(e => Unquote(e, symbols, level)))
+                            .Let(ps => ps
+                                .Skip(1)
+                                .Aggregate((Expression) Vector(symbols, ps.First()), (v, p) => v.Method(symbols, "+", p))
+                                .Method(symbols, "list")
+                            )
             ))
-                ?? (expression as VectorExpression).Null(ev => Vector(symbols, ev.Elements.Select(e => Unquote(e, symbols, level))))
-                ?? (expression as LambdaListExpression).Null(el => LambdaList(symbols, el.Elements.Select(e => Unquote(e, symbols, level))))
+                ?? (expression as VectorExpression).Null(ev => Vector(symbols, ev.Elements.Select(e => ProcessQuasiquote(e, symbols, level))))
+                ?? (expression as LambdaListExpression).Null(el => LambdaList(symbols, el.Elements.Select(e => ProcessQuasiquote(e, symbols, level))))
                 ?? (Expression) Quote(symbols, expression);
         }
 
-        private static Expression MakeConstant(Expression expression, SymbolTable symbols)
+        private static Expression Unquote(Expression expression, SymbolTable symbols, Int32 level)
         {
-            return (expression as IdentifierExpression).Null(_ =>
-                _.Reduce(symbols).Type == typeof(IdentifierExpression)
-            )
-                ? expression
-                : expression.Reduce(symbols).Let(e => typeof(Expression).IsAppropriate(e.Type)
-                      ? e
-                      : Function(symbols, "const", e)
-                  );
+            return expression.List("unquote") != null
+                ? EnumerableEx.Generate(
+                      (ListExpression) expression,
+                      _ => _ != null && _[0].Id() == "unquote",
+                      _ => _[1] as ListExpression,
+                      _ => _[1]
+                  )
+                      .ToArray()
+                      .Let(es => Enumerable.Range(0, level - es.Length)
+                          .Aggregate(es.Last(), (e, i) => Quote(symbols, e))
+                          .If(e => !(e as IdentifierExpression).Null(_ => _.Type(symbols) == typeof(IdentifierExpression)),
+                              e => e.Reduce(symbols).If(_ => !typeof(Expression).IsAppropriate(_.Type),
+                                  _ => Function(symbols, "const", _)
+                              )
+                          )
+                      )
+                : ProcessQuasiquote(expression, symbols, level);
         }
     }
 
