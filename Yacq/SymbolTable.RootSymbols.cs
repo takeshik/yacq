@@ -953,6 +953,14 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, ".")]
             public static Expression Dot(DispatchExpression e, SymbolTable s, Type t)
             {
+                if (e.Arguments.Count > 2)
+                {
+                    return YacqExpression.Function(s, ".",
+                        e.Arguments
+                            .Skip(2)
+                            .StartWith(YacqExpression.Function(s, ".", e.Arguments[0], e.Arguments[1]))
+                    );
+                }
                 var a0 = e.Arguments[0].Reduce(s);
                 s = a0 is SymbolTableExpression
                     ? ((SymbolTableExpression) a0).Symbols

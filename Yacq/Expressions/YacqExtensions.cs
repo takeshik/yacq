@@ -246,7 +246,7 @@ namespace XSpect.Yacq.Expressions
                 l != null
                     ? head == null
                           ? l.Elements
-                          : (l[0] as IdentifierExpression).Null(_ => _.Name) == head
+                          : (l.Elements.Any() ? l[0] as IdentifierExpression : null).Null(_ => _.Name) == head
                                 ? l.Elements.Skip(1)
                                 : null
                     : null

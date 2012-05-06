@@ -57,9 +57,8 @@ namespace XSpect.Yacq.Expressions
         /// </returns>
         public override String ToString()
         {
-            return this.List(".").Null(_ => _.Count()) == 2 || this.List(":").Null(_ => _.Count()) == 2
-                ? String.Concat(this.Elements[1], this.Elements[0], this.Elements[2])
-                :  "(" + String.Join(" ", this.Elements.Select(e => e.ToString())) + ")";
+            return (this.List(".") ?? this.List(":")).Null(_ => String.Join(this[0].Id(), _))
+                ?? "(" + String.Join(" ", this.Elements.Select(e => e.ToString())) + ")";
         }
 
         /// <summary>
