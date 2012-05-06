@@ -144,7 +144,9 @@ namespace XSpect.Yacq.Collections
         /// <returns>The <see cref="YacqList"/> object which contains specified values.</returns>
         public static YacqList Create(Expression head, YacqList tail)
         {
-            return new YacqList(head, tail);
+            return head == null && tail == null
+                ? Empty
+                : new YacqList(head, tail);
         }
 
         /// <summary>
@@ -164,10 +166,12 @@ namespace XSpect.Yacq.Collections
         /// <returns>The <see cref="YacqList"/> object which contains specified values.</returns>
         public static YacqList Create(IEnumerable<Expression> elements)
         {
-            return elements
-                .Reverse()
-                .ToArray()
-                .Let(a => a.Skip(1).Aggregate(Create(a.First()), (l, e) => Create(e, l)));
+            return elements != null && elements.Any()
+                ? elements
+                      .Reverse()
+                      .ToArray()
+                      .Let(a => a.Skip(1).Aggregate(Create(a.First()), (l, e) => Create(e, l)))
+                : Empty;
         }
 
         /// <summary>

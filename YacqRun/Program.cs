@@ -187,7 +187,7 @@ Type (!help) [ENTER] to show help."
                                 var data = ((IEnumerable) ret)
                                     .Cast<Object>()
                                     .Select(_ => (_ ?? "(null)").ToString())
-                                    .Take(101)
+                                    .Take(ReplSymbols.ReplDumpLimit + 1)
                                     .ToArray();
                                 if (data.Any(s => s.Length > 40))
                                 {
@@ -196,11 +196,11 @@ Type (!help) [ENTER] to show help."
                                     Console.ForegroundColor = ConsoleColor.Green;
                                     Console.WriteLine(String.Join(
                                         Environment.NewLine,
-                                        data.Take(100)
+                                        data.Take(ReplSymbols.ReplDumpLimit)
                                             .Select(s => "    " + s)
                                     ));
                                     Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                    Console.WriteLine(data.Length > 100
+                                    Console.WriteLine(data.Length > ReplSymbols.ReplDumpLimit
                                         ? "    (more...)\n  ]"
                                         : "  ]"
                                     );
@@ -210,9 +210,9 @@ Type (!help) [ENTER] to show help."
                                     Console.ForegroundColor = ConsoleColor.DarkGreen;
                                     Console.Write(" = [ \n    ");
                                     Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.Write(String.Join(" ", data.Take(100)));
+                                    Console.Write(String.Join(" ", data.Take(ReplSymbols.ReplDumpLimit)));
                                     Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                    Console.Write(data.Length > 100
+                                    Console.Write(data.Length > ReplSymbols.ReplDumpLimit
                                         ? " (more...)\n  ]"
                                         : "\n  ]"
                                     );

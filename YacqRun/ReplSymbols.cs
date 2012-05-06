@@ -57,20 +57,24 @@ namespace XSpect.Yacq.Runner
   (!gc)
     Run GC manually.
   !history
-    Get history list (Tuples of (input string, parsed expression, result value).
+    Get history list: Tuples of input string, parsed expression, result value.
   !inputs
     Get input string history list.
   !exprs
     Get parsed expression history list.
   !results
     Get result value history list.
+  !dumpLimit
+    Int32 member. Get or set the limit count of enumerating result sequences.
+    ex) (= !dumpLimit 1000) ; Default is 100.
   !verbose
     Boolean member. Get or set whether REPL shows verbose messages.
     ex) (= !verbosed false) ; Default is true.
   CODE
     Run one-line CODE.
   <<INPUT [ENTER] CODES
-    Run multi-line CODES while INPUT line was got (heredoc <<EOT).
+    NOT a YACQ syntax. Run multi-line CODES while INPUT line was got
+    (heredoc <<EOT).
   CODE
     Otherwise: Run one-line code.";
             #endregion
@@ -135,6 +139,12 @@ under the MIT license, for parser implementation.";
             set;
         }
 
+        internal static Int32 ReplDumpLimit
+        {
+            get;
+            set;
+        }
+
         internal static readonly List<Tuple<String, Expression, Object>> ReplHistory
             = new List<Tuple<String, Expression, Object>>();
 
@@ -146,9 +156,14 @@ under the MIT license, for parser implementation.";
         public static readonly Expression Verbose
             = Expression.Property(null, typeof(ReplSymbols), "ReplVerbose");
 
+        [YacqSymbol("!dumpLimit")]
+        public static readonly Expression DumpLimit
+            = Expression.Property(null, typeof(ReplSymbols), "ReplDumpLimit");
+
         static ReplSymbols()
         {
             ReplVerbose = true;
+            ReplDumpLimit = 100;
         }
 
         [YacqSymbol(DispatchTypes.Method, "!exit")]
