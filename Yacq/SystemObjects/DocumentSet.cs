@@ -190,7 +190,7 @@ namespace XSpect.Yacq.SystemObjects
             }
             else if (type.IsGenericType)
             {
-                var d = type.GetGenericTypeDefinition().FullName;
+                var d = type.GetGenericTypeDefinition().FullName.Replace('+', '.');
                 return getDefinition
                     ? d
                     : d.Remove(d.LastIndexOf('`'))
@@ -208,7 +208,7 @@ namespace XSpect.Yacq.SystemObjects
             }
             else
             {
-                return type.FullName;
+                return type.FullName.Replace('+', '.');
             }
         }
     }

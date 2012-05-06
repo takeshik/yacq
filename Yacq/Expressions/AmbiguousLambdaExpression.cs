@@ -169,7 +169,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Create new <see cref="AmbiguousLambdaExpression"/> with specified parameter types.
+        /// Creates new <see cref="AmbiguousLambdaExpression"/> with specified parameter types.
         /// </summary>
         /// <param name="parameters">The types for paramaters of new <see cref="AmbiguousLambdaExpression"/>.</param>
         /// <returns>The new <see cref="AmbiguousLambdaExpression"/> with specified parameters.</returns>
@@ -188,7 +188,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Create new <see cref="AmbiguousLambdaExpression"/> with specified type argument map.
+        /// Creates new <see cref="AmbiguousLambdaExpression"/> with specified type argument map.
         /// </summary>
         /// <param name="typeArgumentMap">The type argument map for parameters of new <see cref="AmbiguousLambdaExpression"/>.</param>
         /// <returns>The new <see cref="AmbiguousLambdaExpression"/> with parameters which is specified type.</returns>
@@ -206,7 +206,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Create new <see cref="AmbiguousLambdaExpression"/> with specified parameter types.
+        /// Creates new <see cref="AmbiguousLambdaExpression"/> with specified parameter types.
         /// </summary>
         /// <param name="types">The types for paramaters of new <see cref="AmbiguousLambdaExpression"/>.</param>
         /// <returns>The new <see cref="AmbiguousLambdaExpression"/> with parameters which is specified type.</returns>
@@ -222,7 +222,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Create new <see cref="AmbiguousLambdaExpression"/> to match specified delegate type.
+        /// Creates new <see cref="AmbiguousLambdaExpression"/> to match specified delegate type.
         /// </summary>
         /// <param name="delegateType">The delegate type which is matched for new <see cref="AmbiguousLambdaExpression"/>.</param>
         /// <returns>The new <see cref="AmbiguousLambdaExpression"/> which is matched with <paramref name="delegateType"/>.</returns>
