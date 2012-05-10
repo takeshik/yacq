@@ -1821,7 +1821,7 @@ namespace XSpect.Yacq
                 (isLiteral
                     ? (e_, s_, t_) => body
                     : ((Expression<SymbolDefinition>) body.Reduce(s, typeof(SymbolDefinition))).Compile()
-                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>().Add(GetSymbolEntry(e.Arguments[0], s, isLiteral), d));
+                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>().Add(SymbolEntry.Parse(e.Arguments[0], s, isLiteral), d));
                 return Expression.Empty();
             }
             
@@ -1833,7 +1833,7 @@ namespace XSpect.Yacq
                 (isLiteral
                     ? (e_, s_, t_) => body
                     : ((Expression<SymbolDefinition>) body.Reduce(s, typeof(SymbolDefinition))).Compile()
-                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>()[GetSymbolEntry(e.Arguments[0], s, isLiteral)] = d);
+                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>()[SymbolEntry.Parse(e.Arguments[0], s, isLiteral)] = d);
                 return Expression.Empty();
             }
             
@@ -1841,7 +1841,7 @@ namespace XSpect.Yacq
             public static Expression UndefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
                 e.Left.Reduce(s).Const<SymbolTable>().Apply(_ =>
-                    new [] { GetSymbolEntry(e.Arguments[0], s, true), GetSymbolEntry(e.Arguments[0], s, false), }
+                    new[] { SymbolEntry.Parse(e.Arguments[0], s, true), SymbolEntry.Parse(e.Arguments[0], s, false), }
                         .ForEach(k => _.Remove(k))
                 );
                 return Expression.Empty();
@@ -2375,20 +2375,6 @@ namespace XSpect.Yacq
                             )
                         )
                         .ToArray()
-                );
-            }
-
-            private static SymbolEntry GetSymbolEntry(Expression arg, SymbolTable s, Boolean isLiteral)
-            {
-                return (arg.List(".").Null(l => Tuple.Create(
-                    (l.First() as VectorExpression).Null(v => Static.MakeType(((TypeCandidateExpression) v.Elements.First().Reduce(s)).ElectedType))
-                        ?? ((TypeCandidateExpression) l.First().Reduce(s)).ElectedType,
-                    l.Last()
-                ))
-                    ?? Tuple.Create(default(Type), arg)
-                ).Let(_ => _.Item2 is ListExpression
-                    ? new SymbolEntry(DispatchTypes.Method | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.List().First().Id())
-                    : new SymbolEntry(DispatchTypes.Member | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.Id())
                 );
             }
 

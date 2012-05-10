@@ -29,6 +29,7 @@
 
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq
@@ -176,6 +177,81 @@ namespace XSpect.Yacq
                 (this.DispatchType & DispatchTypes.TargetMask) == (other.DispatchType & DispatchTypes.TargetMask) &&
                 this.LeftType == other.LeftType &&
                 this.Name == other.Name;
+        }
+
+        /// <summary>
+        /// Converts the expression representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
+        /// </summary>
+        /// <param name="expression">An expression that contains a symbol entry to convert.</param>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="isLiteral"><c>true</c> if the symbol entry indicates a literal; otherwise, <c>false</c>.</param>
+        /// <returns>An object that is equivalent to the symbol entry specified in the <paramref name="expression"/> parameter.</returns>
+        public static SymbolEntry Parse(Expression expression, SymbolTable symbols, Boolean isLiteral)
+        {
+            return (expression.List(".").Null(l => Tuple.Create(
+                (l.First() as VectorExpression).Null(v => Static.MakeType(((TypeCandidateExpression) v.Elements.First().Reduce(symbols)).ElectedType))
+                    ?? ((TypeCandidateExpression) l.First().Reduce(symbols)).ElectedType,
+                l.Last()
+            ))
+                ?? Tuple.Create(default(Type), expression)
+            ).Let(_ => _.Item2 is ListExpression
+                ? new SymbolEntry(DispatchTypes.Method | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.List().First().Id())
+                : new SymbolEntry(DispatchTypes.Member | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.Id())
+            );
+        }
+
+        /// <summary>
+        /// Converts the expression representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
+        /// </summary>
+        /// <param name="expression">An expression that contains a symbol entry to convert.</param>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <returns>An object that is equivalent to the symbol entry specified in the <paramref name="expression"/> parameter.</returns>
+        public static SymbolEntry Parse(Expression expression, SymbolTable symbols)
+        {
+            return Parse(expression, symbols, false);
+        }
+
+        /// <summary>
+        /// Converts the expression representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
+        /// </summary>
+        /// <param name="expression">An expression that contains a symbol entry to convert.</param>
+        /// <returns>An object that is equivalent to the symbol entry specified in the <paramref name="expression"/> parameter.</returns>
+        public static SymbolEntry Parse(Expression expression)
+        {
+            return Parse(expression, null);
+        }
+
+        /// <summary>
+        /// Converts the string representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
+        /// </summary>
+        /// <param name="expression">An expression string that contains a symbol entry to convert.</param>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="isLiteral"><c>true</c> if the symbol entry indicates a literal; otherwise, <c>false</c>.</param>
+        /// <returns>An object that is equivalent to the symbol entry specified in the <paramref name="expression"/> parameter.</returns>
+        public static SymbolEntry Parse(String expression, SymbolTable symbols, Boolean isLiteral)
+        {
+            return Parse(YacqServices.Read(expression), symbols, isLiteral);
+        }
+
+        /// <summary>
+        /// Converts the string representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
+        /// </summary>
+        /// <param name="expression">An expression string that contains a symbol entry to convert.</param>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <returns>An object that is equivalent to the symbol entry specified in the <paramref name="expression"/> parameter.</returns>
+        public static SymbolEntry Parse(String expression, SymbolTable symbols)
+        {
+            return Parse(expression, symbols, false);
+        }
+
+        /// <summary>
+        /// Converts the string representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
+        /// </summary>
+        /// <param name="expression">An expression string that contains a symbol entry to convert.</param>
+        /// <returns>An object that is equivalent to the symbol entry specified in the <paramref name="expression"/> parameter.</returns>
+        public static SymbolEntry Parse(String expression)
+        {
+            return Parse(expression, null);
         }
 
         /// <summary>
