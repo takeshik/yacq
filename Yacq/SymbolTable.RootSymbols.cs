@@ -1781,6 +1781,23 @@ namespace XSpect.Yacq
                     : e
                 );
             }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "has")]
+            public static Expression InitializeList(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return e.Left.Reduce(s).Let(l => l is NewExpression
+                    ? (Expression) Expression.ListInit(
+                          (NewExpression) l,
+                          e.Arguments
+                              .Select(a => ((MethodCallExpression) l.Method(s, "Add",
+                                  (a as VectorExpression).Null(v => v.Elements) ?? EnumerableEx.Return(a)).Reduce(s)
+                              )
+                                  .Let(c => Expression.ElementInit(c.Method, c.Arguments))
+                              )
+                      )
+                    : e
+                );
+            }
             
             [YacqSymbol(DispatchTypes.Method, typeof(Object), "to")]
             public static Expression Convert(DispatchExpression e, SymbolTable s, Type t)
