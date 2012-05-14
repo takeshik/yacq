@@ -1031,7 +1031,7 @@ namespace XSpect.Yacq
                                     : EnumerableEx.Return(_)
                                 ))
                                 .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
-                                    v.Reduce(s_).Apply(r => s_.Add(n, Expression.Variable(r.Type, n)))
+                                    v.Reduce(s_).Apply(r => s_.Add(n, r is YacqExpression ? r : Expression.Variable(r.Type, n)))
                                 )))
                                 .ToArray()
                                 .Let(_ => Expression.Block(
@@ -1050,7 +1050,8 @@ namespace XSpect.Yacq
                                     )
                                         .StartWith(s_.Literals.Values
                                             .OfType<ParameterExpression>()
-                                            .Zip(_, Expression.Assign).ToArray()
+                                            .Zip(_.Where(a => !(a is YacqExpression)), Expression.Assign)
+                                            .ToArray()
                                         )
                                 ))
                             )
@@ -1069,14 +1070,14 @@ namespace XSpect.Yacq
                                     : EnumerableEx.Return(_)
                                 ))
                                 .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
-                                    v.Reduce(s_).Apply(r => s_.Add(n, Expression.Variable(r.Type, n)))
+                                    v.Reduce(s_).Apply(r => s_.Add(n, r is YacqExpression ? r : Expression.Variable(r.Type, n)))
                                 )))
                                 .ToArray()
                                 .Let(_ => Expression.Block(
                                     s_.Literals.Values
                                         .OfType<ParameterExpression>(),
                                     EnumerableEx.Return(
-                                        (Expression) Expression.Block(
+                                        Expression.Block(
                                             e.Arguments.Count > 1
                                                 ? e.Arguments
                                                       .Skip(1)
@@ -1106,7 +1107,8 @@ namespace XSpect.Yacq
                                     )
                                         .StartWith(s_.Literals.Values
                                             .OfType<ParameterExpression>()
-                                            .Zip(_, Expression.Assign).ToArray()
+                                            .Zip(_.Where(a => !(a is YacqExpression)), Expression.Assign)
+                                            .ToArray()
                                         )
                                 ))
                             )
@@ -1138,19 +1140,27 @@ namespace XSpect.Yacq
                     : (Expression) Expression.Lambda(Expression.Empty());
             }
 
-            [YacqSymbol(DispatchTypes.Method, "alias")]
-            public static Expression Alias(DispatchExpression e, SymbolTable s, Type t)
+            [YacqSymbol(DispatchTypes.Method, "macro")]
+            public static Expression Macro(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
-                    .Share(_ => _.Zip(_, (i, v) => v.Reduce(s_)
-                        .Apply(r => s_.Add(i.Id(), r))
-                    ))
-                    .ToArray()
-                    .Let(_ => e.Arguments.Count > 2
-                        ? Expression.Block(e.Arguments.Skip(1).ReduceAll(s_))
-                        : e.Arguments.Last().Reduce(s_)
-                    )
-                );
+                return e.Arguments.Any()
+                    ? e.Arguments[0] is VectorExpression
+                          ? ((VectorExpression) e.Arguments[0]).Elements
+                                .Select(p => p.List(":").If(_ => _ != null,
+                                    _ => YacqExpression.AmbiguousParameter(
+                                        s,
+                                        ((TypeCandidateExpression) _.Last().Reduce(s)).ElectedType,
+                                        _.First().Id()
+                                    ),
+                                    _ => YacqExpression.AmbiguousParameter(
+                                        s,
+                                        p.Id()
+                                    )
+                                ))
+                                .ToArray()
+                                .Let(p => YacqExpression.Macro(s, e.Arguments[1], p))
+                          : YacqExpression.Macro(s, e.Arguments[0])
+                    : YacqExpression.Macro(s, Expression.Empty());
             }
 
             [YacqSymbol(DispatchTypes.Method, "ignore")]
@@ -1529,6 +1539,7 @@ namespace XSpect.Yacq
                 );
             }
 
+            [YacqSymbol(DispatchTypes.Method, typeof(Static<Object>), "let")]
             [YacqSymbol(DispatchTypes.Method, typeof(Object), "let")]
             public static Expression LetObject(DispatchExpression e, SymbolTable s, Type t)
             {
@@ -1557,20 +1568,6 @@ namespace XSpect.Yacq
                 );
             }
 
-            [YacqSymbol(DispatchTypes.Method, typeof(Object), "alias")]
-            public static Expression AliasObject(DispatchExpression e, SymbolTable s, Type t)
-            {
-                return YacqExpression.Function(s, "alias",
-                    e.Arguments
-                        .Skip(1)
-                        .StartWith(YacqExpression.Vector(
-                            s,
-                            e.Arguments[0],
-                            e.Left
-                        ))
-                );
-            }
-            
             [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "cond")]
             public static Expression Condition(DispatchExpression e, SymbolTable s, Type t)
             {

@@ -144,6 +144,9 @@
     <Compile Include="..\Yacq\Expressions\ListExpression.cs">
       <Link>Expressions\ListExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\MacroExpression.cs">
+      <Link>Expressions\MacroExpression.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\NumberExpression.cs">
       <Link>Expressions\NumberExpression.cs</Link>
     </Compile>

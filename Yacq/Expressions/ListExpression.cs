@@ -79,6 +79,10 @@ namespace XSpect.Yacq.Expressions
             )
             {
                 value = this[0].TryReduce(symbols);
+                if (value is MacroExpression)
+                {
+                    return ((MacroExpression) value).Evaluate(symbols, this.Elements.Skip(1));
+                }
                 if (value != null && value.Type.GetDelegateSignature() != null)
                 {
                     return Invoke(value, this.Elements.Skip(1).ReduceAll(symbols));
