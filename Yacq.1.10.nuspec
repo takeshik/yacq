@@ -1,16 +1,17 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <version>1.9</version>
+    <version>1.10</version>
     <authors>takeshik</authors>
     <owners>takeshik</owners>
-    <licenseUrl>https://github.com/takeshik/yacq/blob/v1.9/LICENSE.txt</licenseUrl>
+    <licenseUrl>https://github.com/takeshik/yacq/blob/v1.10/LICENSE.txt</licenseUrl>
     <projectUrl>http://www.yacq.net/</projectUrl>
     <dependencies>
       <dependency id="Ix_Experimental-Main" version="1.1.10823" />
       <dependency id="Ix_Experimental-Providers" version="1.1.10823" />
       <dependency id="Rx_Experimental-Main" version="1.1.11111" />
       <dependency id="Rx_Experimental-Providers" version="1.1.11111" />
+      <dependency id="Parseq" version="0.1.1" />
     </dependencies>
     <id>Yacq</id>
     <title>YACQ - Embeddable Query Language</title>
