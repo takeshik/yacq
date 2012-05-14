@@ -77,7 +77,8 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return Variable(symbols, this.Name);
+            return Variable(symbols, this.Name).TryReduce
+                (symbols).Let(e => (e as MacroExpression).Null(m => m.Evaluate(symbols)) ?? e);
         }
     }
 

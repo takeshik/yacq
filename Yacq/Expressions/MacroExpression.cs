@@ -151,7 +151,7 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
+        /// <returns>A <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
         public static MacroExpression Macro(
             SymbolTable symbols,
             Expression body,
@@ -167,7 +167,7 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
+        /// <returns>A <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
         public static MacroExpression Macro(
             SymbolTable symbols,
             Expression body,
@@ -182,7 +182,7 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">An array that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
+        /// <returns>A <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
         public static MacroExpression Macro(
             Expression body,
             params AmbiguousParameterExpression[] parameters
@@ -196,7 +196,7 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="body">>An <see cref="Expression"/>  that represents the body of this expression.</param>
         /// <param name="parameters">A sequence that contains <see cref="AmbiguousParameterExpression"/> objects to use to populate the <see cref="AmbiguousLambdaExpression.Parameters"/> collection.</param>
-        /// <returns>An <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
+        /// <returns>A <see cref="MacroExpression"/> that has the properties set to the specified values.</returns>
         public static MacroExpression Macro(
             Expression body,
             IEnumerable<AmbiguousParameterExpression> parameters
