@@ -51,7 +51,7 @@ namespace XSpect.Yacq.Expressions
             return expr != null
                 ? expr is YacqExpression
                       ? ((YacqExpression) expr).Reduce(symbols, expectedType)
-                      : YacqExpression.ImplicitConvert(expr.Reduce(), expectedType)
+                      : YacqExpression.ImplicitConvert(expr, expectedType)
                 : null;
         }
 
@@ -100,8 +100,27 @@ namespace XSpect.Yacq.Expressions
             return expr != null
                 ? expr is YacqExpression
                       ? ((YacqExpression) expr).Reduce(symbols, expectedType).Type
-                      : expr.Reduce().Type
+                      : expr.Type
                 : null;
+        }
+
+        /// <summary>
+        /// Gets the static type of the expression (which with reduced with additional symbol tables, if possible) that this <see cref="Expression"/> represents. Any errors are ignored and returns <c>null</c>.
+        /// </summary>
+        /// <param name="expr">The expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
+        /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>, or <c>null</c> if reducing was failed.</returns>
+        public static Type TryType(this Expression expr, SymbolTable symbols, Type expectedType = null)
+        {
+            try
+            {
+                return expr.Type(symbols, expectedType);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
