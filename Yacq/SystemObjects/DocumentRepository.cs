@@ -1,7 +1,6 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
 // $Id$
-/* YACQ
+/* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
  * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
  * All rights reserved.
@@ -34,7 +33,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
-using XSpect.Yacq.Properties;
 
 namespace XSpect.Yacq.SystemObjects
 {
@@ -131,7 +129,6 @@ namespace XSpect.Yacq.SystemObjects
                       .SelectMany(d => d.EnumerateFiles(key + ".xml"))
                       .FirstOrDefault()
                       .Null(f => new DocumentSet(f))
-                      ?? new DocumentSet(Resources.ResourceManager.GetString(key))
                   ).Apply(s => this.DocumentSets.Add(key, s));
         }
 
@@ -144,3 +141,4 @@ namespace XSpect.Yacq.SystemObjects
         }
     }
 }
+// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

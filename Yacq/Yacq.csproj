@@ -97,11 +97,6 @@
     <Compile Include="LanguageServices\Reader.Defaults.cs" />
     <Compile Include="LanguageServices\ReaderStream.cs" />
     <Compile Include="MemberAccessibilities.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="SystemObjects\DocumentRepository.cs" />
     <Compile Include="SystemObjects\DocumentSet.cs" />
     <Compile Include="Expressions\DispatchExpression.Candidate.cs" />
@@ -142,13 +137,6 @@
       <Link>Libraries\csharp-aliases.yacq</Link>
     </EmbeddedResource>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

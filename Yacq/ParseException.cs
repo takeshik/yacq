@@ -1,7 +1,6 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
 // $Id$
-/* YACQ
+/* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
  * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
  * All rights reserved.
@@ -31,7 +30,6 @@ using System;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using XSpect.Yacq.Expressions;
-using XSpect.Yacq.LanguageServices;
 
 using Parseq;
 
@@ -189,3 +187,4 @@ namespace XSpect.Yacq
     }
 #endif
 }
+// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

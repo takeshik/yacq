@@ -8,7 +8,7 @@
     <ProjectGuid>{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XSpect.Yacq</RootNamespace>
+    <RootNamespace>XSpect.Yacq.Runner</RootNamespace>
     <AssemblyName>YacqRun</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
