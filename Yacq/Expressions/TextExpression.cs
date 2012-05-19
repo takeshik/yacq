@@ -154,25 +154,25 @@ namespace XSpect.Yacq.Expressions
 
         private String ParseEscapeSequence(String str)
         {
-            if (!str.StartsWith("\\"))
+            if (str[0] != '\\')
             {
                 return str;
             }
             str = str.Substring(1);
-            if (str.StartsWith("$("))
+            if (str.StartsWithInvariant("$("))
             {
                 this._codes.Add(ParseEscapeSequences(str.Substring(1)));
                 return "{" + (this._codes.Count - 1) + "}";
             }
-            else if (str.StartsWith("M-\\C-") || str.StartsWith("C-\\M-"))
+            else if (str.StartsWithInvariant("M-\\C-") || str.StartsWithInvariant("C-\\M-"))
             {
                 return ((Char) (ParseEscapeSequence(str.Substring(4))[0] & 0x9f | 0x80)).ToString();
             }
-            else if (str.StartsWith("C-"))
+            else if (str.StartsWithInvariant("C-"))
             {
                 return ((Char) (ParseEscapeSequence(str.Substring(2))[0] & 0x9f)).ToString();
             }
-            else if (str.StartsWith("M-"))
+            else if (str.StartsWithInvariant("M-"))
             {
                 return ((Char) (ParseEscapeSequence(str.Substring(2))[0] & 0xff | 0x80)).ToString();
             }

@@ -73,20 +73,20 @@ namespace XSpect.Yacq.LanguageServices
         /// <param name="input">The code string to read.</param>
         /// <returns>Generated expressions.</returns>
         public YacqExpression[] Read(String input){
-            var stream = new ReaderStream(input);
-            Reply<Char,IEnumerable<YacqExpression>> reply;
-            IEnumerable<YacqExpression> result;
-            ErrorMessage message;
-            switch ((reply = this.Parser(stream))
-                .TryGetValue(out result, out message)
-            )
+            using (var stream = new ReaderStream(input))
             {
-                case ReplyStatus.Success:
-                    return result.ToArray();
-                case ReplyStatus.Failure:
-                    throw new ParseException("Syntax Error", reply.Stream.Position, reply.Stream.Position);
-                default:
-                    throw new ParseException(message.MessageDetails, message.Beginning, message.End);
+                Reply<Char, IEnumerable<YacqExpression>> reply;
+                IEnumerable<YacqExpression> result;
+                ErrorMessage message;
+                switch ((reply = this.Parser(stream)).TryGetValue(out result, out message))
+                {
+                    case ReplyStatus.Success:
+                        return result.ToArray();
+                    case ReplyStatus.Failure:
+                        throw new ParseException("Syntax Error", reply.Stream.Position, reply.Stream.Position);
+                    default:
+                        throw new ParseException(message.MessageDetails, message.Beginning, message.End);
+                }
             }
         }
     }

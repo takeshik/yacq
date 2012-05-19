@@ -179,6 +179,28 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Determines whether two specified <see cref="SymbolEntry"/> have the same value.
+        /// </summary>
+        /// <param name="left">The first <see cref="SymbolEntry"/> to compare.</param>
+        /// <param name="right">The second <see cref="SymbolEntry"/> to compare.</param>
+        /// <returns><c>true</c> if <paramref name="left"/> is the same as <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+        public static Boolean operator ==(SymbolEntry left, SymbolEntry right)
+        {
+            return left.Equals(right);
+        }
+
+        /// <summary>
+        /// Determines whether two specified <see cref="SymbolEntry"/> have the different values.
+        /// </summary>
+        /// <param name="left">The first <see cref="SymbolEntry"/> to compare.</param>
+        /// <param name="right">The second <see cref="SymbolEntry"/> to compare.</param>
+        /// <returns><c>true</c> if <paramref name="left"/> is different from <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+        public static Boolean operator !=(SymbolEntry left, SymbolEntry right)
+        {
+            return !left.Equals(right);
+        }
+
+        /// <summary>
         /// Converts the expression representation of a symbol entry to an equivalent <see cref="SymbolEntry"/> object.
         /// </summary>
         /// <param name="expression">An expression that contains a symbol entry to convert.</param>

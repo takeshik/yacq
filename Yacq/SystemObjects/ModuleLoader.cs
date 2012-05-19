@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -86,10 +87,7 @@ namespace XSpect.Yacq.SystemObjects
             .ToArray();
 #endif
 
-        /// <summary>
-        /// Gets the extensions <see cref="ModuleLoader"/> can load.
-        /// </summary>
-        public static readonly String[] Extensions = new []
+        private static readonly String[] _extensions = new []
         {
             ".dll",
             ".yacb",
@@ -191,7 +189,7 @@ namespace XSpect.Yacq.SystemObjects
             var l = symbols[LoadedModules].Const<ICollection<String>>();
             return this.SearchPaths
                 .Where(d => d.Exists)
-                .SelectMany(d => Extensions
+                .SelectMany(d => _extensions
                     .SelectMany(_ => d.EnumerateFiles(name.Replace('.', Path.DirectorySeparatorChar) + _))
                  )
                 .FirstOrDefault(f => f.Exists)
@@ -210,7 +208,7 @@ namespace XSpect.Yacq.SystemObjects
             return _assembly.GetManifestResourceNames()
                 .Select(n => n.Substring(_resourcePrefix.Length))
                 .Where(n => Path.GetFileNameWithoutExtension(n) == name)
-                .OrderBy(n => Array.IndexOf(Extensions, Path.GetExtension(n))
+                .OrderBy(n => Array.IndexOf(_extensions, Path.GetExtension(n))
                     .Let(i => i < 0 ? Int32.MaxValue : i)
                 )
                 .FirstOrDefault()
@@ -223,7 +221,7 @@ namespace XSpect.Yacq.SystemObjects
                 );
         }
 
-        private Tuple<Object, String> GetFromNamespace(SymbolTable symbols, String name)
+        private static Tuple<Object, String> GetFromNamespace(SymbolTable symbols, String name)
         {
             var l = symbols[LoadedModules].Const<ICollection<String>>();
             return Tuple.Create(
@@ -247,7 +245,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private static Expression Load(SymbolTable symbols, Object obj, String name)
         {
-            if (name.StartsWith(CtsPrefix))
+            if (name.StartsWithInvariant(CtsPrefix))
             {
                 return Expression.Constant(((IEnumerable<IGrouping<String, Type>>) obj)
                     .Select(g => g.Key.Apply(k => symbols[k] = YacqExpression.TypeCandidate(symbols, g)))
@@ -257,7 +255,7 @@ namespace XSpect.Yacq.SystemObjects
             else
             {
                 var stream = (Stream) obj;
-                switch (Path.GetExtension(name).ToLower())
+                switch (Path.GetExtension(name).ToLowerInvariant())
                 {
                     case ".dll":
                         return Expression.Constant(new Byte[stream.Length].Apply(b => stream.Read(b, 0, b.Length))

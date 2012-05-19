@@ -147,6 +147,16 @@ namespace XSpect.Yacq
             return self;
         }
 
+        internal static Boolean StartsWithInvariant(this String str, String value)
+        {
+            return str.StartsWith(value, StringComparison.InvariantCulture);
+        }
+
+        internal static Boolean EndsWithInvariant(this String str, String value)
+        {
+            return str.EndsWith(value, StringComparison.InvariantCulture);
+        }
+
         internal static IEnumerable<TResult> Choose<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
             where TSource : class
         {

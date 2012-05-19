@@ -30,6 +30,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -517,6 +518,7 @@ namespace XSpect.Yacq
         public override String ToString()
         {
             return String.Format(
+                CultureInfo.InvariantCulture,
                 "SymbolTable#{0:x8}[@{1}:{2}/{3}]",
                 this.AllHash,
                 this.Chain.Count() - 1,
@@ -933,7 +935,7 @@ namespace XSpect.Yacq
         {
             return this
                 .Where(p =>
-                    (p.Key.DispatchType == DispatchTypes.Unknown || p.Key.DispatchType.HasFlag(key.DispatchType)) &&
+                    (p.Key.DispatchType == DispatchTypes.None || p.Key.DispatchType.HasFlag(key.DispatchType)) &&
                     p.Key.Name == key.Name &&
                     p.Key.TypeMatch(key.LeftType)
                 )

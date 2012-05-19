@@ -34,6 +34,11 @@ namespace XSpect.Yacq.Expressions
     public enum QuoteType
     {
         /// <summary>
+        /// The expression is invalid.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// The expression is quote expression.
         /// </summary>
         Quote = 1,

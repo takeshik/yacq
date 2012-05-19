@@ -77,7 +77,7 @@ namespace XSpect.Yacq.Expressions
                     {
                         Int32 value = -1;
                         return e is IdentifierExpression && e.Id().Let(s =>
-                            s.StartsWith("$") && Int32.TryParse(s.Substring(1), out value)
+                            s.StartsWithInvariant("$") && Int32.TryParse(s.Substring(1), out value)
                         )
                             ? value
                             : -1;

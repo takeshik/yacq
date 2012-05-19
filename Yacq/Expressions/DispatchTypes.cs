@@ -39,7 +39,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Specifies the symbol has no targets, or no condition to search symbols. This is default value of <see cref="DispatchTypes"/>.
         /// </summary>
-        Unknown = 0,
+        None = 0,
         
         /// <summary>
         /// Specifies the symbol is targeted to member access (just a identifiers, fields, or properties).

@@ -48,6 +48,8 @@ namespace XSpect.Yacq
 {
     partial class SymbolTable
     {
+        private static readonly SymbolTable _root = new SymbolTable(typeof(RootSymbols));
+
         /// <summary>
         /// Returns the root <see cref="SymbolTable"/>, the common symbols for all <see cref="YacqExpression"/>.
         /// </summary>
@@ -56,14 +58,10 @@ namespace XSpect.Yacq
         /// </value>
         public static SymbolTable Root
         {
-            get;
-            private set;
-        }
-
-        static SymbolTable()
-        {
-            Root = new SymbolTable()
-                .Apply(s => s.Import(typeof(RootSymbols)));
+            get
+            {
+                return _root;
+            }
         }
 
         private static class RootSymbols

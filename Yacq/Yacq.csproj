@@ -24,6 +24,8 @@
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <DocumentationFile>bin\Debug\Yacq.xml</DocumentationFile>
+    <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,8 +34,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\Yacq.xml</DocumentationFile>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugNoSign|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,7 +48,7 @@
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
     <RegisterForComInterop>false</RegisterForComInterop>
     <DocumentationFile>bin\DebugNoSign\Yacq.xml</DocumentationFile>
   </PropertyGroup>
@@ -58,8 +61,9 @@
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\ReleaseNoSign\Yacq.xml</DocumentationFile>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Parseq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">

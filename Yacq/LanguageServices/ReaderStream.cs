@@ -77,6 +77,11 @@ namespace XSpect.Yacq.LanguageServices
         {
         }
 
+        ~ReaderStream()
+        {
+            this.Dispose(false);
+        }
+
         public override Boolean CanNext()
         {
             return this.Source.Length > this.Position.Index;
@@ -143,7 +148,13 @@ namespace XSpect.Yacq.LanguageServices
             }
         }
 
-        public override void Dispose()
+        public override sealed void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(Boolean disposing)
         {
             if (_next != null)
             {

@@ -97,7 +97,7 @@ namespace XSpect.Yacq.Expressions
 
         private Object Parse()
         {
-            var text = this.SourceText.Replace("_", "").ToUpper();
+            var text = this.SourceText.Replace("_", "").ToUpperInvariant();
             var b = text[0] != '-'
                 ? text.Length > 2
                       ? GetBase(text.Substring(0, 2))

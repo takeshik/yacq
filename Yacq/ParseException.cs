@@ -80,15 +80,52 @@ namespace XSpect.Yacq
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException
+        )
+            : base(message, innerException)
+        {
+        }
+
         private ParseException(
             String message,
+            Exception innerException,
             Expression expression,
             Nullable<Position> startPosition,
             Nullable<Position> endPosition
         )
-            : base(message + " (at " + GetPositionString(expression, startPosition, endPosition) + ")")
+            : base(message + " (at " + GetPositionString(expression, startPosition, endPosition) + ")", innerException)
         {
             this.Expression = expression;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        public ParseException()
+            : this("Syntax error", null, null, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Expression expression
+        )
+            : this(message, innerException, expression, null, null)
+        {
         }
 
         /// <summary>
@@ -100,7 +137,22 @@ namespace XSpect.Yacq
             String message,
             Expression expression
         )
-            : this(message, expression, null, null)
+            : this(message, null, expression)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="position">The position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Position position
+        )
+            : this(message, innerException, null, position, null)
         {
         }
 
@@ -113,7 +165,24 @@ namespace XSpect.Yacq
             String message,
             Position position
         )
-            : this(message, null, position, null)
+            : this(message, null, position)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, innerException, null, startPosition, endPosition)
         {
         }
 
@@ -128,7 +197,26 @@ namespace XSpect.Yacq
             Position startPosition,
             Position endPosition
         )
-            : this(message, null, startPosition, endPosition)
+            : this(message, default(Exception), startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Expression expression,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, innerException, expression, (Nullable<Position>) startPosition, endPosition)
         {
         }
 
@@ -145,21 +233,9 @@ namespace XSpect.Yacq
             Position startPosition,
             Position endPosition
         )
-            : this(message, expression, (Nullable<Position>) startPosition, endPosition)
+            : this(message, null, expression, startPosition, endPosition)
         {
         }
-
-#if !SILVERLIGHT
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class with serialized data.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected ParseException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-#endif
 
         private static String GetPositionString(Expression expression, Nullable<Position> startPosition, Nullable<Position> endPosition)
         {
@@ -182,8 +258,33 @@ namespace XSpect.Yacq
     // (C# compiler doesn't recognize XML document comments for members which
     // is divided by compiler directive.)
     [Serializable()]
-    public partial class ParseException
+    partial class ParseException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class with serialized data.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        protected ParseException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            this.Expression = (Expression) info.GetValue("Expression", typeof(Expression));
+            this.StartPosition = (Position) info.GetValue("StartPosition", typeof(Position));
+            this.EndPosition = (Position) info.GetValue("EndPosition", typeof(Position));
+        }
+
+        /// <summary>
+        /// Sets the <see cref="SerializationInfo" /> object with the parameter name and additional exception information.
+        /// </summary>
+        /// <param name="info">The object that holds the serialized object data.</param>
+        /// <param name="context">The contextual information about the source or destination.</param>
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Expression", this.Expression);
+            info.AddValue("StartPosition", this.StartPosition);
+            info.AddValue("EndPosition", this.EndPosition);
+            base.GetObjectData(info, context);
+        }
     }
 #endif
 }
