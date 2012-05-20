@@ -61,11 +61,4 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("1.10.0.0")]
 [assembly: AssemblyFileVersion("1.10.0.0")]
-
-#pragma warning disable 1699
-#if !NOSIGN
-[assembly: AssemblyKeyFile(@"../Yacq.snk")]
-[assembly: AssemblyDelaySign(false)]
-#endif
-#pragma warning restore 1699
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

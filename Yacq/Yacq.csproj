@@ -25,6 +25,8 @@
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <DocumentationFile>bin\Debug\Yacq.xml</DocumentationFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Yacq.snk</AssemblyOriginatorKeyFile>
     <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
@@ -69,8 +71,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\Yacq.xml</DocumentationFile>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <DocumentationFile>bin\Release\Yacq.xml</DocumentationFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Yacq.snk</AssemblyOriginatorKeyFile>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>True</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
@@ -112,10 +116,10 @@
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
+    <SignAssembly>false</SignAssembly>
     <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <RegisterForComInterop>false</RegisterForComInterop>
     <DocumentationFile>bin\DebugNoSign\Yacq.xml</DocumentationFile>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
@@ -158,12 +162,11 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\ReleaseNoSign\Yacq.xml</DocumentationFile>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <DocumentationFile>bin\ReleaseNoSign\Yacq.xml</DocumentationFile>
+    <SignAssembly>false</SignAssembly>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>True</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
