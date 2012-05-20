@@ -156,14 +156,6 @@ namespace XSpect.Yacq.LanguageServices
 
         protected virtual void Dispose(Boolean disposing)
         {
-            if (_next != null)
-            {
-                _next.Dispose();
-            }
-            if (_prev != null)
-            {
-                _prev.Dispose();
-            }
         }
     }
 }
