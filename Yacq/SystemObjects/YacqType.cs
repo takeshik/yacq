@@ -78,6 +78,10 @@ namespace XSpect.Yacq.SystemObjects
             IEnumerable<Type> baseTypes
         )
         {
+            if (baseTypes == null)
+            {
+                baseTypes = new Type[0];
+            }
             this._type = module.DefineType(
                 name,
                 TypeAttributes.Public,
@@ -743,7 +747,7 @@ namespace XSpect.Yacq.SystemObjects
             this._initializers.Enqueue(Tuple.Create(
                 method,
                 expression,
-                Expression.GetDelegateType(parameterTypes
+                Expression.GetDelegateType((parameterTypes ?? new Type[0])
                     .Concat(new [] { returnType, })
                     .ToArray()
                 )

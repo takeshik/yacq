@@ -81,7 +81,7 @@ namespace XSpect.Yacq.Expressions
         {
             this._codes = new List<String>();
             this.QuoteChar = quoteChar;
-            this.SourceText = sourceText;
+            this.SourceText = sourceText ?? "";
             this.Value = this.Parse();
         }
 
@@ -245,7 +245,9 @@ namespace XSpect.Yacq.Expressions
         /// <returns>An <see cref="TextExpression"/> which generates a string or a character from specified string.</returns>
         public static TextExpression Text(SymbolTable symbols, String text)
         {
-            return Text(symbols, text.First(), text.Substring(1, text.Length - 2));
+            return String.IsNullOrEmpty(text) || text.First() != text.Last()
+                ? Text(symbols, default(Char), text)
+                : Text(symbols, text.First(), text.Substring(1, text.Length - 2));
         }
 
         /// <summary>
@@ -266,7 +268,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>An <see cref="TextExpression"/> which generates a string or a character from specified string.</returns>
         public static TextExpression Text(String text)
         {
-            return Text(null, text.First(), text.Substring(1, text.Length - 2));
+            return Text(null, text);
         }
     }
 }

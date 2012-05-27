@@ -96,7 +96,7 @@ namespace XSpect.Yacq.Expressions
         )
             : base(symbols, elements)
         {
-            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters);
+            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
         }
     }
 
@@ -131,7 +131,11 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<AmbiguousParameterExpression> parameters
         )
         {
-            return LambdaList(symbols, YacqList.Create(elements), parameters.ToArray());
+            return LambdaList(
+                symbols,
+                YacqList.Create(elements),
+                parameters != null ? parameters.ToArray() : null
+            );
         }
 
         /// <summary>
@@ -161,7 +165,7 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<Expression> elements
         )
         {
-            return LambdaList(symbols, elements, Enumerable.Empty<AmbiguousParameterExpression>());
+            return LambdaList(symbols, elements, null);
         }
 
         /// <summary>
@@ -189,7 +193,7 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<AmbiguousParameterExpression> parameters
         )
         {
-            return LambdaList(null, elements, parameters.ToArray());
+            return LambdaList(null, elements, parameters);
         }
 
         /// <summary>
@@ -215,7 +219,7 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<Expression> elements
         )
         {
-            return LambdaList(null, elements.ToArray(), Enumerable.Empty<AmbiguousParameterExpression>());
+            return LambdaList(null, elements.ToArray(), null);
         }
     }
 }

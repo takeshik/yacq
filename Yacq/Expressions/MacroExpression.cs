@@ -68,8 +68,8 @@ namespace XSpect.Yacq.Expressions
             {
                 throw new ArgumentException("All parameters of macro must be Expression", "parameters");
             }
-            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters);
-            this.Body = body;
+            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
+            this.Body = body ?? Empty();
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace XSpect.Yacq.Expressions
         public Expression Evaluate(SymbolTable symbols, IEnumerable<Expression> arguments)
         {
             return this.Parameters
-                .Zip(arguments, (p, a) => p.Type == null || p.Type.IsAppropriate(a.Type)
+                .Zip(arguments ?? new Expression[0], (p, a) => p.Type() == null || p.Type.IsAppropriate(a.Type)
                     ? Tuple.Create(p.Name, a)
                     : null
                 )
@@ -172,7 +172,11 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<AmbiguousParameterExpression> parameters
         )
         {
-            return Macro(symbols, body, parameters.ToArray());
+            return Macro(
+                symbols,
+                body,
+                parameters != null ? parameters.ToArray() : null
+            );
         }
 
         /// <summary>

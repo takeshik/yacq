@@ -97,7 +97,7 @@ namespace XSpect.Yacq.Expressions
         protected YacqSequenceExpression(SymbolTable symbols, YacqList elements)
             : base(symbols)
         {
-            this.Elements = elements;
+            this.Elements = elements ?? YacqList.Empty;
         }
 
         /// <summary>

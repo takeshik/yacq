@@ -147,6 +147,10 @@ namespace XSpect.Yacq.SystemObjects
 
         private YacqType DefineType(IDictionary<String, Type> members, Boolean throwIfExists)
         {
+            if (members == null)
+            {
+                members = new Dictionary<String, Type>();
+            }
             var name =  ":Anonymous:" + Convert.ToBase64String(_sha.ComputeHash(Encoding.Unicode.GetBytes(
                 String.Concat(members.Select(_ => "<" + _.Key + ":" + _.Value.AssemblyQualifiedName + ">"))
             )))

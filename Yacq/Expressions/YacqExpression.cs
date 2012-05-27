@@ -78,9 +78,12 @@ namespace XSpect.Yacq.Expressions
         {
             get
             {
-                return this.CanReduce || this._reducedExpressions.ContainsKey(new SymbolTable(this.Symbols).AllHash)
-                    ? this.Reduce().Null(e => e.Type)
-                    : null;
+                var type = this.Type();
+                if (type == null)
+                {
+                    throw new InvalidOperationException("Failed to reduce the expression.");
+                }
+                return type;
             }
         }
 
@@ -178,6 +181,11 @@ namespace XSpect.Yacq.Expressions
                       : ImplicitConvert(expression, expectedType);
         }
 
+        internal Boolean IsCached(SymbolTable symbols)
+        {
+            return this._reducedExpressions.ContainsKey(symbols.AllHash);
+        }
+
         internal void ClearCache()
         {
             this._reducedExpressions.Clear();
@@ -191,7 +199,8 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected abstract Expression ReduceImpl(SymbolTable symbols, Type expectedType);
 
-        internal void SetPosition(Position start, Position end){
+        internal void SetPosition(Position start, Position end)
+        {
             this.StartPosition = start;
             this.EndPosition = end;
         }

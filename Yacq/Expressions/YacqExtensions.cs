@@ -94,12 +94,13 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>.</returns>
-        public static Type Type(this Expression expr, SymbolTable symbols, Type expectedType = null)
+        public static Type Type(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
         {
             return expr != null
-                ? expr is YacqExpression
-                      ? ((YacqExpression) expr).Reduce(symbols, expectedType).Type
-                      : expr.Type
+                ? (expr as YacqExpression).Null(e => e.CanReduce || e.IsCached(new SymbolTable(e.Symbols))
+                      ? e.Reduce(symbols, expectedType).Null(_ => _.Type)
+                      : null
+                  ) ?? expr.Type
                 : null;
         }
 
@@ -110,7 +111,7 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>, or <c>null</c> if reducing was failed.</returns>
-        public static Type TryType(this Expression expr, SymbolTable symbols, Type expectedType = null)
+        public static Type TryType(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
         {
             try
             {

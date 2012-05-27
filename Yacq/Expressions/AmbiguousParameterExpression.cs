@@ -48,6 +48,10 @@ namespace XSpect.Yacq.Expressions
         {
             get
             {
+                if (this._type == null)
+                {
+                    throw new InvalidOperationException("The type of this parameter is null. Use Type() extension method instead.");
+                }
                 return this._type;
             }
         }
@@ -71,9 +75,9 @@ namespace XSpect.Yacq.Expressions
             get
             {
                 return
-                    this.Type == null ||
-                    this.Type.ContainsGenericParameters ||
-                    this.Type.IsGenericTypeDefinition;
+                    this._type == null ||
+                    this._type.ContainsGenericParameters ||
+                    this._type.IsGenericTypeDefinition;
             }
         }
 

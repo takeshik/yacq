@@ -68,7 +68,7 @@ namespace XSpect.Yacq.LanguageServices
         public ReaderStream(String source, Position position)
         {
             this._position = position;
-            this._source = source;
+            this._source = source ?? "";
             this._next = this._prev = null;
         }
 

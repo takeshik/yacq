@@ -163,8 +163,8 @@ namespace XSpect.Yacq.Expressions
             : base(symbols)
         {
             this.ReturnType = returnType;
-            this.Bodies = new ReadOnlyCollection<Expression>(bodies);
-            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters);
+            this.Bodies = new ReadOnlyCollection<Expression>(bodies ?? new Expression[0]);
+            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
         }
 
         /// <summary>
@@ -251,7 +251,12 @@ namespace XSpect.Yacq.Expressions
             params AmbiguousParameterExpression[] parameters
         )
         {
-            return new AmbiguousLambdaExpression(symbols, returnType, bodies.ToArray(), parameters);
+            return new AmbiguousLambdaExpression(
+                symbols,
+                returnType,
+                bodies != null ? bodies.ToArray() : null,
+                parameters
+            );
         }
 
         /// <summary>
@@ -269,7 +274,12 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<AmbiguousParameterExpression> parameters
         )
         {
-            return AmbiguousLambda(symbols, returnType, bodies, parameters.ToArray());
+            return AmbiguousLambda(
+                symbols,
+                returnType,
+                bodies,
+                parameters != null ? parameters.ToArray() : null
+            );
         }
 
         /// <summary>
@@ -287,7 +297,12 @@ namespace XSpect.Yacq.Expressions
             params AmbiguousParameterExpression[] parameters
         )
         {
-            return AmbiguousLambda(symbols, returnType, EnumerableEx.Return(body), parameters);
+            return AmbiguousLambda(
+                symbols,
+                returnType,
+                body != null ? EnumerableEx.Return(body) : null,
+                parameters
+            );
         }
 
         /// <summary>
@@ -305,7 +320,12 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<AmbiguousParameterExpression> parameters
         )
         {
-            return AmbiguousLambda(symbols, returnType, body, parameters.ToArray());
+            return AmbiguousLambda(
+                symbols,
+                returnType,
+                body,
+                parameters != null ? parameters.ToArray() : null
+            );
         }
 
         /// <summary>

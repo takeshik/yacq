@@ -72,7 +72,7 @@ namespace XSpect.Yacq.Expressions
         )
             : base(symbols)
         {
-            this.Candidates = new ReadOnlyCollection<Type>(candidates);
+            this.Candidates = new ReadOnlyCollection<Type>(candidates ?? new Type[0]);
         }
 
         /// <summary>
@@ -121,7 +121,10 @@ namespace XSpect.Yacq.Expressions
         /// <returns>An <see cref="TypeCandidateExpression"/> that has specified candidate types.</returns>
         public static TypeCandidateExpression TypeCandidate(SymbolTable symbols, IEnumerable<Type> candidates)
         {
-            return TypeCandidate(symbols, candidates.ToArray());
+            return TypeCandidate(
+                symbols,
+                candidates != null ? candidates.ToArray() : null
+            );
         }
 
         /// <summary>
@@ -141,7 +144,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>An <see cref="TypeCandidateExpression"/> that has specified candidate types.</returns>
         public static TypeCandidateExpression TypeCandidate(IEnumerable<Type> candidates)
         {
-            return TypeCandidate(null, candidates.ToArray());
+            return TypeCandidate(null, candidates);
         }
     }
 }

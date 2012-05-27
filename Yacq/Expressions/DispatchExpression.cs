@@ -113,8 +113,8 @@ namespace XSpect.Yacq.Expressions
             this.DispatchType = dispatchType;
             this.Left = left;
             this.Name = name;
-            this.TypeArguments = new ReadOnlyCollection<Type>(typeArguments);
-            this.Arguments = new ReadOnlyCollection<Expression>(arguments);
+            this.TypeArguments = new ReadOnlyCollection<Type>(typeArguments ?? new Type[0]);
+            this.Arguments = new ReadOnlyCollection<Expression>(arguments ?? new Expression[0]);
         }
 
         /// <summary>
@@ -532,7 +532,7 @@ namespace XSpect.Yacq.Expressions
                 dispatchType,
                 left,
                 name,
-                (typeArguments ?? Enumerable.Empty<Type>()).ToArray(),
+                typeArguments != null ? typeArguments.ToArray() : new Type[0],
                 arguments
             );
         }
@@ -554,7 +554,7 @@ namespace XSpect.Yacq.Expressions
             params Expression[] arguments
         )
         {
-            return Dispatch(symbols, dispatchType, left, name, Enumerable.Empty<Type>(), arguments);
+            return Dispatch(symbols, dispatchType, left, name, new Type[0], arguments);
         }
 
         /// <summary>
@@ -574,7 +574,7 @@ namespace XSpect.Yacq.Expressions
             params Expression[] arguments
         )
         {
-            return Dispatch(symbols, dispatchType, null, name, (typeArguments ?? Enumerable.Empty<Type>()).ToArray(), arguments);
+            return Dispatch(symbols, dispatchType, null, name, typeArguments, arguments);
         }
 
         /// <summary>
@@ -614,7 +614,14 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<Expression> arguments
         )
         {
-            return Dispatch(symbols, dispatchType, left, name, typeArguments, arguments.ToArray());
+            return Dispatch(
+                symbols,
+                dispatchType,
+                left,
+                name,
+                typeArguments,
+                arguments != null ? arguments.ToArray() : new Expression[0]
+            );
         }
 
         /// <summary>
@@ -634,7 +641,7 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<Expression> arguments
         )
         {
-            return Dispatch(symbols, dispatchType, left, name, arguments.ToArray());
+            return Dispatch(symbols, dispatchType, left, name, null, arguments);
         }
 
         /// <summary>
@@ -654,7 +661,7 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<Expression> arguments
         )
         {
-            return Dispatch(symbols, dispatchType, name, typeArguments, arguments.ToArray());
+            return Dispatch(symbols, dispatchType, null, name, typeArguments, arguments);
         }
 
         /// <summary>
@@ -672,7 +679,7 @@ namespace XSpect.Yacq.Expressions
             IEnumerable<Expression> arguments
         )
         {
-            return Dispatch(symbols, dispatchType, name, arguments.ToArray());
+            return Dispatch(symbols, dispatchType, null, name, arguments);
         }
 
         /// <summary>

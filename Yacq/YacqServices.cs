@@ -221,7 +221,7 @@ namespace XSpect.Yacq
                     .GetDelegateSignature()
                     .GetParameters()
                     .Select(p => p.ParameterType)
-                    .Zip(parameterNames, YacqExpression.AmbiguousParameter)
+                    .Zip(parameterNames ?? new String[0], YacqExpression.AmbiguousParameter)
                     .ToArray()
             );
         }
