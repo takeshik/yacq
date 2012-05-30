@@ -40,29 +40,6 @@
     <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugNoSign|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DebugNoSign\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NOSIGN</DefineConstants>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <SignAssembly>false</SignAssembly>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseNoSign|AnyCPU' ">
-    <OutputPath>bin\ReleaseNoSign\</OutputPath>
-    <DefineConstants>TRACE;NOSIGN</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <SignAssembly>false</SignAssembly>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>..\Yacq.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Parseq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Parseq.0.1.1\lib\net40\Parseq.dll</HintPath>
