@@ -1624,17 +1624,6 @@ namespace XSpect.Yacq.Linq
             ));
         }
 
-#if !SILVERLIGHT
-        /// <summary>
-        /// Makes an observable sequence remotable.
-        /// </summary>
-        /// <returns>The observable sequence that supports remote subscriptions.</returns>
-        public YacqQbservable<TSource> Remotable()
-        {
-            return new YacqQbservable<TSource>(this.Symbols, this._source.Remotable());
-        }
-#endif
-
         /// <summary>
         /// Repeats the observable sequence indefinitely.
         /// </summary>

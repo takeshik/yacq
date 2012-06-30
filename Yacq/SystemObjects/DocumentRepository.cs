@@ -137,7 +137,11 @@ namespace XSpect.Yacq.SystemObjects
             return this.LoadDocumentSet((member is Type
                 ? (Type) member
                 : member.DeclaringType
+#if SILVERLIGHT
+            ).Assembly.FullName.Split(',')[0]);
+#else
             ).Assembly.GetName().Name);
+#endif
         }
     }
 }

@@ -258,6 +258,9 @@ namespace XSpect.Yacq.SystemObjects
                 switch (Path.GetExtension(name).ToLowerInvariant())
                 {
                     case ".dll":
+#if SILVERLIGHT
+                        throw new NotImplementedException("Loading DLL is not implemented in Sliverlight environment.");
+#else
                         return Expression.Constant(new Byte[stream.Length].Apply(b => stream.Read(b, 0, b.Length))
                             .Let(Assembly.Load)
                             .Apply(a => a.GetTypes()
@@ -265,6 +268,7 @@ namespace XSpect.Yacq.SystemObjects
                                 .ForEach(symbols.Import)
                             )
                         );
+#endif
                     case ".yacb":
                         throw new NotImplementedException("YACQ Binary code is not implemented.");
                     default:
