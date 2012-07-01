@@ -28,17 +28,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
 using XSpect.Yacq.Expressions;
-#if !__MonoCS__
+#if SILVERLIGHT
 using System.Reactive.Linq;
+using System.Xml.Linq;
 #endif
 
 namespace XSpect.Yacq.SystemObjects
@@ -79,7 +77,6 @@ namespace XSpect.Yacq.SystemObjects
             typeof(QueryableEx),
             typeof(Observable),
             typeof(Qbservable),
-            typeof(XmlReader),
             typeof(XDocument),
             typeof(YacqServices),
         }

@@ -26,7 +26,6 @@
  * THE SOFTWARE.
  */
 
-#if !__MonoCS__
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -122,5 +121,4 @@ namespace XSpect.Yacq.Linq
         }
     }
 }
-#endif
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

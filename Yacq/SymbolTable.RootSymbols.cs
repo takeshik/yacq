@@ -39,10 +39,8 @@ using XSpect.Yacq.Expressions;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using XSpect.Yacq.SystemObjects;
-#if !__MonoCS__
 using System.Reactive;
 using System.Reactive.Linq;
-#endif
 
 namespace XSpect.Yacq
 {
@@ -2190,7 +2188,6 @@ namespace XSpect.Yacq
             [YacqSymbol("QueryableEx")]
             public static Expression QueryableExType = YacqExpression.TypeCandidate(typeof(QueryableEx));
 
-#if !__MonoCS__
             [YacqSymbol("Observable")]
             public static Expression ObservableType = YacqExpression.TypeCandidate(typeof(Observable));
             
@@ -2202,7 +2199,6 @@ namespace XSpect.Yacq
             
             [YacqSymbol("Qbservable")]
             public static Expression QbservableType = YacqExpression.TypeCandidate(typeof(Qbservable));
-#endif
             
             // Generic Delegate Types
             

@@ -408,7 +408,7 @@ namespace XSpect.Yacq
                     return (MemberAccessibilities) (((MethodBase) member).Attributes & MethodAttributes.MemberAccessMask);
                 case MemberTypes.Event:
                     return ((EventInfo) member).Let(e =>
-#if SILVERLIGHT
+#if SILVERLIGHT || __MonoCS__
                         Enumerable.Empty<MethodInfo>()
 #else
                         e.GetOtherMethods(true)
