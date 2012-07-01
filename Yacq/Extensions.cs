@@ -38,113 +38,252 @@ namespace XSpect.Yacq
 {
     internal static class Extensions
     {
-        internal static Boolean If<TReceiver>(this TReceiver self, Func<TReceiver, Boolean> predicate)
-        {
-            return predicate(self);
-        }
-
-        internal static TResult If<TReceiver, TResult>(this TReceiver self, Func<TReceiver, Boolean> predicate, TResult valueIfTrue, TResult valueIfFalse)
-        {
-            if (self == null)
-            {
-                return default(TResult);
-            }
-            else if (self == null || predicate(self))
-            {
-                return valueIfTrue;
-            }
-            else
-            {
-                return valueIfFalse;
-            }
-        }
-
-        internal static TReceiver If<TReceiver>(this TReceiver self, Func<TReceiver, Boolean> predicate, TReceiver valueIfTrue)
-        {
-            return self.If(predicate, valueIfTrue, self);
-        }
-
-        internal static TResult If<TReceiver, TResult>(this TReceiver self, Func<TReceiver, Boolean> predicate, Func<TReceiver, TResult> funcIfTrue, Func<TReceiver, TResult> funcIfFalse)
-        {
-            if (predicate(self))
-            {
-                return funcIfTrue(self);
-            }
-            else
-            {
-                return funcIfFalse(self);
-            }
-        }
-
-        internal static TReceiver If<TReceiver>(this TReceiver self, Func<TReceiver, Boolean> predicate, Func<TReceiver, TReceiver> funcIfTrue)
-        {
-            return self.If(predicate, funcIfTrue, _ => _);
-        }
-
-        internal static TReceiver If<TReceiver>(this TReceiver self, Func<TReceiver, Boolean> predicate, Action<TReceiver> actionIfTrue, Action<TReceiver> actionIfFalse)
-        {
-            if (predicate(self))
-            {
-                actionIfTrue(self);
-            }
-            else
-            {
-                actionIfFalse(self);
-            }
-            return self;
-        }
-
-        internal static TReceiver If<TReceiver>(this TReceiver self, Func<TReceiver, Boolean> predicate, Action<TReceiver> actionIfTrue)
-        {
-            return self.If(predicate, actionIfTrue, _ =>
-            {
-            });
-        }
-
-        internal static TResult Null<TReceiver, TResult>(this TReceiver self, Func<TReceiver, TResult> func, TResult valueIfNull)
-            where TReceiver : class
-        {
-            if (self == null)
-            {
-                return valueIfNull;
-            }
-            else
-            {
-                return func(self);
-            }
-        }
-
-        internal static TResult Null<TReceiver, TResult>(this TReceiver self, Func<TReceiver, TResult> func)
-            where TReceiver : class
-        {
-            return Null(self, func, default(TResult));
-        }
-
-        internal static void Null<TReceiver>(this TReceiver self, Action<TReceiver> action)
-        {
-            if (self != null)
-            {
-                action(self);
-            }
-        }
-
-        internal static TResult Let<TReceiver, TResult>(this TReceiver self, Func<TReceiver, TResult> func)
+        internal static TReturn Let<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
         {
             return func(self);
         }
 
         internal static TReceiver Apply<TReceiver>(this TReceiver self, params Action<TReceiver>[] actions)
         {
-            return Apply(self, (IEnumerable<Action<TReceiver>>) actions);
+            Array.ForEach(actions, a => a(self));
+            return self;
         }
 
-        internal static TReceiver Apply<TReceiver>(this TReceiver self, IEnumerable<Action<TReceiver>> actions)
+        internal static TReturn Dispose<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
+            where TReceiver : IDisposable
         {
-            foreach (var a in actions)
+            using (self)
             {
-                a(self);
+                return func(self);
             }
-            return self;
+        }
+
+        internal static void Dispose<TReceiver>(this TReceiver self, Action<TReceiver> func)
+            where TReceiver : IDisposable
+        {
+            using (self)
+            {
+                func(self);
+            }
+        }
+
+        internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfDefault)
+        {
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? func(self)
+                : funcIfDefault();
+        }
+
+        internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfDefault)
+        {
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? func(self)
+                : valueIfDefault;
+        }
+
+        internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
+        {
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? func(self)
+                : default(TReturn);
+        }
+
+        internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action, Func<TReceiver> funcIfDefault)
+        {
+            if (EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
+            {
+                action(self);
+                return self;
+            }
+            else
+            {
+                return funcIfDefault();
+            }
+        }
+
+        internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action, TReceiver valueIfDefault)
+        {
+            if (EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
+            {
+                action(self);
+                return self;
+            }
+            else
+            {
+                return valueIfDefault;
+            }
+        }
+
+        internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action)
+        {
+            if (EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
+            {
+                action(self);
+                return self;
+            }
+            else
+            {
+                return default(TReceiver);
+            }
+        }
+
+        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfNull)
+            where TReceiver : class
+        {
+            return self != null
+                ? func(self)
+                : funcIfNull();
+        }
+
+        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfNull)
+            where TReceiver : class
+        {
+            return self != null
+                ? func(self)
+                : valueIfNull;
+        }
+
+        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
+            where TReceiver : class
+        {
+            return self != null
+                ? func(self)
+                : default(TReturn);
+        }
+
+        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action, Func<TReceiver> funcIfNull)
+            where TReceiver : class
+        {
+            if (self != null)
+            {
+                action(self);
+                return self;
+            }
+            else
+            {
+                return funcIfNull();
+            }
+        }
+
+        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action, TReceiver valueIfNull)
+            where TReceiver : class
+        {
+            if (self != null)
+            {
+                action(self);
+                return self;
+            }
+            else
+            {
+                return valueIfNull;
+            }
+        }
+
+        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action)
+            where TReceiver : class
+        {
+            if (self != null)
+            {
+                action(self);
+                return self;
+            }
+            else
+            {
+                return default(TReceiver);
+            }
+        }
+
+        internal static Nullable<TReturn> Nullable<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfDefault)
+            where TReturn : struct
+        {
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? func(self)
+                : funcIfDefault();
+        }
+
+        internal static Nullable<TReturn> Nullable<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfDefault)
+            where TReturn : struct
+        {
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? func(self)
+                : valueIfDefault;
+        }
+
+        internal static Nullable<TReturn> Nullable<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
+            where TReturn : struct
+        {
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? func(self)
+                : default(Nullable<TReturn>);
+        }
+
+        internal static TReturn If<TReceiver, TReturn>(
+            this TReceiver self,
+            Func<TReceiver, Boolean> predicate,
+            TReturn then,
+            TReturn otherwise
+        )
+        {
+            return predicate(self)
+                ? then
+                : otherwise;
+        }
+
+        internal static TReceiver If<TReceiver>(
+            this TReceiver self,
+            Func<TReceiver, Boolean> predicate,
+            TReceiver then
+        )
+        {
+            return predicate(self)
+                ? then
+                : self;
+        }
+
+        internal static TReturn If<TReceiver, TReturn>(
+            this TReceiver self,
+            Func<TReceiver, Boolean> predicate,
+            Func<TReceiver, TReturn> then,
+            Func<TReceiver, TReturn> otherwise
+        )
+        {
+            return predicate(self)
+                ? then(self)
+                : otherwise(self);
+        }
+
+        internal static TReceiver If<TReceiver>(
+            this TReceiver self,
+            Func<TReceiver, Boolean> predicate,
+            Func<TReceiver, TReceiver> then
+        )
+        {
+            return predicate(self)
+                ? then(self)
+                : self;
+        }
+
+        internal static TReceiver If<TReceiver>(
+            this TReceiver self,
+            Func<TReceiver, Boolean> predicate,
+            Action<TReceiver> then,
+            Action<TReceiver> otherwise
+        )
+        {
+            return predicate(self)
+                ? self.Apply(then)
+                : self.Apply(otherwise);
+        }
+
+        internal static TReceiver If<TReceiver>(
+            this TReceiver self,
+            Func<TReceiver, Boolean> predicate,
+            Action<TReceiver> then
+        )
+        {
+            return predicate(self)
+                ? self.Apply(then)
+                : self;
         }
 
         internal static Boolean StartsWithInvariant(this String str, String value)
@@ -379,7 +518,6 @@ namespace XSpect.Yacq
                 ? EnumerableEx.Return(type).Expand(t => t.GetGenericArguments())
                 : Enumerable.Empty<Type>();
         }
-
 
         internal static Type GetCorrespondingType(this Type type, Type targetType)
         {

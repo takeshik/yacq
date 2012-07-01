@@ -272,10 +272,8 @@ namespace XSpect.Yacq.SystemObjects
                     case ".yacb":
                         throw new NotImplementedException("YACQ Binary code is not implemented.");
                     default:
-                        using (var reader = new StreamReader(stream, true))
-                        {
-                            return YacqServices.Parse(symbols, reader.ReadToEnd());
-                        }
+                        return new StreamReader(stream, true)
+                            .Dispose(r => YacqServices.Parse(symbols, r.ReadToEnd()));
                 }
             }
         }

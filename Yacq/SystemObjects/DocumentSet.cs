@@ -57,10 +57,7 @@ namespace XSpect.Yacq.SystemObjects
         /// <param name="stream">The stream to read the XML file.</param>
         public DocumentSet(Stream stream)
         {
-            using (stream)
-            {
-                this._xml = XDocument.Load(stream);
-            }
+            this._xml =  stream.Dispose(s => XDocument.Load(s));
         }
 
         /// <summary>
