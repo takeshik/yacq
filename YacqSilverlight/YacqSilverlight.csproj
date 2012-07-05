@@ -124,8 +124,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="Parseq.Silverlight, Version=1.0.0.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Parseq.0.1.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
+    <Reference Include="Parseq.Silverlight">
+      <HintPath>..\packages\Parseq.0.1.2\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
     </Reference>
     <Reference Include="system" />
     <Reference Include="System.Core" />
