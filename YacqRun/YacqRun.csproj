@@ -41,8 +41,8 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Parseq">
-      <HintPath>..\packages\Parseq.0.1.2\lib\net40\Parseq.dll</HintPath>
+    <Reference Include="Parseq, Version=1.2.1.0, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Parseq.0.1.2.1\lib\net40\Parseq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
