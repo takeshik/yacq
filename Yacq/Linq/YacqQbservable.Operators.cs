@@ -828,6 +828,34 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
+        /// Time shifts the observable sequence based on a delay selector function for each element.
+        /// </summary>
+        /// <typeparam name="TDelay">The type of the elements in the delay sequences used to denote the delay duration of each element in the source sequence.</typeparam>
+        /// <param name="delayDurationSelector"><c>(it) =></c> Selector function to retrieve a sequence indicating the delay for each given element.</param>
+        /// <returns>Time-shifted sequence.</returns>
+        public IQbservable<TSource> Delay<TDelay>(String delayDurationSelector)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Delay(
+                YacqServices.ParseFunc<TSource, IObservable<TDelay>>(this.Symbols, delayDurationSelector)
+            ));
+        }
+
+        /// <summary>
+        /// Time shifts the observable sequence based on a subscription delay and a delay selector function for each element.
+        /// </summary>
+        /// <typeparam name="TDelay">The type of the elements in the delay sequences used to denote the delay duration of each element in the source sequence.</typeparam>
+        /// <param name="subscriptionDelay">Sequence indicating the delay for the subscription to the source.</param>
+        /// <param name="delayDurationSelector"><c>(it) =></c> Selector function to retrieve a sequence indicating the delay for each given element.</param>
+        /// <returns>Time-shifted sequence.</returns>
+        public IQbservable<TSource> Delay<TDelay>(IObservable<TDelay> subscriptionDelay, String delayDurationSelector)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Delay(
+                subscriptionDelay,
+                YacqServices.ParseFunc<TSource, IObservable<TDelay>>(this.Symbols, delayDurationSelector)
+            ));
+        }
+
+        /// <summary>
         /// Time shifts the observable sequence by delaying the subscription.
         /// </summary>
         /// <param name="dueTime">Absolute time to perform the subscription at.</param>
@@ -1979,6 +2007,27 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
+        /// Skips elements for the specified duration from the start of the observable source sequence.
+        /// </summary>
+        /// <param name="duration">Duration for skipping elements from the start of the sequence.</param>
+        /// <returns>Observable sequence with the elements skipped during the specified duration from the start of the source sequence.</returns>
+        public YacqQbservable<TSource> Skip(TimeSpan duration)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Skip(duration));
+        }
+
+        /// <summary>
+        /// Skips elements for the specified duration from the start of the observable source sequence, using the specified scheduler to run timers.
+        /// </summary>
+        /// <param name="duration">Duration for skipping elements from the start of the sequence.</param>
+        /// <param name="scheduler">Scheduler to run the timer on.</param>
+        /// <returns>Observable sequence with the elements skipped during the specified duration from the start of the source sequence.</returns>
+        public YacqQbservable<TSource> Skip(TimeSpan duration, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Skip(duration, scheduler));
+        }
+
+        /// <summary>
         /// Bypasses a specified number of elements at the end of an observable sequence.
         /// </summary>
         /// <param name="count">Number of elements to bypass at the end of the source sequence.</param>
@@ -1989,6 +2038,27 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
+        /// Skips elements for the specified duration from the end of the observable source sequence.
+        /// </summary>
+        /// <param name="duration">Duration for skipping elements from the end of the sequence.</param>
+        /// <returns>Observable sequence with the elements skipped during the specified duration from the end of the source sequence.</returns>
+        public YacqQbservable<TSource> SkipLast(TimeSpan duration)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.SkipLast(duration));
+        }
+
+        /// <summary>
+        /// Skips elements for the specified duration from the end of the observable source sequence, using the specified scheduler to run timers.
+        /// </summary>
+        /// <param name="duration">Duration for skipping elements from the end of the sequence.</param>
+        /// <param name="scheduler">Scheduler to run the timer on.</param>
+        /// <returns>Observable sequence with the elements skipped during the specified duration from the end of the source sequence.</returns>
+        public YacqQbservable<TSource> SkipLast(TimeSpan duration, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.SkipLast(duration, scheduler));
+        }
+
+        /// <summary>
         /// Returns the values from the source observable sequence only after the other observable sequence produces a value.
         /// </summary>
         /// <param name="other">Observable sequence that triggers propagation of elements of the source sequence.</param>
@@ -1996,6 +2066,27 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> SkipUntil<TOther>(IObservable<TOther> other)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.SkipUntil(other));
+        }
+
+        /// <summary>
+        /// Skips elements from the observable source sequence until the specified start time.
+        /// </summary>
+        /// <param name="startTime">Time to start taking elements from the source sequence.</param>
+        /// <returns>Observable sequence with the elements skipped until the specified start time.</returns>
+        public YacqQbservable<TSource> SkipUntil(DateTimeOffset startTime)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.SkipUntil(startTime));
+        }
+
+        /// <summary>
+        /// Skips elements from the observable source sequence until the specified start time, using the specified scheduler to run timers.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+        /// <param name="scheduler">Scheduler to run the timer on.</param>
+        /// <returns>Observable sequence with the elements skipped until the specified start time.</returns>
+        public YacqQbservable<TSource> SkipUntil(DateTimeOffset startTime, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.SkipUntil(startTime, scheduler));
         }
 
         /// <summary>
@@ -2081,6 +2172,38 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
+        /// Returns a specified number of contiguous elements from the start of an observable sequence, using the specified scheduler for the edge case of Take(0).
+        /// </summary>
+        /// <param name="count">The number of elements to return.</param>
+        /// <param name="scheduler">Scheduler used to produce an OnCompleted message in case <paramref name="count">count</paramref> is set to 0.</param>
+        /// <returns>An observable sequence that contains the specified number of elements from the start of the input sequence.</returns>
+        public YacqQbservable<TSource> Take(Int32 count, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Take(count, scheduler));
+        }
+
+        /// <summary>
+        /// Takes elements for the specified duration from the start of the observable source sequence, using the specified scheduler to run timers.
+        /// </summary>
+        /// <param name="duration">Duration for taking elements from the start of the sequence.</param>
+        /// <returns>Observable sequence with the elements taken during the specified duration from the start of the source sequence.</returns>
+        public YacqQbservable<TSource> Take(TimeSpan duration)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Take(duration));
+        }
+
+        /// <summary>
+        /// Takes elements for the specified duration from the end of the observable source sequence, using the specified scheduler to run timers.
+        /// </summary>
+        /// <param name="duration">Duration for taking elements from the end of the sequence.</param>
+        /// <param name="scheduler">Scheduler to run the timer on.</param>
+        /// <returns>Observable sequence with the elements taken during the specified duration from the end of the source sequence.</returns>
+        public YacqQbservable<TSource> Take(TimeSpan duration, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Take(duration, scheduler));
+        }
+
+        /// <summary>
         /// Returns a specified number of contiguous elements from the end of an observable sequence.
         /// </summary>
         /// <param name="count">Number of elements to take from the end of the source sequence.</param>
@@ -2088,6 +2211,27 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> TakeLast(Int32 count)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.TakeLast(count));
+        }
+
+        /// <summary>
+        /// Takes elements for the specified duration until the specified end time.
+        /// </summary>
+        /// <param name="endTime">Time to stop taking elements from the source sequence.</param>
+        /// <returns>Observable sequence with the elements taken until the specified end time.</returns>
+        public YacqQbservable<TSource> TakeUntil(DateTimeOffset endTime)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.TakeUntil(endTime));
+        }
+
+        /// <summary>
+        /// Takes elements for the specified duration until the specified end time, using the specified scheduler to run timers.
+        /// </summary>
+        /// <param name="endTime">Time to stop taking elements from the source sequence.</param>
+        /// <param name="scheduler">Scheduler to run the timer on.</param>
+        /// <returns>Observable sequence with the elements taken until the specified end time.</returns>
+        public YacqQbservable<TSource> TakeUntil(DateTimeOffset endTime, IScheduler scheduler)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.TakeUntil(endTime, scheduler));
         }
 
         /// <summary>
@@ -2142,6 +2286,19 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Throttle(TimeSpan dueTime, IScheduler scheduler)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Throttle(dueTime, scheduler));
+        }
+
+        /// <summary>
+        /// Ignores elements from an observable sequence which are followed by another value within a computed throttle duration.
+        /// </summary>
+        /// <typeparam name="TThrottle">The type of the elements in the throttle sequences selected for each element in the source sequence.</typeparam>
+        /// <param name="throttleDurationSelector"><c>(it) =></c> Selector function to retrieve a sequence indicating the throttle duration for each given element.</param>
+        /// <returns>The throttled sequence.</returns>
+        public YacqQbservable<TSource> Throttle<TThrottle>(String throttleDurationSelector)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Throttle(
+                YacqServices.ParseFunc<TSource, IObservable<TThrottle>>(this.Symbols, throttleDurationSelector)
+            ));
         }
 
         /// <summary>
@@ -2249,6 +2406,70 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<TSource> Timeout(TimeSpan dueTime, IScheduler scheduler)
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.Timeout(dueTime, scheduler));
+        }
+
+        /// <summary>
+        /// Applies a timeout policy to the observable sequence based on a timeout duration computed for each element.
+        /// If the next element isn't received within the computed duration starting from its predecessor, a TimeoutException is propagated to the observer.
+        /// </summary>
+        /// <typeparam name="TTimeout">The type of the elements in the timeout sequences used to indicate the timeout duration for each element in the source sequence.</typeparam>
+        /// <param name="timeoutDurationSelector"><c>(it) =></c> Selector to retrieve an observable sequence that represents the timeout between the current element and the next element.</param>
+        /// <returns>The source sequence with a TimeoutException in case of a timeout.</returns>
+        public YacqQbservable<TSource> Timeout<TTimeout>(String timeoutDurationSelector)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Timeout(
+                YacqServices.ParseFunc<TSource, IObservable<TTimeout>>(this.Symbols, timeoutDurationSelector)
+            ));
+        }
+
+        /// <summary>
+        /// Applies a timeout policy to the observable sequence based on a timeout duration computed for each element.
+        /// If the next element isn't received within the computed duration starting from its predecessor, the other observable sequence is used to produce future messages from that point on.
+        /// </summary>
+        /// <typeparam name="TTimeout">The type of the elements in the timeout sequences used to indicate the timeout duration for each element in the source sequence.</typeparam>
+        /// <param name="timeoutDurationSelector">Selector to retrieve an observable sequence that represents the timeout between the current element and the next element.</param>
+        /// <param name="other">Sequence to return in case of a timeout.</param>
+        /// <returns>The source sequence switching to the other sequence in case of a timeout.</returns>
+        public YacqQbservable<TSource> Timeout<TTimeout>(String timeoutDurationSelector, IObservable<TSource> other)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Timeout(
+                YacqServices.ParseFunc<TSource, IObservable<TTimeout>>(this.Symbols, timeoutDurationSelector),
+                other
+            ));
+        }
+
+        /// <summary>
+        /// Applies a timeout policy to the observable sequence based on an initial timeout duration for the first element, and a timeout duration computed for each subsequent element.
+        /// If the next element isn't received within the computed duration starting from its predecessor, a TimeoutException is propagated to the observer.
+        /// </summary>
+        /// <typeparam name="TTimeout">The type of the elements in the timeout sequences used to indicate the timeout duration for each element in the source sequence.</typeparam>
+        /// <param name="firstTimeout">Observable sequence that represents the timeout for the first element.</param>
+        /// <param name="timeoutDurationSelector">Selector to retrieve an observable sequence that represents the timeout between the current element and the next element.</param>
+        /// <returns>The source sequence with a TimeoutException in case of a timeout.</returns>
+        public YacqQbservable<TSource> Timeout<TTimeout>(IObservable<TTimeout> firstTimeout, String timeoutDurationSelector)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Timeout(
+                firstTimeout,
+                YacqServices.ParseFunc<TSource, IObservable<TTimeout>>(this.Symbols, timeoutDurationSelector)
+            ));
+        }
+
+        /// <summary>
+        /// Applies a timeout policy to the observable sequence based on an initial timeout duration for the first element, and a timeout duration computed for each subsequent element.
+        /// If the next element isn't received within the computed duration starting from its predecessor, the other observable sequence is used to produce future messages from that point on.
+        /// </summary>
+        /// <typeparam name="TTimeout">The type of the elements in the timeout sequences used to indicate the timeout duration for each element in the source sequence.</typeparam>
+        /// <param name="firstTimeout">Observable sequence that represents the timeout for the first element.</param>
+        /// <param name="timeoutDurationSelector">Selector to retrieve an observable sequence that represents the timeout between the current element and the next element.</param>
+        /// <param name="other">Sequence to return in case of a timeout.</param>
+        /// <returns>The source sequence switching to the other sequence in case of a timeout.</returns>
+        public YacqQbservable<TSource> Timeout<TTimeout>(IObservable<TTimeout> firstTimeout, String timeoutDurationSelector, IObservable<TSource> other)
+        {
+            return new YacqQbservable<TSource>(this.Symbols, this._source.Timeout(
+                firstTimeout,
+                YacqServices.ParseFunc<TSource, IObservable<TTimeout>>(this.Symbols, timeoutDurationSelector),
+                other
+            ));
         }
 
         /// <summary>
