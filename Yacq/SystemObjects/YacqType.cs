@@ -748,7 +748,7 @@ namespace XSpect.Yacq.SystemObjects
                 method,
                 expression,
                 Expression.GetDelegateType((parameterTypes ?? new Type[0])
-                    .Concat(new [] { returnType, })
+                    .EndWith(returnType)
                     .ToArray()
                 )
             ));

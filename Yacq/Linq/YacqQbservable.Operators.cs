@@ -2081,7 +2081,7 @@ namespace XSpect.Yacq.Linq
         /// <summary>
         /// Skips elements from the observable source sequence until the specified start time, using the specified scheduler to run timers.
         /// </summary>
-        /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+        /// <param name="startTime">Time to start taking elements from the source sequence.</param>
         /// <param name="scheduler">Scheduler to run the timer on.</param>
         /// <returns>Observable sequence with the elements skipped until the specified start time.</returns>
         public YacqQbservable<TSource> SkipUntil(DateTimeOffset startTime, IScheduler scheduler)

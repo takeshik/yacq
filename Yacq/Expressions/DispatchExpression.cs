@@ -241,10 +241,9 @@ namespace XSpect.Yacq.Expressions
                     ? c.Clone(arguments: (c.IsParamArrayContext
                           ? c.Arguments
                                 .Take(c.Parameters.Count - 1)
-                                .Concat(EnumerableEx.Return(
-                                    Vector(symbols, c.Arguments.Skip(c.Parameters.Count - 1))
-                                        .Reduce(symbols, c.Parameters.Last().ParameterType)
-                                ))
+                                .EndWith(Vector(symbols, c.Arguments.Skip(c.Parameters.Count - 1))
+                                    .Reduce(symbols, c.Parameters.Last().ParameterType)
+                                )
                           : c.ParameterMap.Select(_ => _.Item2)
                       ).ToArray())
                     : null

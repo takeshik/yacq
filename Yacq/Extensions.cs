@@ -325,6 +325,11 @@ namespace XSpect.Yacq
             }
         }
 
+        internal static IEnumerable<TSource> EndWith<TSource>(this IEnumerable<TSource> source, params TSource[] values)
+        {
+            return source.Concat(values);
+        }
+
         internal static Expression TryConvert(this Expression expr, Type type)
         {
             return type == null || expr.Type == type
@@ -575,7 +580,7 @@ namespace XSpect.Yacq
         {
             return Expression.GetDelegateType(method.GetParameters()
                 .Select(p => p.ParameterType)
-                .Concat(EnumerableEx.Return(method.ReturnType))
+                .EndWith(method.ReturnType)
                 .ToArray()
             );
         }
@@ -598,7 +603,7 @@ namespace XSpect.Yacq
                     .Generate(t, _ => _.BaseType != null, _ => _.BaseType, _ => _)
                     .Count()
                 )
-                .Concat(EnumerableEx.Return(typeof(Object)))
+                .EndWith(typeof(Object))
                 .First(t => types.All(t.IsAssignableFrom));
         }
 
@@ -637,7 +642,7 @@ namespace XSpect.Yacq
 
         internal static IEnumerable<ParameterInfo> GetAllParameters(this MethodInfo method)
         {
-            return method.GetParameters().Concat(EnumerableEx.Return(method.ReturnParameter));
+            return method.GetParameters().EndWith(method.ReturnParameter);
         }
     }
 }

@@ -87,7 +87,7 @@ namespace XSpect.Yacq
                         ? (Expression) YacqExpression.Function(s, "=", e.Arguments
                               .Skip(1)
                               .SkipLast(1)
-                              .Concat(new [] { _, })
+                              .EndWith(_)
                           )
                         : _
                     );
@@ -1192,7 +1192,16 @@ namespace XSpect.Yacq
             [YacqSymbol(DispatchTypes.Method, "tuple")]
             public static Expression CreateTuple(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.TypeCandidate(typeof(Tuple)).Method(s, "Create", e.Arguments);
+                return e.Arguments.Count <= 8
+                    ? YacqExpression.TypeCandidate(typeof(Tuple)).Method(s, "Create", e.Arguments)
+                    : e.Arguments
+                          .Take(7)
+                          .ReduceAll(s)
+                          .EndWith(YacqExpression.Function(s, "tuple", e.Arguments.Skip(7)))
+                          .ToArray()
+                          .Let(_ => YacqExpression.TypeCandidate(typeof(Tuple<,,,,,,,>)
+                              .MakeGenericType(_.Select(a => a.Type).ToArray())
+                          ).Method(s, "new", _));
             }
 
             #endregion

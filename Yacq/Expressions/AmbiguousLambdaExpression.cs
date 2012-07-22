@@ -123,7 +123,7 @@ namespace XSpect.Yacq.Expressions
                               .Let(e => this.ReturnType != null
                                   ? Lambda(GetDelegateType(this.Parameters
                                         .Select(p => p.Type)
-                                        .Concat(new [] { this.ReturnType, })
+                                        .EndWith(this.ReturnType)
                                         .ToArray()
                                     ), e, ps)
                                   : expectedType == null
@@ -140,7 +140,7 @@ namespace XSpect.Yacq.Expressions
                                                                 .GetDelegateSignature()
                                                                 .GetAllParameters()
                                                                 .Select(p => p.ParameterType)
-                                                                .Zip(ps.Select(p => p.Type).Concat(new [] { e.Type, }), Tuple.Create)
+                                                                .Zip(ps.Select(p => p.Type).EndWith(e.Type), Tuple.Create)
                                                                 .Where(_ => _.Item1.IsGenericParameter)
                                                                 .ToDictionary(_ => _.Item1, _ => _.Item2)
                                                             )
