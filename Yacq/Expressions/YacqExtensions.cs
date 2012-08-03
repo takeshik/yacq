@@ -96,7 +96,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>.</returns>
         public static Type Type(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
         {
-            return expr.Null(expr_ => (expr_ as YacqExpression).Null(e => e.CanReduce || e.IsCached(new SymbolTable(e.Symbols))
+            return expr.Null(expr_ => (expr_ as YacqExpression).Null(e => e.CanReduce
                 ? e.Reduce(symbols, expectedType).Null(_ => _.Type)
                 : null
             ), () => expr.Type);

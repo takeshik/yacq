@@ -41,6 +41,18 @@ namespace XSpect.Yacq.Expressions
         : YacqExpression
     {
         /// <summary>
+        /// Indicates that the node can be reduced to a simpler node. If this returns true, Reduce() can be called to produce the reduced form.
+        /// </summary>
+        /// <returns><c>true</c> if the node can be reduced, otherwise <c>false</c>.</returns>
+        public override Boolean CanReduce
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the body expression in this expression.
         /// </summary>
         /// <value>The body expression in this expression.</value>

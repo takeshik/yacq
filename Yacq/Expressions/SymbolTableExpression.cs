@@ -38,6 +38,18 @@ namespace XSpect.Yacq.Expressions
     public class SymbolTableExpression
         : YacqExpression
     {
+        /// <summary>
+        /// Indicates that the node can be reduced to a simpler node. If this returns true, Reduce() can be called to produce the reduced form.
+        /// </summary>
+        /// <returns><c>true</c> if the node can be reduced, otherwise <c>false</c>.</returns>
+        public override Boolean CanReduce
+        {
+            get
+            {
+                return false;
+            }
+        }
+        
         internal SymbolTableExpression(SymbolTable symbols)
             : base(symbols)
         {

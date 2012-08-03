@@ -42,8 +42,6 @@ namespace XSpect.Yacq.Expressions
     public abstract partial class YacqExpression
         : Expression
     {
-        private Boolean _canReduce;
-
         private readonly Dictionary<Int32, Expression> _reducedExpressions;
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace XSpect.Yacq.Expressions
         {
             get
             {
-                return this._canReduce;
+                return true;
             }
         }
 
@@ -125,7 +123,6 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The symbol table linked with this expression.</param>
         protected YacqExpression(SymbolTable symbols)
         {
-            this._canReduce = true;
             this._reducedExpressions = new Dictionary<Int32, Expression>();
             this.Symbols = symbols ?? new SymbolTable();
         }
@@ -150,9 +147,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         public Expression Reduce(SymbolTable symbols, Type expectedType)
         {
-            symbols = this.Symbols.Any()
-                ? new SymbolTable(this.Symbols, symbols)
-                : symbols ?? new SymbolTable();
+            symbols = this.CreateSymbolTable(symbols);
             var hash = symbols.AllHash
                 ^ (expectedType != null ? expectedType.GetHashCode() : 0);
             if (this._reducedExpressions.ContainsKey(hash))
@@ -162,7 +157,6 @@ namespace XSpect.Yacq.Expressions
             else
             {
                 var expression = this.ForceReduce(symbols, expectedType);
-                this._canReduce = false;
                 if (expression != this)
                 {
                     this._reducedExpressions[hash] = expression;
@@ -181,14 +175,23 @@ namespace XSpect.Yacq.Expressions
                       : ImplicitConvert(expression, expectedType);
         }
 
-        internal Boolean IsCached(SymbolTable symbols)
+        internal Boolean IsCached(SymbolTable symbols, Type expectedType)
         {
-            return this._reducedExpressions.ContainsKey(symbols.AllHash);
+            return this._reducedExpressions.ContainsKey(this.CreateSymbolTable(symbols).AllHash
+                ^ (expectedType != null ? expectedType.GetHashCode() : 0)
+            );
         }
 
         internal void ClearCache()
         {
             this._reducedExpressions.Clear();
+        }
+
+        internal SymbolTable CreateSymbolTable(SymbolTable symbols)
+        {
+            return this.Symbols.Any()
+                ? new SymbolTable(this.Symbols, symbols)
+                : symbols ?? new SymbolTable();
         }
 
         /// <summary>
