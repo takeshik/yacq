@@ -1030,15 +1030,14 @@ namespace XSpect.Yacq
         /// <returns>The symbol value with the most appropriate to the specified <see cref="DispatchExpression"/>.</returns>
         public SymbolDefinition ResolveMatch(DispatchExpression expression)
         {
-            return this.ResolveMatch(
-                expression.DispatchType,
-                expression.Left.Reduce(this)
-                    .Null(e => e is TypeCandidateExpression
-                        ? Static.MakeType(((TypeCandidateExpression) e).ElectedType)
-                        : e.Type
-                    ),
-                expression.Name
-            );
+            return (expression.Left.Reduce(this)
+                .Null(e => (e as TypeCandidateExpression)
+                    .Null(te => te.Candidates.Select(Static.MakeType))
+                    ?? new[] { e.Type, }
+                ) ?? new Type[1]
+            )
+                .Select(t => this.ResolveMatch(expression.DispatchType, t, expression.Name))
+                .FirstOrDefault(_ => _ != null);
         }
 
         private void PrepareModify()

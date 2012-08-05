@@ -2186,17 +2186,17 @@ namespace XSpect.Yacq
             // LINQ Types
             
             [YacqSymbol("Enumerable")]
-            public static Expression EnumerableType = YacqExpression.TypeCandidate(typeof(Enumerable));
-            
-            [YacqSymbol("EnumerableEx")]
-            public static Expression EnumerableExType = YacqExpression.TypeCandidate(typeof(EnumerableEx));
+            public static Expression EnumerableType = YacqExpression.TypeCandidate(
+                typeof(Enumerable),
+                typeof(EnumerableEx)
+            );
             
             [YacqSymbol("Queryable")]
-            public static Expression QueryableType = YacqExpression.TypeCandidate(typeof(Queryable));
+            public static Expression QueryableType = YacqExpression.TypeCandidate(
+                typeof(Queryable),
+                typeof(QueryableEx)
+            );
             
-            [YacqSymbol("QueryableEx")]
-            public static Expression QueryableExType = YacqExpression.TypeCandidate(typeof(QueryableEx));
-
             [YacqSymbol("Observable")]
             public static Expression ObservableType = YacqExpression.TypeCandidate(typeof(Observable));
             
@@ -2335,6 +2335,14 @@ namespace XSpect.Yacq
             {
                 return YacqExpression.TypeCandidate(
                     ((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType.MakeArrayType()
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Member, typeof(Static<Object>), "seq")]
+            public static Expression MakeSequenceType(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(
+                    typeof(IEnumerable<>).MakeGenericType(((TypeCandidateExpression) e.Left.Reduce(s)).ElectedType)
                 );
             }
 
