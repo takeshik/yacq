@@ -97,7 +97,9 @@ namespace XSpect.Yacq.Expressions
         public static Type Type(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
         {
             return expr.Null(expr_ => (expr_ as YacqExpression).Null(e => e.CanReduce
-                ? e.Reduce(symbols, expectedType).Null(_ => _.Type)
+                ? e.Reduce(symbols, expectedType)
+                      .If(_ => _ is YacqExpression, _ => null)
+                      .Null(_ => _.Type)
                 : null
             ), () => expr.Type);
         }

@@ -76,8 +76,17 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return Variable(symbols, this.Name).TryReduce
-                (symbols).Let(e => (e as MacroExpression).Null(m => m.Evaluate(symbols)) ?? e);
+            if (symbols.ResolveMatch(DispatchTypes.Member, this.Name) != null
+                || symbols.Missing != DispatchExpression.DefaultMissing
+            )
+            {
+                return Variable(symbols, this.Name)
+                    .Reduce(symbols)
+                    .Let(e => (e as MacroExpression).Null(m => m.Evaluate(symbols)) ?? e);
+            }else
+            {
+                throw new ParseException("Identifier evaluation failed: " + this);
+            }
         }
     }
 
