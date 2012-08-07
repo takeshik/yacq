@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqSilverlightRun", "YacqS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yacq.Tests", "Yacq.Tests\Yacq.Tests.csproj", "{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}"
 EndProject
+Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "YacqReference", "YacqReference\YacqReference.shfbproj", "{1EB6D288-4FC7-426E-B403-A6447F9A29FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,9 @@ Global
 		{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EB6D288-4FC7-426E-B403-A6447F9A29FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EB6D288-4FC7-426E-B403-A6447F9A29FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EB6D288-4FC7-426E-B403-A6447F9A29FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
