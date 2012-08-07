@@ -62,6 +62,9 @@ namespace XSpect.Yacq
             }
         }
 
+// ReSharper disable UnusedMember.Local
+// ReSharper disable UnusedParameter.Local
+
         private static class RootSymbols
         {
             /* The Guideline of Reduce(SymbolTable) Method:
@@ -2404,6 +2407,9 @@ namespace XSpect.Yacq
 
             #endregion
         }
+
+// ReSharper restore UnusedMember.Local
+// ReSharper restore UnusedParameter.Local
     }
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
