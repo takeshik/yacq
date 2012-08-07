@@ -68,14 +68,8 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GalaSoft.MvvmLight.Extras.SL4">
-      <HintPath>..\packages\MvvmLightLibs.3.1.1\lib\SL4\GalaSoft.MvvmLight.Extras.SL4.dll</HintPath>
-    </Reference>
     <Reference Include="GalaSoft.MvvmLight.Extras.SL5">
       <HintPath>..\packages\MvvmLightLibs.4.1.23.0\lib\SL5\GalaSoft.MvvmLight.Extras.SL5.dll</HintPath>
-    </Reference>
-    <Reference Include="GalaSoft.MvvmLight.SL4">
-      <HintPath>..\packages\MvvmLightLibs.3.1.1\lib\SL4\GalaSoft.MvvmLight.SL4.dll</HintPath>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight.SL5">
       <HintPath>..\packages\MvvmLightLibs.4.1.23.0\lib\SL5\GalaSoft.MvvmLight.SL5.dll</HintPath>
