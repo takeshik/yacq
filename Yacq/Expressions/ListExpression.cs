@@ -82,7 +82,7 @@ namespace XSpect.Yacq.Expressions
                 {
                     return ((MacroExpression) value).Evaluate(symbols, this.Elements.Skip(1));
                 }
-                if (value != null && value.Type.GetDelegateSignature() != null)
+                if (value != null && value.Type(symbols).GetDelegateSignature() != null)
                 {
                     return Invoke(value, this.Elements.Skip(1).ReduceAll(symbols));
                 }

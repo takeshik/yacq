@@ -100,8 +100,9 @@ namespace XSpect.Yacq.Expressions
                 ? e.Reduce(symbols, expectedType)
                       .If(_ => _ is YacqExpression, _ => null)
                       .Null(_ => _.Type)
-                : null
-            ), () => expr.Type);
+                : null,
+                () => expr.Type
+            ));
         }
 
         /// <summary>

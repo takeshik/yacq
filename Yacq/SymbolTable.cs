@@ -1033,7 +1033,7 @@ namespace XSpect.Yacq
             return (expression.Left.Reduce(this)
                 .Null(e => (e as TypeCandidateExpression)
                     .Null(te => te.Candidates.Select(Static.MakeType))
-                    ?? new[] { e.Type, }
+                    ?? new[] { e.Type(this), }
                 ) ?? new Type[1]
             )
                 .Select(t => this.ResolveMatch(expression.DispatchType, t, expression.Name))

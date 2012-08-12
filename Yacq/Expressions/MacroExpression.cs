@@ -76,7 +76,7 @@ namespace XSpect.Yacq.Expressions
         internal MacroExpression(SymbolTable symbols, Expression body, IList<AmbiguousParameterExpression> parameters)
             : base(symbols)
         {
-            if (parameters.Any(p => p.Type != null && !typeof(Expression).IsAppropriate(p.Type)))
+            if (parameters.Any(p => p.Type(symbols) != null && !typeof(Expression).IsAppropriate(p.Type)))
             {
                 throw new ArgumentException("All parameters of macro must be Expression", "parameters");
             }

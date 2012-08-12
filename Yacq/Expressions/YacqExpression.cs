@@ -79,7 +79,7 @@ namespace XSpect.Yacq.Expressions
                 var type = this.Type();
                 if (type == null)
                 {
-                    throw new InvalidOperationException("Failed to reduce the expression.");
+                    throw new InvalidOperationException("Failed to reduce the expression. Use Type() extension method instead.");
                 }
                 return type;
             }

@@ -879,6 +879,15 @@ namespace XSpect.Yacq
             {
                 return Expression.Not(YacqExpression.Function(s, "&&", e.Arguments));
             }
+
+            [YacqSymbol(DispatchTypes.Method, "||")]
+            public static Expression OrElse(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return Expression.OrElse(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                    ? e.Arguments[1].Reduce(s)
+                    : YacqExpression.Function(s, "||", e.Arguments.Skip(1)).Reduce(s)
+                );
+            }
             
             [YacqSymbol(DispatchTypes.Method, "!||")]
             public static Expression NotOrElse(DispatchExpression e, SymbolTable s, Type t)
