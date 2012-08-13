@@ -28,7 +28,7 @@
 
 using System;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Symbols
 {
     /// <summary>
     /// Specify the symbol is for static call, not instance call. Use only for <see cref="SymbolEntry"/>.

@@ -34,6 +34,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using XSpect.Yacq.Expressions;
+using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.SystemObjects
 {

@@ -33,6 +33,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using XSpect.Yacq.Expressions;
+using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq
 {

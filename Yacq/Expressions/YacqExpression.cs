@@ -32,6 +32,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Parseq;
+using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.Expressions
 {

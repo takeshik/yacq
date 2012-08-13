@@ -34,6 +34,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using XSpect.Yacq.Expressions;
+using XSpect.Yacq.Symbols;
+
 #if SILVERLIGHT
 using System.Reactive.Linq;
 using System.Xml.Linq;

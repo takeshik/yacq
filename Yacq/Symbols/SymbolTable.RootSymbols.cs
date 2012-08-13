@@ -42,7 +42,7 @@ using XSpect.Yacq.SystemObjects;
 using System.Reactive;
 using System.Reactive.Linq;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Symbols
 {
     partial class SymbolTable
     {

@@ -32,6 +32,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using XSpect.Yacq.Expressions;
+using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.SystemObjects
 {

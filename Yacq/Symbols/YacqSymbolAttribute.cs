@@ -29,7 +29,7 @@
 using System;
 using XSpect.Yacq.Expressions;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Symbols
 {
     /// <summary>
     /// Indicates that a method or field is exported as symbols with specified <see cref="SymbolEntry"/> keys.

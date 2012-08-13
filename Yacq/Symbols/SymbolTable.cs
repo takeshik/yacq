@@ -36,7 +36,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using XSpect.Yacq.Expressions;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Symbols
 {
     /// <summary>
     /// Represents a dictionary of symbols, the mechanism to hook all member references and method calls.

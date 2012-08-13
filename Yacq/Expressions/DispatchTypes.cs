@@ -27,6 +27,7 @@
  */
 
 using System;
+using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.Expressions
 {

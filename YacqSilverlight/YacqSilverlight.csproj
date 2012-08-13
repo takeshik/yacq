@@ -253,20 +253,23 @@
     <Compile Include="..\Yacq\ParseException.cs">
       <Link>ParseException.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\Static.cs">
-      <Link>Static.cs</Link>
+    <Compile Include="..\Yacq\Symbols\Static.cs">
+      <Link>Symbols\Static.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SymbolDefinition.cs">
-      <Link>SymbolDefinition.cs</Link>
+    <Compile Include="..\Yacq\Symbols\SymbolDefinition.cs">
+      <Link>Symbols\SymbolDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SymbolEntry.cs">
-      <Link>SymbolEntry.cs</Link>
+    <Compile Include="..\Yacq\Symbols\SymbolEntry.cs">
+      <Link>Symbols\SymbolEntry.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SymbolTable.cs">
-      <Link>SymbolTable.cs</Link>
+    <Compile Include="..\Yacq\Symbols\SymbolTable.cs">
+      <Link>Symbols\SymbolTable.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\SymbolTable.RootSymbols.cs">
-      <Link>SymbolTable.RootSymbols.cs</Link>
+    <Compile Include="..\Yacq\Symbols\SymbolTable.RootSymbols.cs">
+      <Link>Symbols\SymbolTable.RootSymbols.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Symbols\YacqSymbolAttribute.cs">
+      <Link>Symbols\YacqSymbolAttribute.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\SystemObjects\DocumentRepository.cs">
       <Link>SystemObjects\DocumentRepository.cs</Link>
@@ -288,9 +291,6 @@
     </Compile>
     <Compile Include="..\Yacq\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\Yacq\YacqSymbolAttribute.cs">
-      <Link>YacqSymbolAttribute.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

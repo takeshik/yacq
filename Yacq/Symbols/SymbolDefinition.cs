@@ -31,7 +31,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using XSpect.Yacq.Expressions;
 
-namespace XSpect.Yacq
+namespace XSpect.Yacq.Symbols
 {
     /// <summary>
     /// Represents value of symbol, the method that defines implementation of the symbol.
