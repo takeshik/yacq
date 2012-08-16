@@ -1075,32 +1075,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Expands an observable sequence by recursively invoking selector.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function to invoke for each produced element, resulting in another sequence to which the selector will be invoked recursively again.</param>
-        /// <returns>A <see cref="YacqQbservable{TSource}"/> containing all the elements produced by the recursive expansion.</returns>
-        public YacqQbservable<TSource> Expand(String selector)
-        {
-            return new YacqQbservable<TSource>(this.Symbols, this._source.Expand(
-                YacqServices.ParseFunc<TSource, IObservable<TSource>>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
-        /// Expands an observable sequence by recursively invoking selector.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function to invoke for each produced element, resulting in another sequence to which the selector will be invoked recursively again.</param>
-        /// <param name="scheduler">Scheduler on which to perform the expansion.</param>
-        /// <returns>A <see cref="YacqQbservable{TSource}"/> containing all the elements produced by the recursive expansion.</returns>
-        public YacqQbservable<TSource> Expand(String selector, IScheduler scheduler)
-        {
-            return new YacqQbservable<TSource>(this.Symbols, this._source.Expand(
-                YacqServices.ParseFunc<TSource, IObservable<TSource>>(this.Symbols, selector),
-                scheduler
-            ));
-        }
-
-        /// <summary>
         /// Invokes a specified action after source observable sequence terminates normally or by an exception.
         /// </summary>
         /// <param name="finallyAction"><c>() =></c> Action to invoke after the source observable sequence terminates.</param>
@@ -1151,20 +1125,6 @@ namespace XSpect.Yacq.Linq
         {
             return new YacqQbservable<TSource>(this.Symbols, this._source.FirstOrDefaultAsync(
                 YacqServices.ParseFunc<TSource, Boolean>(this.Symbols, predicate)
-            ));
-        }
-
-        /// <summary>
-        /// Runs two observable sequences in parallel and combines their last elemenets.
-        /// </summary>
-        /// <param name="second">Second observable sequence.</param>
-        /// <param name="resultSelector"><c>(it, it2) =></c> Result selector function to invoke with the last elements of both sequences.</param>
-        /// <returns>A <see cref="YacqQbservable{TSource}"/> with the result of calling the selector function with the last elements of both input sequences.</returns>
-        public YacqQbservable<TResult> ForkJoin<TSecond, TResult>(IObservable<TSecond> second, String resultSelector)
-        {
-            return new YacqQbservable<TResult>(this.Symbols, this._source.ForkJoin(
-                second,
-                YacqServices.ParseLambda<Func<TSource, TSecond, TResult>>(this.Symbols, resultSelector, "it", "it2")
             ));
         }
 
@@ -1410,17 +1370,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Bind the source to the parameter without sharing subscription side-effects.
-        /// </summary>
-        /// <param name="function"><c>(it) =></c> A function which specifies the side effects.</param>
-        public YacqQbservable<TResult> Let<TResult>(String function)
-        {
-            return new YacqQbservable<TResult>(this.Symbols, this._source.Let(
-                YacqServices.ParseFunc<IObservable<TSource>, IObservable<TResult>>(this.Symbols, function)
-            ));
-        }
-
-        /// <summary>
         /// Returns a <see cref="T:System.Int64"/> that represents the total number of elements in an observable sequence.
         /// </summary>
         /// <returns>An observable sequence containing a single element with the number of elements in the input sequence.</returns>
@@ -1428,30 +1377,6 @@ namespace XSpect.Yacq.Linq
         public YacqQbservable<Int64> LongCount()
         {
             return new YacqQbservable<Int64>(this.Symbols, this._source.LongCount());
-        }
-
-        /// <summary>
-        /// Comonadic bind operator.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> A selector function.</param>
-        public YacqQbservable<TResult> ManySelect<TResult>(String selector)
-        {
-            return new YacqQbservable<TResult>(this.Symbols, this._source.ManySelect(
-                YacqServices.ParseFunc<IObservable<TSource>, TResult>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
-        /// Comonadic bind operator.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> A selector function.</param>
-        /// <param name="scheduler">Scheduler on which to perform the expansion.</param>
-        public YacqQbservable<TResult> ManySelect<TResult>(String selector, IScheduler scheduler)
-        {
-            return new YacqQbservable<TResult>(this.Symbols, this._source.ManySelect(
-                YacqServices.ParseFunc<IObservable<TSource>, TResult>(this.Symbols, selector),
-                scheduler
-            ));
         }
 
         /// <summary>
