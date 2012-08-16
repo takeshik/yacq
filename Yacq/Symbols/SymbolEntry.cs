@@ -45,10 +45,10 @@ namespace XSpect.Yacq.Symbols
         public static readonly SymbolEntry Missing = default(SymbolEntry);
 
         /// <summary>
-        /// Gets the target <see cref="Expressions.DispatchTypes"/> of this symbol.
+        /// Gets the target <see cref="DispatchTypes"/> of this symbol.
         /// </summary>
         /// <value>
-        /// The target <see cref="Expressions.DispatchTypes"/> of this symbol.
+        /// The target <see cref="DispatchTypes"/> of this symbol.
         /// </value>
         public DispatchTypes DispatchType
         {
@@ -86,7 +86,7 @@ namespace XSpect.Yacq.Symbols
         /// <summary>
         /// Initializes a new instance of <see cref="SymbolEntry"/>.
         /// </summary>
-        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="dispatchType">The target <see cref="DispatchTypes"/> of this symbol.</param>
         /// <param name="leftType">The target of this symbol.</param>
         /// <param name="name">The name of this symbol.</param>
         public SymbolEntry(DispatchTypes dispatchType, Type leftType, String name)
@@ -100,7 +100,7 @@ namespace XSpect.Yacq.Symbols
         /// <summary>
         /// Initializes a new instance of <see cref="SymbolEntry"/>.
         /// </summary>
-        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="dispatchType">The target <see cref="DispatchTypes"/> of this symbol.</param>
         /// <param name="name">The name of this symbol.</param>
         public SymbolEntry(DispatchTypes dispatchType, String name)
             : this(dispatchType, null, name)

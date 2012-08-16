@@ -27,9 +27,8 @@
  */
 
 using System;
-using XSpect.Yacq.Symbols;
 
-namespace XSpect.Yacq.Expressions
+namespace XSpect.Yacq.Symbols
 {
     /// <summary>
     /// Specifies flags for symbol targets and attributes.

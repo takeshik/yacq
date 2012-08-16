@@ -27,7 +27,6 @@
  */
 
 using System;
-using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Symbols
 {
@@ -39,10 +38,10 @@ namespace XSpect.Yacq.Symbols
         : Attribute
     {
         /// <summary>
-        /// Gets the target <see cref="Expressions.DispatchTypes"/> of this symbol.
+        /// Gets the target <see cref="DispatchTypes"/> of this symbol.
         /// </summary>
         /// <value>
-        /// The target <see cref="Expressions.DispatchTypes"/> of this symbol.
+        /// The target <see cref="DispatchTypes"/> of this symbol.
         /// </value>
         public DispatchTypes DispatchType
         {
@@ -80,7 +79,7 @@ namespace XSpect.Yacq.Symbols
         /// <summary>
         /// Initializes a new instance of <see cref="YacqSymbolAttribute"/> class.
         /// </summary>
-        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="dispatchType">The target <see cref="DispatchTypes"/> of this symbol.</param>
         /// <param name="leftType">The target of this symbol.</param>
         /// <param name="name">The name of this symbol.</param>
         public YacqSymbolAttribute(DispatchTypes dispatchType, Type leftType, String name)
@@ -93,7 +92,7 @@ namespace XSpect.Yacq.Symbols
         /// <summary>
         /// Initializes a new instance of <see cref="YacqSymbolAttribute"/> class.
         /// </summary>
-        /// <param name="dispatchType">The target <see cref="Expressions.DispatchTypes"/> of this symbol.</param>
+        /// <param name="dispatchType">The target <see cref="DispatchTypes"/> of this symbol.</param>
         /// <param name="name">The name of this symbol.</param>
         public YacqSymbolAttribute(DispatchTypes dispatchType, String name)
             : this(dispatchType, null, name)

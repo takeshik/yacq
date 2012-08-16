@@ -175,9 +175,6 @@
     <Compile Include="..\Yacq\Expressions\DispatchExpression.TypeNode.cs">
       <Link>Expressions\DispatchExpression.TypeNode.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\Expressions\DispatchTypes.cs">
-      <Link>Expressions\DispatchTypes.cs</Link>
-    </Compile>
     <Compile Include="..\Yacq\Expressions\IdentifierExpression.cs">
       <Link>Expressions\IdentifierExpression.cs</Link>
     </Compile>
@@ -252,6 +249,9 @@
     </Compile>
     <Compile Include="..\Yacq\ParseException.cs">
       <Link>ParseException.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Symbols\DispatchTypes.cs">
+      <Link>Symbols\DispatchTypes.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Symbols\Static.cs">
       <Link>Symbols\Static.cs</Link>
