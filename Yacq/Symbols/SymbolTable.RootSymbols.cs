@@ -1301,18 +1301,7 @@ namespace XSpect.Yacq.Symbols
             {
                 var type = (e.Arguments[0].List(":") ?? new [] { e.Arguments[0], YacqExpression.TypeCandidate(typeof(Object)), })
                     .Let(es => s.Resolve("*assembly*").Const<YacqAssembly>().DefineType(
-                        es.First().List(".")
-                            .Null(l => String.Join(".", l
-                                .Expand(_ => _ is ListExpression
-                                    ? ((ListExpression) _).Elements
-                                    : Enumerable.Empty<Expression>()
-                                )
-                                .OfType<IdentifierExpression>()
-                                .Select(_ => _.Name)
-                                .Where(_ => _ != ".")
-                                .ToArray()
-                                .Let(_ => _.TakeLast(2).Concat(_.SkipLast(2).Reverse()))
-                            ), es.First().Id()),
+                        String.Join(".", GetIdentifierFragments(es.First())),
                         (es.Last() is VectorExpression
                             ? ((VectorExpression) es.Last()).Elements
                             : EnumerableEx.Return(es.Last())
@@ -1451,6 +1440,19 @@ namespace XSpect.Yacq.Symbols
             {
                 return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
                     .Method(s, "undef", e.Arguments);
+            }
+
+            [YacqSymbol(DispatchTypes.Method, "module")]
+            public static Expression Module(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return ModuleLoader.CreatePathSymbols(
+                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t).Const<SymbolTable>(),
+                    GetIdentifierFragments(e.Arguments[0])
+                ).Let(s_ => YacqExpression.Function(s_, "$",
+                    e.Arguments
+                        .Skip(1)
+                        .StartWith(YacqExpression.Vector(s_))
+                ));
             }
             
             [YacqSymbol(DispatchTypes.Method, "load")]
@@ -1998,7 +2000,9 @@ namespace XSpect.Yacq.Symbols
             public static Expression GetGlobalSymbols(DispatchExpression e, SymbolTable s, Type t)
             {
                 return Expression.Constant(
-                    s.AllKeys
+                    (e.Left.Reduce(s) as SymbolTableExpression)
+                        .Null(se => se.Symbols, s)
+                        .AllKeys
                         .Where(_ => _.LeftType == null)
                         .OrderBy(_ => _.DispatchType.HasFlag(DispatchTypes.Member)
                             ? 0
@@ -2021,7 +2025,7 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Member, "here")]
             public static Expression Here(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.SymbolTable(HereSymbol(e, s, t).Const<SymbolTable>());
+                return YacqExpression.SymbolTable(YacqExpression.Variable(s, "$here").Const<SymbolTable>());
             }
 
             [YacqSymbol(DispatchTypes.Member, "global")]
@@ -2411,6 +2415,22 @@ namespace XSpect.Yacq.Symbols
                             )
                         )
                         .ToArray()
+                );
+            }
+
+            private static IEnumerable<String> GetIdentifierFragments(Expression expression)
+            {
+                return expression.List(".").Null(l => l
+                    .Expand(_ => _ is ListExpression
+                        ? ((ListExpression) _).Elements
+                        : Enumerable.Empty<Expression>()
+                    )
+                    .OfType<IdentifierExpression>()
+                    .Select(_ => _.Name)
+                    .Where(_ => _ != ".")
+                    .ToArray()
+                    .Let(_ => _.TakeLast(2).Concat(_.SkipLast(2).Reverse())),
+                    new [] { expression.Id(), }
                 );
             }
 

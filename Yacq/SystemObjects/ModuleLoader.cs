@@ -277,15 +277,21 @@ namespace XSpect.Yacq.SystemObjects
             }
         }
 
-        private static SymbolTable CreatePathSymbols(SymbolTable symbols, IEnumerable<String> fragments)
+        internal static SymbolTable CreatePathSymbols(SymbolTable symbols, IEnumerable<String> fragments)
         {
             return ((SymbolTableExpression) EnumerableEx.Generate(
-                Tuple.Create(fragments, symbols),
+                Tuple.Create(fragments, symbols
+                    .Resolve(DispatchTypes.Member, "$here")(null, symbols, typeof(SymbolTable))
+                        .Const<SymbolTable>()
+                ),
                 _ => _.Item1.Any(),
                 _ => Tuple.Create(_.Item1.Skip(1), _.Item1.First()
                     .Let(f => _.Item2.ExistsKey(f) && _.Item2.Resolve(f) is SymbolTableExpression
-                        ? ((SymbolTableExpression) symbols.Resolve(f)).Symbols
-                        : new SymbolTable().Apply(s => _.Item2[f] = YacqExpression.SymbolTable(s))
+                        ? ((SymbolTableExpression) _.Item2.Resolve(f)).Symbols
+                        : new SymbolTable().Apply(
+                              s => _.Item2[f] = YacqExpression.SymbolTable(s),
+                              s => s["$here"] = YacqExpression.Constant(s)
+                          )
                 )),
                 _ => _.Item2
             ).Last().Resolve(fragments.Last())).Symbols;
