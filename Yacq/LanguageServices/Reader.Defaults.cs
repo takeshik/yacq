@@ -218,11 +218,26 @@ namespace XSpect.Yacq.LanguageServices
                     )
                 );
 
+                var escape = '\\'.Satisfy()
+                    .Right(
+                        Combinator.Choice(
+                            'a'.Satisfy().Select(_ => '\u0007'),
+                            'b'.Satisfy().Select(_ => '\u0008'),
+                            't'.Satisfy().Select(_ => '\u0009'),
+                            'r'.Satisfy().Select(_ => '\u000d'),
+                            'v'.Satisfy().Select(_ => '\u000b'),
+                            'f'.Satisfy().Select(_ => '\u000c'),
+                            'n'.Satisfy().Select(_ => '\u000a'),
+                            'e'.Satisfy().Select(_ => '\u001b'),
+                            Chars.Any()
+                        )
+                    );
+
                 var text =
                     Span(
                         from x in Chars.OneOf('\'', '\"', '`')
                         let quoteMark = x.Satisfy()
-                        from y in quoteMark.Not().Right(Chars.Any()).Many().Select(_ => new String(_.ToArray()))
+                        from y in quoteMark.Not().Right(escape.Or(Chars.Any())).Many().Select(_ => new String(_.ToArray()))
                         from z in quoteMark
                         select (YacqExpression) YacqExpression.Text(String.Concat(x, y, z)),
                             (start, end, t) => t.SetPosition(start, end)
