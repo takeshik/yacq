@@ -1,17 +1,18 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <version>1.10</version>
+    <version>1.11</version>
     <authors>takeshik</authors>
     <owners>takeshik</owners>
-    <licenseUrl>https://github.com/takeshik/yacq/blob/v1.10/LICENSE.txt</licenseUrl>
-    <projectUrl>http://www.yacq.net/</projectUrl>
+    <licenseUrl>https://github.com/takeshik/yacq/blob/v1.11/LICENSE.txt</licenseUrl>
+    <projectUrl>http://yacq.net/</projectUrl>
+    <iconUrl>http://docs.yacq.net/nuget-icon.png</iconUrl>
     <dependencies>
+      <dependency id="Rx-Main" version="2.0.20814" />
+      <dependency id="Rx-Providers" version="2.0.20814" />
       <dependency id="Ix_Experimental-Main" version="1.1.10823" />
       <dependency id="Ix_Experimental-Providers" version="1.1.10823" />
-      <dependency id="Rx_Experimental-Main" version="1.1.11111" />
-      <dependency id="Rx_Experimental-Providers" version="1.1.11111" />
-      <dependency id="Parseq" version="0.1.1" />
+      <dependency id="Parseq" version="1.3.0.1" />
     </dependencies>
     <id>Yacq</id>
     <title>YACQ - Embeddable Query Language</title>
@@ -23,7 +24,7 @@
   <files>
     <file src="Yacq\bin\Release\Yacq.dll" target="lib\net40\Yacq.dll" />
     <file src="Yacq\bin\Release\Yacq.xml" target="lib\net40\Yacq.xml" />
-    <file src="YacqSilverlight\bin\Release\Yacq.dll" target="lib\sl40\Yacq.dll" />
-    <file src="YacqSilverlight\bin\Release\Yacq.xml" target="lib\sl40\Yacq.xml" />
+    <file src="YacqSilverlight\bin\Release\Yacq.dll" target="lib\sl50\Yacq.dll" />
+    <file src="YacqSilverlight\bin\Release\Yacq.xml" target="lib\sl50\Yacq.xml" />
   </files>
 </package>
