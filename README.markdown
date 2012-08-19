@@ -1,12 +1,23 @@
 # YACQ - Yet Another Compilable Query Language for .NET
 
-YACQ は、.NET Framework 4、Silverlight 4、または Mono 2.10 上で動作する、完全に C# のみによって書かれたソフトウェア組込可能なクエリ言語処理系です。
+YACQ は、.NET Framework 4、Silverlight 5、または Mono 2.10 上で動作する、完全に C# のみによって書かれたソフトウェア組込可能なクエリ言語処理系です。
 
-> YACQ is a software-embeddable query language system for .NET Framework 4, Silverlight 4, or Mono 2.10, written only in C#.
+> YACQ is a software-embeddable query language system for .NET Framework 4, Silverlight 5, or Mono 2.10, written only in C#.
 
 詳細な情報およびドキュメントは[プロジェクトウェブサイト](http://www.yacq.net/wiki/Ja%3AWikiStart) 上で公開されています。
 
 > For more details and documents, please visit [the Project Website](http://www.yacq.net/).
+
+## Dependencies
+
+- Reactive Extensions (Rx)
+    - [Rx-Main](http://nuget.org/Packages/Rx-Main)
+    - [Rx-Providers](http://nuget.org/Packages/Rx-Providers)
+- Interactive Extensions (Ix)
+    - [Ix\_Experimental-Main](http://nuget.org/Packages/Ix_Experimental-Main)
+    - [Ix\_Experimental-Providers](http://nuget.org/Packages/Ix_Experimental-Providers)
+- Parseq
+    - [Parseq](http://nuget.org/Packages/Parseq)
 
 ## Acknowledgement
 

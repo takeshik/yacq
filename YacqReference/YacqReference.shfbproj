@@ -55,66 +55,75 @@
     <ComponentConfigurations>
       <ComponentConfig id="Cached Framework Comments Index Data" enabled="True">
         <component id="Cached Framework Comments Index Data" type="SandcastleBuilder.Components.CachedCopyFromIndexComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
-<index name="comments" value="/doc/members/member" key="@name" cache="100">
+          <index name="comments" value="/doc/members/member" key="@name" cache="100">
 				{@CachedFrameworkCommentList}
 				{@CommentFileList}
 			</index>
-<copy name="comments" source="*" target="/document/comments" />
-</component>
+          <copy name="comments" source="*" target="/document/comments" />
+        </component>
       </ComponentConfig>
-<ComponentConfig id="API Token Resolution" enabled="True"><component id="API Token Resolution" type="Microsoft.Ddue.Tools.SharedContentComponent" assembly="{@SandcastlePath}ProductionTools\BuildComponents.dll">
+      <ComponentConfig id="API Token Resolution" enabled="True">
+        <component id="API Token Resolution" type="Microsoft.Ddue.Tools.SharedContentComponent" assembly="{@SandcastlePath}ProductionTools\BuildComponents.dll">
 
 			{@TokenFiles}
-			<replace elements="/*//token" item="string(.)" />
-</component></ComponentConfig>
-<ComponentConfig id="Cached MSDN URL References" enabled="True"><component id="Cached MSDN URL References" type="SandcastleBuilder.Components.CachedResolveReferenceLinksComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll" locale="{@Locale}" linkTarget="{@SdkLinkTarget}">
-<helpOutput format="HtmlHelp1">
-  <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
-  <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@HtmlSdkLinkType}" />
-  <targets files="reflection.xml" type="Local" />
-</helpOutput>
-<helpOutput format="MSHelp2">
-  <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
-  <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@MSHelp2SdkLinkType}" />
-  <targets files="reflection.xml" type="Index" />
-</helpOutput>
-<helpOutput format="MSHelpViewer">
-  <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
-  <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@MSHelpViewerSdkLinkType}" />
-  <targets files="reflection.xml" type="Id" />
-</helpOutput>
-<helpOutput format="Website">
-  <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
-  <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@WebsiteSdkLinkType}" />
-  <targets files="reflection.xml" type="Local" />
-</helpOutput>
-</component></ComponentConfig>
-<ComponentConfig id="Cached Reflection Index Data" enabled="True"><component id="Cached Reflection Index Data" type="SandcastleBuilder.Components.CachedCopyFromIndexComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
-<index name="reflection" value="/reflection/apis/api" key="@id" cache="10">
-  <cache base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" cacheFile="{@LocalDataFolder}Cache\Reflection.cache" />
-  <data files="reflection.xml" />
-</index>
-<copy name="reflection" source="*" target="/document/reference" />
-</component></ComponentConfig>
-<ComponentConfig id="Code Block Component" enabled="True"><component id="Code Block Component" type="SandcastleBuilder.Components.CodeBlockComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
-  <basePath value="{@HtmlEncProjectFolder}" />
-  <languageFilter value="true" />
-  <allowMissingSource value="false" />
-  <removeRegionMarkers value="false" />
-  <colorizer syntaxFile="{@SHFBFolder}Colorizer\highlight.xml" styleFile="{@SHFBFolder}Colorizer\highlight.xsl" copyImageUrl="../icons/CopyCode.gif" language="cs" tabSize="4" numberLines="true" outlining="false" keepSeeTags="false" defaultTitle="true" />
-</component></ComponentConfig></ComponentConfigurations>
+			<replace elements="/*//token" item="string(.)" /></component>
+      </ComponentConfig>
+      <ComponentConfig id="Cached MSDN URL References" enabled="True">
+        <component id="Cached MSDN URL References" type="SandcastleBuilder.Components.CachedResolveReferenceLinksComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll" locale="{@Locale}" linkTarget="{@SdkLinkTarget}">
+          <helpOutput format="HtmlHelp1">
+            <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
+            <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@HtmlSdkLinkType}" />
+            <targets files="reflection.xml" type="Local" />
+          </helpOutput>
+          <helpOutput format="MSHelp2">
+            <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
+            <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@MSHelp2SdkLinkType}" />
+            <targets files="reflection.xml" type="Index" />
+          </helpOutput>
+          <helpOutput format="MSHelpViewer">
+            <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
+            <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@MSHelpViewerSdkLinkType}" />
+            <targets files="reflection.xml" type="Id" />
+          </helpOutput>
+          <helpOutput format="Website">
+            <cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
+            <targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@WebsiteSdkLinkType}" />
+            <targets files="reflection.xml" type="Local" />
+          </helpOutput>
+        </component>
+      </ComponentConfig>
+      <ComponentConfig id="Cached Reflection Index Data" enabled="True">
+        <component id="Cached Reflection Index Data" type="SandcastleBuilder.Components.CachedCopyFromIndexComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
+          <index name="reflection" value="/reflection/apis/api" key="@id" cache="10">
+            <cache base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" cacheFile="{@LocalDataFolder}Cache\Reflection.cache" />
+            <data files="reflection.xml" />
+          </index>
+          <copy name="reflection" source="*" target="/document/reference" />
+        </component>
+      </ComponentConfig>
+      <ComponentConfig id="Code Block Component" enabled="True">
+        <component id="Code Block Component" type="SandcastleBuilder.Components.CodeBlockComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
+          <basePath value="{@HtmlEncProjectFolder}" />
+          <languageFilter value="true" />
+          <allowMissingSource value="false" />
+          <removeRegionMarkers value="false" />
+          <colorizer syntaxFile="{@SHFBFolder}Colorizer\highlight.xml" styleFile="{@SHFBFolder}Colorizer\highlight.xsl" copyImageUrl="../icons/CopyCode.gif" language="cs" tabSize="4" numberLines="true" outlining="false" keepSeeTags="false" defaultTitle="true" />
+        </component>
+      </ComponentConfig>
+    </ComponentConfigurations>
     <PlugInConfigurations />
     <RootNamespaceTitle>Yacq</RootNamespaceTitle>
     <FeedbackEMailLinkText>
     </FeedbackEMailLinkText>
     <ProjectSummary>&amp;lt%3bstrong&amp;gt%3b&amp;lt%3ba href=&amp;quot%3bhttp://yacq.net/&amp;quot%3b&amp;gt%3bYACQ&amp;lt%3b/a&amp;gt%3b&amp;lt%3b/strong&amp;gt%3b %28Yet Another Compilable Query%29 is an embeddable querying language for .NET, based on Expression Trees API. This provides dynamic evaluation from strings, complete access to .NET libraries and the LINQ ecosystem.</ProjectSummary>
     <NamespaceSummaries>
-      <NamespaceSummaryItem name="XSpect.Yacq" isDocumented="True" xmlns="">The &lt;c&gt;XSpect.Yacq&lt;/c&gt; namespace contains types to access the language service.</NamespaceSummaryItem>
-<NamespaceSummaryItem name="XSpect.Yacq.Collections" isDocumented="True" xmlns="">The &lt;c&gt;XSpect.Yacq.Collections&lt;/c&gt; namespace contains container types which is used for expression nodes.</NamespaceSummaryItem>
-<NamespaceSummaryItem name="XSpect.Yacq.Expressions" isDocumented="True" xmlns="">The &lt;c&gt;XSpect.Yacq.Expressions&lt;/c&gt; namespace contains types to construct expression (or syntax) trees of YACQ to represent, analyze, evaluate, and compile codes. This is extension of standard Expression Trees.</NamespaceSummaryItem>
-<NamespaceSummaryItem name="XSpect.Yacq.LanguageServices" isDocumented="True" xmlns="">The &lt;c&gt;XSpect.Yacq.LanguageServices&lt;/c&gt; namespace contains types to read code strings to construct YACQ expression trees by supplied grammar rules.</NamespaceSummaryItem>
-<NamespaceSummaryItem name="XSpect.Yacq.Linq" isDocumented="True" xmlns="">The &lt;c&gt;XSpect.Yacq.Linq&lt;/c&gt; namespace contains types to enable integrated YACQ support for query operators of LINQ.</NamespaceSummaryItem>
-<NamespaceSummaryItem name="XSpect.Yacq.SystemObjects" isDocumented="True" xmlns="">The &lt;c&gt;XSpect.Yacq.SystemObjects&lt;/c&gt; namespace contains utility types which is used by the YACQ system and user codes.</NamespaceSummaryItem></NamespaceSummaries>
+      <NamespaceSummaryItem name="XSpect.Yacq" isDocumented="True">The &lt;c&gt;XSpect.Yacq&lt;/c&gt; namespace contains types to access the language service.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="XSpect.Yacq.Collections" isDocumented="True">The &lt;c&gt;XSpect.Yacq.Collections&lt;/c&gt; namespace contains container types which is used for expression nodes.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="XSpect.Yacq.Expressions" isDocumented="True">The &lt;c&gt;XSpect.Yacq.Expressions&lt;/c&gt; namespace contains types to construct expression (or syntax) trees of YACQ to represent, analyze, evaluate, and compile codes. This is extension of standard Expression Trees.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="XSpect.Yacq.LanguageServices" isDocumented="True">The &lt;c&gt;XSpect.Yacq.LanguageServices&lt;/c&gt; namespace contains types to read code strings to construct YACQ expression trees by supplied grammar rules.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="XSpect.Yacq.Linq" isDocumented="True">The &lt;c&gt;XSpect.Yacq.Linq&lt;/c&gt; namespace contains types to enable integrated YACQ support for query operators of LINQ.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="XSpect.Yacq.SystemObjects" isDocumented="True">The &lt;c&gt;XSpect.Yacq.SystemObjects&lt;/c&gt; namespace contains utility types which is used by the YACQ system and user codes.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="XSpect.Yacq.Symbols" isDocumented="True">The &lt;c&gt;XSpect.Yacq.Symbols&lt;/c&gt; namespace contains types to form and access the symbol table mechanism.</NamespaceSummaryItem></NamespaceSummaries>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in
        order for Visual Studio to perform the build.  The others are optional
