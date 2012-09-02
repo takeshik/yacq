@@ -29,9 +29,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Xml;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 using XSpect.Yacq.Linq;
@@ -67,6 +69,8 @@ namespace XSpect.Yacq
             }
         }
 
+        #region ReadAll
+
         /// <summary>
         /// Read code string and generate expressions without reducing.
         /// </summary>
@@ -77,6 +81,20 @@ namespace XSpect.Yacq
         {
             return (reader ?? new Reader()).Read(code);
         }
+
+        /// <summary>
+        /// Read code string and generate expressions without reducing.
+        /// </summary>
+        /// <param name="code">Code string to read.</param>
+        /// <returns>All expressions without reducing, generated from the code.</returns>
+        public static YacqExpression[] ReadAll(String code)
+        {
+            return ReadAll(null, code);
+        }
+
+        #endregion
+
+        #region Read
 
         /// <summary>
         /// Read code string and generate expressions without reducing.
@@ -94,20 +112,14 @@ namespace XSpect.Yacq
         /// </summary>
         /// <param name="code">Code string to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
-        public static YacqExpression[] ReadAll(String code)
-        {
-            return ReadAll(null, code);
-        }
-
-        /// <summary>
-        /// Read code string and generate expressions without reducing.
-        /// </summary>
-        /// <param name="code">Code string to read.</param>
-        /// <returns>All expressions without reducing, generated from the code.</returns>
         public static YacqExpression Read(String code)
         {
             return Read(null, code);
         }
+
+        #endregion
+
+        #region ParseAll
 
         /// <summary>
         /// Parse code string and generate expressions.
@@ -127,6 +139,20 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
+        /// Parse code string and generate expressions.
+        /// </summary>
+        /// <param name="code">Code string to parse.</param>
+        /// <returns>All expressions generated from the code.</returns>
+        public static Expression[] ParseAll(String code)
+        {
+            return ParseAll(null, code);
+        }
+
+        #endregion
+
+        #region Parse
+
+        /// <summary>
         /// Parse code string and generate expressions, only return the last expression.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
@@ -136,6 +162,20 @@ namespace XSpect.Yacq
         {
             return ParseAll(symbols, code).Last();
         }
+
+        /// <summary>
+        /// Parse code string and generate expressions, only return the last expression.
+        /// </summary>
+        /// <param name="code">Code string to parse.</param>
+        /// <returns>The last expressions generated from the code.</returns>
+        public static Expression Parse(String code)
+        {
+            return Parse(null, code);
+        }
+
+        #endregion
+
+        #region ParseLambda
 
         /// <summary>
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
@@ -226,74 +266,6 @@ namespace XSpect.Yacq
         }
 
         /// <summary>
-        /// Parse code string as the body of function and generate lambda expression with no return value and no parameters.
-        /// </summary>
-        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function.</param>
-        /// <returns>The lambda expression generated from the code.</returns>
-        public static Expression<Action> ParseAction(SymbolTable symbols, String code)
-        {
-            return (Expression<Action>) ParseLambda(symbols, typeof(void), code, new AmbiguousParameterExpression[0]);
-        }
-
-        /// <summary>
-        /// Parse code string as the body of function and generate lambda expression with no return value and only one parameter named "it".
-        /// </summary>
-        /// <typeparam name="T">The type of "it" parameter.</typeparam>
-        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
-        /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static Expression<Action<T>> ParseAction<T>(SymbolTable symbols, String code)
-        {
-            return (Expression<Action<T>>) ParseLambda(symbols, typeof(T), typeof(void), code);
-        }
-
-        /// <summary>
-        /// Parse code string as the body of function and generate lambda expression with return value and no parameters.
-        /// </summary>
-        /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
-        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function.</param>
-        /// <returns>The lambda expression generated from the code.</returns>
-        public static Expression<Func<TReturn>> ParseFunc<TReturn>(SymbolTable symbols, String code)
-        {
-            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code, new AmbiguousParameterExpression[0]);
-        }
-
-        /// <summary>
-        /// Parse code string as the body of function and generate lambda expression with return value and only one parameter named "it".
-        /// </summary>
-        /// <typeparam name="T">The type of "it" parameter.</typeparam>
-        /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
-        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
-        /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(SymbolTable symbols, String code)
-        {
-            return (Expression<Func<T, TReturn>>) ParseLambda(symbols, typeof(T), typeof(TReturn), code);
-        }
-
-        /// <summary>
-        /// Parse code string and generate expressions.
-        /// </summary>
-        /// <param name="code">Code string to parse.</param>
-        /// <returns>All expressions generated from the code.</returns>
-        public static Expression[] ParseAll(String code)
-        {
-            return ParseAll(null, code);
-        }
-
-        /// <summary>
-        /// Parse code string and generate expressions, only return the last expression.
-        /// </summary>
-        /// <param name="code">Code string to parse.</param>
-        /// <returns>The last expressions generated from the code.</returns>
-        public static Expression Parse(String code)
-        {
-            return Parse(null, code);
-        }
-
-        /// <summary>
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
         /// </summary>
         /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
@@ -351,6 +323,33 @@ namespace XSpect.Yacq
             return ParseLambda<TDelegate>(null, code, parameterNames);
         }
 
+        #endregion
+
+        #region ParseAction
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with no return value and no parameters.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse as the body of function.</param>
+        /// <returns>The lambda expression generated from the code.</returns>
+        public static Expression<Action> ParseAction(SymbolTable symbols, String code)
+        {
+            return (Expression<Action>) ParseLambda(symbols, typeof(void), code, new AmbiguousParameterExpression[0]);
+        }
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with no return value and only one parameter named "it".
+        /// </summary>
+        /// <typeparam name="T">The type of "it" parameter.</typeparam>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <returns>The lambda expression generated from the code and the parameter.</returns>
+        public static Expression<Action<T>> ParseAction<T>(SymbolTable symbols, String code)
+        {
+            return (Expression<Action<T>>) ParseLambda(symbols, typeof(T), typeof(void), code);
+        }
+
         /// <summary>
         /// Parse code string as the body of function and generate lambda expression with no return value and no parameters.
         /// </summary>
@@ -370,6 +369,35 @@ namespace XSpect.Yacq
         public static Expression<Action<T>> ParseAction<T>(String code)
         {
             return ParseAction<T>(null, code);
+        }
+
+        #endregion
+
+        #region ParseFunc
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with return value and no parameters.
+        /// </summary>
+        /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse as the body of function.</param>
+        /// <returns>The lambda expression generated from the code.</returns>
+        public static Expression<Func<TReturn>> ParseFunc<TReturn>(SymbolTable symbols, String code)
+        {
+            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code, new AmbiguousParameterExpression[0]);
+        }
+
+        /// <summary>
+        /// Parse code string as the body of function and generate lambda expression with return value and only one parameter named "it".
+        /// </summary>
+        /// <typeparam name="T">The type of "it" parameter.</typeparam>
+        /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <returns>The lambda expression generated from the code and the parameter.</returns>
+        public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(SymbolTable symbols, String code)
+        {
+            return (Expression<Func<T, TReturn>>) ParseLambda(symbols, typeof(T), typeof(TReturn), code);
         }
 
         /// <summary>
@@ -394,6 +422,644 @@ namespace XSpect.Yacq
         {
             return ParseFunc<T, TReturn>(null, code);
         }
+
+        #endregion
+
+        #region Save
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
+        public static void Save(SymbolTable symbols, Expression expression, XmlDictionaryWriter writer)
+        {
+            YacqExpression.Serialize(symbols, expression).Save(writer);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
+        public static void Save(Expression expression, XmlDictionaryWriter writer)
+        {
+            Save(null, expression, writer);
+        }
+
+        #endregion
+
+        #region SaveText
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract XML data into an output stream.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void SaveText(SymbolTable symbols, Expression expression, Stream stream)
+        {
+            YacqExpression.Serialize(symbols, expression).SaveText(stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract XML data to specified file.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void SaveText(SymbolTable symbols, Expression expression, FileInfo file)
+        {
+            YacqExpression.Serialize(symbols, expression).SaveText(file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents specified expression as Data Contract XML data.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <returns>The Data Contract XML data that represents this expression.</returns>
+        public static String SaveText(SymbolTable symbols, Expression expression)
+        {
+            return YacqExpression.Serialize(symbols, expression).SaveText();
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract XML data into an output stream.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void SaveText(Expression expression, Stream stream)
+        {
+            SaveText(null, expression, stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract XML data to specified file.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void SaveText(Expression expression, FileInfo file)
+        {
+            SaveText(null, expression, file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents specified expression as Data Contract XML data.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <returns>The Data Contract XML data that represents this expression.</returns>
+        public static String SaveText(Expression expression)
+        {
+            return SaveText(null, expression);
+        }
+
+        #endregion
+
+        #region SaveBinary
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract binary data into an output stream.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void SaveBinary(SymbolTable symbols, Expression expression, Stream stream)
+        {
+            YacqExpression.Serialize(symbols, expression).SaveBinary(stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract binary data to specified file.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void SaveBinary(SymbolTable symbols, Expression expression, FileInfo file)
+        {
+            YacqExpression.Serialize(symbols, expression).SaveBinary(file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents specified expression as Data Contract binary data.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <returns>The Data Contract XML data that represents this expression.</returns>
+        public static Byte[] SaveBinary(SymbolTable symbols, Expression expression)
+        {
+            return YacqExpression.Serialize(symbols, expression).SaveBinary();
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract binary data into an output stream.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void SaveBinary(Expression expression, Stream stream)
+        {
+            SaveBinary(null, expression, stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents specified expression as Data Contract binary data to specified file.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void SaveBinary(Expression expression, FileInfo file)
+        {
+            SaveBinary(null, expression, file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents specified expression as Data Contract binary data.
+        /// </summary>
+        /// <param name="expression">The expression to serialize.</param>
+        /// <returns>The Data Contract XML data that represents this expression.</returns>
+        public static Byte[] SaveBinary(Expression expression)
+        {
+            return SaveBinary(null, expression);
+        }
+
+        #endregion
+
+        #region ReadAndSave
+
+        /// <summary>
+        /// Saves the object graph which represents the read expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
+        public static void ReadAndSave(Reader reader, String code, XmlDictionaryWriter writer)
+        {
+            Save(Read(reader, code), writer);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents the read expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
+        public static void ReadAndSave(String code, XmlDictionaryWriter writer)
+        {
+            ReadAndSave(null, code, writer);
+        }
+
+        #endregion
+
+        #region ReadAndSaveText
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract XML data into an output stream.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ReadAndSaveText(Reader reader, String code, Stream stream)
+        {
+            SaveText(Read(reader, code), stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract XML data to specified file.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ReadAndSaveText(Reader reader, String code, FileInfo file)
+        {
+            SaveText(Read(reader, code), file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents read expression from specified code as Data Contract XML data.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
+        public static String ReadAndSaveText(Reader reader, String code)
+        {
+            return SaveText(Read(reader, code));
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract XML data into an output stream.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ReadAndSaveText(String code, Stream stream)
+        {
+            ReadAndSaveText(null, code, stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract XML data to specified file.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ReadAndSaveText(String code, FileInfo file)
+        {
+            ReadAndSaveText(null, code, file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents read expression from specified code as Data Contract XML data.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
+        public static String ReadAndSaveText(String code)
+        {
+            return ReadAndSaveText(null, code);
+        }
+
+        #endregion
+
+        #region ReadAndSaveBinary
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract binary data into an output stream.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ReadAndSaveBinary(Reader reader, String code, Stream stream)
+        {
+            SaveBinary(Read(reader, code), stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract binary data to specified file.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ReadAndSaveBinary(Reader reader, String code, FileInfo file)
+        {
+            SaveBinary(Read(reader, code), file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents read expression from specified code as Data Contract binary data.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
+        public static Byte[] ReadAndSaveBinary(Reader reader, String code)
+        {
+            return SaveBinary(Read(reader, code));
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract binary data into an output stream.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ReadAndSaveBinary(String code, Stream stream)
+        {
+            ReadAndSaveBinary(null, code, stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents read expression from specified code as Data Contract binary data to specified file.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ReadAndSaveBinary(String code, FileInfo file)
+        {
+            ReadAndSaveBinary(null, code, file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents read expression from specified code as Data Contract binary data.
+        /// </summary>
+        /// <param name="code">Code string to read and serialize.</param>
+        /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
+        public static Byte[] ReadAndSaveBinary(String code)
+        {
+            return ReadAndSaveBinary(null, code);
+        }
+
+        #endregion
+
+        #region ParseAndSave
+
+        /// <summary>
+        /// Saves the object graph which represents the parsed expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
+        public static void ParseAndSave(SymbolTable symbols, String code, XmlDictionaryWriter writer)
+        {
+            Save(Parse(symbols, code), writer);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents the parsed expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
+        public static void ParseAndSave(String code, XmlDictionaryWriter writer)
+        {
+            ParseAndSave(null, code, writer);
+        }
+
+        #endregion
+
+        #region ParseAndSaveText
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data into an output stream.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ParseAndSaveText(SymbolTable symbols, String code, Stream stream)
+        {
+            SaveText(Parse(symbols, code), stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data to specified file.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ParseAndSaveText(SymbolTable symbols, String code, FileInfo file)
+        {
+            SaveText(Parse(symbols, code), file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents parsed expression from specified code as Data Contract XML data.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
+        public static String ParseAndSaveText(SymbolTable symbols, String code)
+        {
+            return SaveText(Parse(symbols, code));
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data into an output stream.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ParseAndSaveText(String code, Stream stream)
+        {
+            ParseAndSaveText(null, code, stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data to specified file.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ParseAndSaveText(String code, FileInfo file)
+        {
+            ParseAndSaveText(null, code, file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents parsed expression from specified code as Data Contract XML data.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
+        public static String ParseAndSaveText(String code)
+        {
+            return ParseAndSaveText(null, code);
+        }
+
+        #endregion
+
+        #region ParseAndSaveBinary
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data into an output stream.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ParseAndSaveBinary(SymbolTable symbols, String code, Stream stream)
+        {
+            SaveBinary(Parse(symbols, code), stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data to specified file.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ParseAndSaveBinary(SymbolTable symbols, String code, FileInfo file)
+        {
+            SaveBinary(Parse(symbols, code), file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents parsed expression from specified code as Data Contract binary data.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
+        public static Byte[] ParseAndSaveBinary(SymbolTable symbols, String code)
+        {
+            return SaveBinary(Parse(symbols, code));
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data into an output stream.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="stream">The destination stream.</param>
+        public static void ParseAndSaveBinary(String code, Stream stream)
+        {
+            ParseAndSaveBinary(null, code, stream);
+        }
+
+        /// <summary>
+        /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data to specified file.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="file">The file to write the output to.</param>
+        public static void ParseAndSaveBinary(String code, FileInfo file)
+        {
+            ParseAndSaveBinary(null, code, file);
+        }
+
+        /// <summary>
+        /// Gets the object graph which represents parsed expression from specified code as Data Contract binary data.
+        /// </summary>
+        /// <param name="code">Code string to parse and serialize.</param>
+        /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
+        public static Byte[] ParseAndSaveBinary(String code)
+        {
+            return ParseAndSaveBinary(null, code);
+        }
+
+        #endregion
+
+        #region Load
+
+        /// <summary>
+        /// Loads the object graph and deserializes to an <see cref="Expression"/> which represents the serialized expression using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="reader">An <see cref="XmlDictionaryReader"/> used to read the object graph.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression Load(SymbolTable symbols, XmlDictionaryReader reader)
+        {
+            return YacqExpression.Load(symbols, reader).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph and deserializes to an <see cref="Expression"/> which represents the serialized expression using the specified <see cref="XmlDictionaryWriter"/>.
+        /// </summary>
+        /// <param name="reader">An <see cref="XmlDictionaryReader"/> used to read the object graph.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression Load(XmlDictionaryReader reader)
+        {
+            return Load(null, reader);
+        }
+
+        #endregion
+
+        #region LoadText
+
+        /// <summary>
+        /// Loads the object graph as Data Contract XML data from an input stream and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="stream">The stream to load as input.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadText(SymbolTable symbols, Stream stream)
+        {
+            return YacqExpression.LoadText(symbols, stream).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph as Data Contract XML data from specified file and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="file">The file to load and use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadText(SymbolTable symbols, FileInfo file)
+        {
+            return YacqExpression.LoadText(symbols, file).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph as specified Data Contract XML data and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="data">The Data Contract XML data to use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadText(SymbolTable symbols, String data)
+        {
+            return YacqExpression.LoadText(symbols, data).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph as Data Contract XML data from an input stream and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="stream">The stream to load as input.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadText(Stream stream)
+        {
+            return LoadText(null, stream);
+        }
+
+        /// <summary>
+        /// Loads the object graph as Data Contract XML data from specified file and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="file">The file to load and use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadText(FileInfo file)
+        {
+            return LoadText(null, file);
+        }
+
+        /// <summary>
+        /// Loads the object graph as specified Data Contract XML data and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="data">The Data Contract XML data to use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadText(String data)
+        {
+            return LoadText(null, data);
+        }
+
+        #endregion
+
+        #region LoadBinary
+
+        /// <summary>
+        /// Loads the object graph as Data Contract binary data from an input stream and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="stream">The stream to load as input.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadBinary(SymbolTable symbols, Stream stream)
+        {
+            return YacqExpression.LoadBinary(symbols, stream).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph as Data Contract binary data from specified file and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="file">The file to load and use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadBinary(SymbolTable symbols, FileInfo file)
+        {
+            return YacqExpression.LoadBinary(symbols, file).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph as specified Data Contract binary data and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="data">The Data Contract XML data to use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadBinary(SymbolTable symbols, Byte[] data)
+        {
+            return YacqExpression.LoadBinary(symbols, data).Deserialize();
+        }
+
+        /// <summary>
+        /// Loads the object graph as Data Contract binary data from an input stream and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="stream">The stream to load as input.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadBinary(Stream stream)
+        {
+            return LoadBinary(null, stream);
+        }
+
+        /// <summary>
+        /// Loads the object graph as Data Contract binary data from specified file and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="file">The file to load and use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadBinary(FileInfo file)
+        {
+            return LoadBinary(null, file);
+        }
+
+        /// <summary>
+        /// Loads the object graph as specified Data Contract binary data and deserializes to an <see cref="Expression"/> which represents the serialized expression.
+        /// </summary>
+        /// <param name="data">The Data Contract XML data to use as source.</param>
+        /// <returns>An <see cref="Expression"/> which was deserialized.</returns>
+        public static Expression LoadBinary(Byte[] data)
+        {
+            return LoadBinary(null, data);
+        }
+
+        #endregion
 
         #region Exension Methods
 
@@ -476,16 +1142,6 @@ namespace XSpect.Yacq
         public static YacqQbservable<TSource> Yacq<TSource>(this IQbservable<TSource> source, SymbolTable symbols)
         {
             return new YacqQbservable<TSource>(symbols, source);
-        }
-
-        /// <summary>
-        /// Enables querying with YACQ code strings.
-        /// </summary>
-        /// <param name="source">An <see cref="IEnumerable" /> to convert to a <see cref="YacqQueryable" />.</param>
-        /// <returns>The source as a <see cref="YacqQueryable" /> to access to YACQ query operator methods.</returns>
-        public static YacqQueryable Yacq(this IEnumerable source)
-        {
-            return source.Yacq(null);
         }
 
         /// <summary>

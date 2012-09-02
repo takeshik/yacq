@@ -75,6 +75,15 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced (or deserialized) expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
+            return this.Deserialize();
+        }
+
+        /// <summary>
+        /// Gets the deserialized expression of this expression.
+        /// </summary>
+        /// <returns>The deserialized expression of this expression.</returns>
+        public Expression Deserialize()
+        {
             return this._value.Deserialize();
         }
 
@@ -215,7 +224,7 @@ namespace XSpect.Yacq.Expressions
         #region LoadText
 
         /// <summary>
-        /// Loads the object graph as Data Contract XML data into an output stream and creates a <see cref="SerializedExpression"/> which represents an expression.
+        /// Loads the object graph as Data Contract XML data from an input stream and creates a <see cref="SerializedExpression"/> which represents an expression.
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="stream">The stream to load as input.</param>
@@ -253,7 +262,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Loads the object graph as Data Contract XML data into an output stream and creates a <see cref="SerializedExpression"/> which represents an expression.
+        /// Loads the object graph as Data Contract XML data from an input stream and creates a <see cref="SerializedExpression"/> which represents an expression.
         /// </summary>
         /// <param name="stream">The stream to load as input.</param>
         /// <returns>A <see cref="SerializedExpression"/> that has the loaded object graph and represents an expression.</returns>
