@@ -34,6 +34,10 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract(Name = "Member", IsReference = true)]
+    [KnownType(typeof(EventRef))]
+    [KnownType(typeof(FieldRef))]
+    [KnownType(typeof(MethodRef))]
+    [KnownType(typeof(PropertyRef))]
     internal abstract class MemberRef
     {
         public const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;

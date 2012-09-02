@@ -48,8 +48,12 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(Index))]
     [KnownType(typeof(Invoke))]
     [KnownType(typeof(Lambda))]
+    [KnownType(typeof(MemberAccess))]
     [KnownType(typeof(New))]
     [KnownType(typeof(Parameter))]
+    [KnownType(typeof(AssemblyRef))]
+    [KnownType(typeof(TypeRef))]
+    [KnownType(typeof(MemberRef))]
     internal abstract partial class Node
     {
         public const String Namespace = "http://yacq.net/schema";

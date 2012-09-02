@@ -45,7 +45,18 @@ namespace XSpect.Yacq.Expressions
     public class SerializedExpression
         : YacqExpression
     {
+        private static readonly DataContractSerializer _serializer
+            = new DataContractSerializer(typeof(Node), "Expression", Node.Namespace);
+
         private readonly Node _value;
+
+        internal static DataContractSerializer Serializer
+        {
+            get
+            {
+                return _serializer;
+            }
+        }
 
         internal SerializedExpression(
             SymbolTable symbols,
@@ -93,8 +104,7 @@ namespace XSpect.Yacq.Expressions
         /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
         public void Save(XmlDictionaryWriter writer)
         {
-            new DataContractSerializer(typeof(Node), "expression", Node.Namespace)
-                .WriteObject(writer, this._value);
+            Serializer.WriteObject(writer, this._value);
             writer.Flush();
         }
 
@@ -204,8 +214,7 @@ namespace XSpect.Yacq.Expressions
         {
             return new SerializedExpression(
                 symbols,
-                (Node) new DataContractSerializer(typeof(Node), "expression", Node.Namespace)
-                    .ReadObject(reader)
+                (Node) SerializedExpression.Serializer.ReadObject(reader)
             );
         }
 
