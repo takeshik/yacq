@@ -27,40 +27,42 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-[assembly: CLSCompliant(true)]
-[assembly: ContractNamespace("http://yacq.net/schema", ClrNamespace = "XSpect.Yacq.Serialization")]
+namespace XSpect.Yacq.Serialization
+{
+    [DataContract(Name = "Event")]
+    internal class EventRef
+        : MemberRef
+    {
+        private static readonly Dictionary<EventRef, EventInfo> _cache
+            = new Dictionary<EventRef, EventInfo>();
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("YACQ")]
-[assembly: AssemblyDescription("Yet Another Compilable Query Language, based on Expression Trees API")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("XSpect Project")]
-[assembly: AssemblyProduct("YACQ")]
-[assembly: AssemblyCopyright("Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>, All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+        private static readonly Dictionary<EventInfo, EventRef> _reverseCache
+            = new Dictionary<EventInfo, EventRef>();
 
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+        public static EventRef Serialize(EventInfo @event)
+        {
+            return _reverseCache.ContainsKey(@event)
+                ? _reverseCache[@event]
+                : new EventRef()
+                  {
+                      Type = TypeRef.Serialize(@event.ReflectedType),
+                      Name = @event.Name,
+                  }.Apply(e => _reverseCache.Add(@event, e));
+        }
 
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e0cf4876-1eed-4344-893d-e44fb194a367")]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-[assembly: AssemblyVersion("1.11.0.0")]
-[assembly: AssemblyFileVersion("1.11.0.0")]
+        public new EventInfo Deserialize()
+        {
+            return _cache.ContainsKey(this)
+                ? _cache[this]
+                : this.Type.Deserialize()
+                      .GetEvent(this.Name, Binding)
+                      .Apply(e => _cache.Add(this, e));
+        }
+    }
+}
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

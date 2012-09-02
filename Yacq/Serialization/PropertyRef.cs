@@ -27,40 +27,42 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-[assembly: CLSCompliant(true)]
-[assembly: ContractNamespace("http://yacq.net/schema", ClrNamespace = "XSpect.Yacq.Serialization")]
+namespace XSpect.Yacq.Serialization
+{
+    [DataContract(Name = "Property")]
+    internal class PropertyRef
+        : MemberRef
+    {
+        private static readonly Dictionary<PropertyRef, PropertyInfo> _cache
+            = new Dictionary<PropertyRef, PropertyInfo>();
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("YACQ")]
-[assembly: AssemblyDescription("Yet Another Compilable Query Language, based on Expression Trees API")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("XSpect Project")]
-[assembly: AssemblyProduct("YACQ")]
-[assembly: AssemblyCopyright("Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>, All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+        private static readonly Dictionary<PropertyInfo, PropertyRef> _reverseCache
+            = new Dictionary<PropertyInfo, PropertyRef>();
 
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+        public static PropertyRef Serialize(PropertyInfo property)
+        {
+            return _reverseCache.ContainsKey(property)
+                ? _reverseCache[property]
+                : new PropertyRef()
+                {
+                    Type = TypeRef.Serialize(property.ReflectedType),
+                    Name = property.Name,
+                }.Apply(p => _reverseCache.Add(property, p));
+        }
 
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e0cf4876-1eed-4344-893d-e44fb194a367")]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-[assembly: AssemblyVersion("1.11.0.0")]
-[assembly: AssemblyFileVersion("1.11.0.0")]
+        public new PropertyInfo Deserialize()
+        {
+            return _cache.ContainsKey(this)
+                ? _cache[this]
+                : this.Type.Deserialize()
+                      .GetProperty(this.Name, Binding)
+                      .Apply(p => _cache.Add(this, p));
+        }
+    }
+}
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

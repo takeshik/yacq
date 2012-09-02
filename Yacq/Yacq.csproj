@@ -137,6 +137,7 @@
     <Reference Include="System.Reactive.Providers">
       <HintPath>..\packages\Rx-Providers.2.0.20814\lib\Net40\System.Reactive.Providers.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -147,11 +148,204 @@
     <Compile Include="Expressions\MacroExpression.cs" />
     <Compile Include="Expressions\QuotedExpression.cs" />
     <Compile Include="Expressions\QuoteType.cs" />
+    <Compile Include="Expressions\SerializedExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
     <Compile Include="Expressions\YacqSequenceExpression.cs" />
     <Compile Include="LanguageServices\Reader.Defaults.cs" />
     <Compile Include="LanguageServices\ReaderStream.cs" />
     <Compile Include="MemberAccessibilities.cs" />
+    <Compile Include="Serialization\Add.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\AddAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\AddAssignChecked.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\AddChecked.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\And.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\AndAlso.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\AndAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\ArrayLength.cs" />
+    <Compile Include="Serialization\AssemblyRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Assign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\BinaryNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Coalesce.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Block.cs" />
+    <Compile Include="Serialization\Condition.cs" />
+    <Compile Include="Serialization\Constant.cs" />
+    <Compile Include="Serialization\ArrayIndex.cs" />
+    <Compile Include="Serialization\Convert.cs" />
+    <Compile Include="Serialization\ConvertChecked.cs" />
+    <Compile Include="Serialization\Call.cs" />
+    <Compile Include="Serialization\NewArrayBounds.cs" />
+    <Compile Include="Serialization\NewArrayInit.cs" />
+    <Compile Include="Serialization\NewArrayNode.cs" />
+    <Compile Include="Serialization\Index.cs" />
+    <Compile Include="Serialization\MemberAccess.cs" />
+    <Compile Include="Serialization\Invoke.cs" />
+    <Compile Include="Serialization\Decrement.cs" />
+    <Compile Include="Serialization\Increment.cs" />
+    <Compile Include="Serialization\IsFalse.cs" />
+    <Compile Include="Serialization\IsTrue.cs" />
+    <Compile Include="Serialization\Negate.cs" />
+    <Compile Include="Serialization\NegateChecked.cs" />
+    <Compile Include="Serialization\New.cs" />
+    <Compile Include="Serialization\Not.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\OnesComplement.cs" />
+    <Compile Include="Serialization\PostDecrementAssign.cs" />
+    <Compile Include="Serialization\PostIncrementAssign.cs" />
+    <Compile Include="Serialization\PreDecrementAssign.cs" />
+    <Compile Include="Serialization\PreIncrementAssign.cs" />
+    <Compile Include="Serialization\Quote.cs" />
+    <Compile Include="Serialization\Rethrow.cs" />
+    <Compile Include="Serialization\Throw.cs" />
+    <Compile Include="Serialization\TypeAs.cs" />
+    <Compile Include="Serialization\TypeBinaryNode.cs" />
+    <Compile Include="Serialization\TypeEqual.cs" />
+    <Compile Include="Serialization\TypeIs.cs" />
+    <Compile Include="Serialization\UnaryNode.cs" />
+    <Compile Include="Serialization\Parameter.cs" />
+    <Compile Include="Serialization\Goto.cs" />
+    <Compile Include="Serialization\Default.cs" />
+    <Compile Include="Serialization\Divide.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\DivideAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Equal.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\EventRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\ExclusiveOr.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\ExclusiveOrAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\FieldRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\GreaterThan.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\GreaterThanOrEqual.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Lambda.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\LeftShift.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\LeftShiftAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\LessThan.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\LessThanOrEqual.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\MemberRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\MethodRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Modulo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\ModuloAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Multiply.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\MultiplyAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\MultiplyAssignChecked.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\MultiplyChecked.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Node.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\NotEqual.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Or.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\OrAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\OrElse.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Power.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\PowerAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\PropertyRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\ReferenceEqual.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\ReferenceNotEqual.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\RightShift.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\RightShiftAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\Subtract.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\SubtractAssign.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\SubtractAssignChecked.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\SubtractChecked.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\TypeRef.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serialization\UnaryPlus.cs" />
+    <Compile Include="Serialization\Unbox.cs" />
     <Compile Include="SystemObjects\DocumentRepository.cs" />
     <Compile Include="SystemObjects\DocumentSet.cs" />
     <Compile Include="Expressions\DispatchExpression.Candidate.cs" />

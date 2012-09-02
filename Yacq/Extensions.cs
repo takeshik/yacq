@@ -59,13 +59,14 @@ namespace XSpect.Yacq
             }
         }
 
-        internal static void Dispose<TReceiver>(this TReceiver self, Action<TReceiver> func)
+        internal static TReceiver Dispose<TReceiver>(this TReceiver self, Action<TReceiver> func)
             where TReceiver : IDisposable
         {
             using (self)
             {
                 func(self);
             }
+            return self;
         }
 
         internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfDefault)
@@ -285,6 +286,24 @@ namespace XSpect.Yacq
             return predicate(self)
                 ? self.Apply(then)
                 : self;
+        }
+
+        internal static TResult[] SelectAll<TSource, TResult>(this TSource[] array, Func<TSource, TResult> selector)
+        {
+#if SILVERLIGHT
+            return array.Select(selector).ToArray();
+#else
+            return Array.ConvertAll(array, e => selector(e));
+#endif
+        }
+
+        internal static TSource[] WhereAll<TSource>(this TSource[] array, Func<TSource, Boolean> predicate)
+        {
+#if SILVERLIGHT
+            return array.Where(predicate).ToArray();
+#else
+            return Array.FindAll(array, e => predicate(e));
+#endif
         }
 
         internal static Boolean StartsWithInvariant(this String str, String value)

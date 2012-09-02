@@ -150,6 +150,7 @@
     <Reference Include="System.Reactive.Providers">
       <HintPath>..\packages\Rx-Providers.2.0.20814\lib\SL5\System.Reactive.Providers.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -198,6 +199,9 @@
     </Compile>
     <Compile Include="..\Yacq\Expressions\QuoteType.cs">
       <Link>Expressions\QuoteType.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\SerializedExpression.cs">
+      <Link>Expressions\SerializedExpression.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Expressions\SymbolTableExpression.cs">
       <Link>Expressions\SymbolTableExpression.cs</Link>
@@ -249,6 +253,276 @@
     </Compile>
     <Compile Include="..\Yacq\ParseException.cs">
       <Link>ParseException.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Add.cs">
+      <Link>Serialization\Add.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AddAssign.cs">
+      <Link>Serialization\AddAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AddAssignChecked.cs">
+      <Link>Serialization\AddAssignChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AddChecked.cs">
+      <Link>Serialization\AddChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\And.cs">
+      <Link>Serialization\And.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AndAlso.cs">
+      <Link>Serialization\AndAlso.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AndAssign.cs">
+      <Link>Serialization\AndAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ArrayIndex.cs">
+      <Link>Serialization\ArrayIndex.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ArrayLength.cs">
+      <Link>Serialization\ArrayLength.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AssemblyRef.cs">
+      <Link>Serialization\AssemblyRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Assign.cs">
+      <Link>Serialization\Assign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\BinaryNode.cs">
+      <Link>Serialization\BinaryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Block.cs">
+      <Link>Serialization\Block.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Call.cs">
+      <Link>Serialization\Call.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Coalesce.cs">
+      <Link>Serialization\Coalesce.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Condition.cs">
+      <Link>Serialization\Condition.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Constant.cs">
+      <Link>Serialization\Constant.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Convert.cs">
+      <Link>Serialization\Convert.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ConvertChecked.cs">
+      <Link>Serialization\ConvertChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Decrement.cs">
+      <Link>Serialization\Decrement.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Default.cs">
+      <Link>Serialization\Default.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Divide.cs">
+      <Link>Serialization\Divide.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DivideAssign.cs">
+      <Link>Serialization\DivideAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Equal.cs">
+      <Link>Serialization\Equal.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\EventRef.cs">
+      <Link>Serialization\EventRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ExclusiveOr.cs">
+      <Link>Serialization\ExclusiveOr.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ExclusiveOrAssign.cs">
+      <Link>Serialization\ExclusiveOrAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\FieldRef.cs">
+      <Link>Serialization\FieldRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Goto.cs">
+      <Link>Serialization\Goto.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\GreaterThan.cs">
+      <Link>Serialization\GreaterThan.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\GreaterThanOrEqual.cs">
+      <Link>Serialization\GreaterThanOrEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Increment.cs">
+      <Link>Serialization\Increment.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Index.cs">
+      <Link>Serialization\Index.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Invoke.cs">
+      <Link>Serialization\Invoke.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\IsFalse.cs">
+      <Link>Serialization\IsFalse.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\IsTrue.cs">
+      <Link>Serialization\IsTrue.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Lambda.cs">
+      <Link>Serialization\Lambda.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\LeftShift.cs">
+      <Link>Serialization\LeftShift.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\LeftShiftAssign.cs">
+      <Link>Serialization\LeftShiftAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\LessThan.cs">
+      <Link>Serialization\LessThan.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\LessThanOrEqual.cs">
+      <Link>Serialization\LessThanOrEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\MemberAccess.cs">
+      <Link>Serialization\MemberAccess.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\MemberRef.cs">
+      <Link>Serialization\MemberRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\MethodRef.cs">
+      <Link>Serialization\MethodRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Modulo.cs">
+      <Link>Serialization\Modulo.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ModuloAssign.cs">
+      <Link>Serialization\ModuloAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Multiply.cs">
+      <Link>Serialization\Multiply.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\MultiplyAssign.cs">
+      <Link>Serialization\MultiplyAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\MultiplyAssignChecked.cs">
+      <Link>Serialization\MultiplyAssignChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\MultiplyChecked.cs">
+      <Link>Serialization\MultiplyChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Negate.cs">
+      <Link>Serialization\Negate.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\NegateChecked.cs">
+      <Link>Serialization\NegateChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\New.cs">
+      <Link>Serialization\New.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\NewArrayBounds.cs">
+      <Link>Serialization\NewArrayBounds.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\NewArrayInit.cs">
+      <Link>Serialization\NewArrayInit.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\NewArrayNode.cs">
+      <Link>Serialization\NewArrayNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Node.cs">
+      <Link>Serialization\Node.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Not.cs">
+      <Link>Serialization\Not.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\NotEqual.cs">
+      <Link>Serialization\NotEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\OnesComplement.cs">
+      <Link>Serialization\OnesComplement.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Or.cs">
+      <Link>Serialization\Or.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\OrAssign.cs">
+      <Link>Serialization\OrAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\OrElse.cs">
+      <Link>Serialization\OrElse.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Parameter.cs">
+      <Link>Serialization\Parameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\PostDecrementAssign.cs">
+      <Link>Serialization\PostDecrementAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\PostIncrementAssign.cs">
+      <Link>Serialization\PostIncrementAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Power.cs">
+      <Link>Serialization\Power.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\PowerAssign.cs">
+      <Link>Serialization\PowerAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\PreDecrementAssign.cs">
+      <Link>Serialization\PreDecrementAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\PreIncrementAssign.cs">
+      <Link>Serialization\PreIncrementAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\PropertyRef.cs">
+      <Link>Serialization\PropertyRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Quote.cs">
+      <Link>Serialization\Quote.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ReferenceEqual.cs">
+      <Link>Serialization\ReferenceEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\ReferenceNotEqual.cs">
+      <Link>Serialization\ReferenceNotEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Rethrow.cs">
+      <Link>Serialization\Rethrow.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\RightShift.cs">
+      <Link>Serialization\RightShift.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\RightShiftAssign.cs">
+      <Link>Serialization\RightShiftAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Subtract.cs">
+      <Link>Serialization\Subtract.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\SubtractAssign.cs">
+      <Link>Serialization\SubtractAssign.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\SubtractAssignChecked.cs">
+      <Link>Serialization\SubtractAssignChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\SubtractChecked.cs">
+      <Link>Serialization\SubtractChecked.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Throw.cs">
+      <Link>Serialization\Throw.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeAs.cs">
+      <Link>Serialization\TypeAs.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeBinaryNode.cs">
+      <Link>Serialization\TypeBinaryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeEqual.cs">
+      <Link>Serialization\TypeEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeIs.cs">
+      <Link>Serialization\TypeIs.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeRef.cs">
+      <Link>Serialization\TypeRef.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\UnaryNode.cs">
+      <Link>Serialization\UnaryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\UnaryPlus.cs">
+      <Link>Serialization\UnaryPlus.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Unbox.cs">
+      <Link>Serialization\Unbox.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Symbols\DispatchTypes.cs">
       <Link>Symbols\DispatchTypes.cs</Link>

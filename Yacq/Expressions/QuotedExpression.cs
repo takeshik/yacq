@@ -151,6 +151,8 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression.
         /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="expression">The expression to quote.</param>
         /// <returns>A <see cref="QuotedExpression"/>.</returns>
         public static QuotedExpression Quote(SymbolTable symbols, Expression expression)
         {
@@ -160,6 +162,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression.
         /// </summary>
+        /// <param name="expression">The expression to quote.</param>
         /// <returns>A <see cref="QuotedExpression"/>.</returns>
         public static new QuotedExpression Quote(Expression expression)
         {
@@ -169,6 +172,8 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression with unquoting.
         /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="expression">The expression to quasiquote.</param>
         /// <returns>A <see cref="QuotedExpression"/>.</returns>
         public static QuotedExpression Quasiquote(SymbolTable symbols, Expression expression)
         {
@@ -178,6 +183,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Creates a <see cref="QuotedExpression"/> that returns specified expression with unquoting.
         /// </summary>
+        /// <param name="expression">The expression to quasiquote.</param>
         /// <returns>A <see cref="QuotedExpression"/>.</returns>
         public static QuotedExpression Quasiquote(Expression expression)
         {

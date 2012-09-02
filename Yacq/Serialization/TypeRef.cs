@@ -27,40 +27,54 @@
  */
 
 using System;
-using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
-[assembly: CLSCompliant(true)]
-[assembly: ContractNamespace("http://yacq.net/schema", ClrNamespace = "XSpect.Yacq.Serialization")]
+namespace XSpect.Yacq.Serialization
+{
+    [DataContract(Name = "Type", IsReference = true)]
+    internal class TypeRef
+    {
+        private static readonly Dictionary<TypeRef, Type> _cache
+            = new Dictionary<TypeRef, Type>();
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("YACQ")]
-[assembly: AssemblyDescription("Yet Another Compilable Query Language, based on Expression Trees API")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("XSpect Project")]
-[assembly: AssemblyProduct("YACQ")]
-[assembly: AssemblyCopyright("Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>, All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+        private static readonly Dictionary<Type, TypeRef> _reverseCache
+            = new Dictionary<Type, TypeRef>();
 
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+        [DataMember(Order = 0, EmitDefaultValue = false)]
+        public AssemblyRef Assembly
+        {
+            get;
+            set;
+        }
 
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e0cf4876-1eed-4344-893d-e44fb194a367")]
+        [DataMember(Order = 1, EmitDefaultValue = false)]
+        public String Name
+        {
+            get;
+            set;
+        }
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-[assembly: AssemblyVersion("1.11.0.0")]
-[assembly: AssemblyFileVersion("1.11.0.0")]
+        public static TypeRef Serialize(Type type)
+        {
+            return _reverseCache.ContainsKey(type)
+                ? _reverseCache[type]
+                : new TypeRef()
+                  {
+                      Assembly = AssemblyRef.Serialize(type.Assembly),
+                      Name = type != typeof(Object) ? type.FullName : null,
+                  }.Apply(t => _reverseCache.Add(type, t));
+        }
+
+        public Type Deserialize()
+        {
+            return _cache.ContainsKey(this)
+                ? _cache[this]
+                : this.Assembly.Deserialize()
+                      .GetType(this.Name ?? "System.Object")
+                      .Apply(t => _cache.Add(this, t));
+        }
+    }
+}
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
