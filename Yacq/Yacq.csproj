@@ -143,6 +143,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\YacqList.cs" />
+    <Compile Include="Dynamic\YacqBinaryOperationBinder.cs" />
+    <Compile Include="Dynamic\YacqConvertBinder.cs" />
+    <Compile Include="Dynamic\YacqGetIndexBinder.cs" />
+    <Compile Include="Dynamic\YacqGetMemberBinder.cs" />
+    <Compile Include="Dynamic\YacqInvokeBinder.cs" />
+    <Compile Include="Dynamic\YacqInvokeMemberBinder.cs" />
+    <Compile Include="Dynamic\YacqSetIndexBinder.cs" />
+    <Compile Include="Dynamic\YacqSetMemberBinder.cs" />
+    <Compile Include="Dynamic\YacqUnaryOperationBinder.cs" />
     <Compile Include="Expressions\DispatchExpression.TypeNode.cs" />
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\MacroExpression.cs" />

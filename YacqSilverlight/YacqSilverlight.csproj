@@ -161,6 +161,33 @@
     <Compile Include="..\Yacq\Collections\YacqList.cs">
       <Link>Collections\YacqList.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqBinaryOperationBinder.cs">
+      <Link>Dynamic\YacqBinaryOperationBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqConvertBinder.cs">
+      <Link>Dynamic\YacqConvertBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqGetIndexBinder.cs">
+      <Link>Dynamic\YacqGetIndexBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqGetMemberBinder.cs">
+      <Link>Dynamic\YacqGetMemberBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqInvokeBinder.cs">
+      <Link>Dynamic\YacqInvokeBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqInvokeMemberBinder.cs">
+      <Link>Dynamic\YacqInvokeMemberBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqSetIndexBinder.cs">
+      <Link>Dynamic\YacqSetIndexBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqSetMemberBinder.cs">
+      <Link>Dynamic\YacqSetMemberBinder.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqUnaryOperationBinder.cs">
+      <Link>Dynamic\YacqUnaryOperationBinder.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\AmbiguousLambdaExpression.cs">
       <Link>Expressions\AmbiguousLambdaExpression.cs</Link>
     </Compile>
