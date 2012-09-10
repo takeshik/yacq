@@ -152,6 +152,8 @@
     <Compile Include="Dynamic\YacqSetIndexBinder.cs" />
     <Compile Include="Dynamic\YacqSetMemberBinder.cs" />
     <Compile Include="Dynamic\YacqUnaryOperationBinder.cs" />
+    <Compile Include="Expressions\ContextfulExpression.cs" />
+    <Compile Include="Expressions\ContextType.cs" />
     <Compile Include="Expressions\DispatchExpression.TypeNode.cs" />
     <Compile Include="Expressions\IgnoredExpression.cs" />
     <Compile Include="Expressions\MacroExpression.cs" />

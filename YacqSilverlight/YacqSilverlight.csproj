@@ -194,6 +194,12 @@
     <Compile Include="..\Yacq\Expressions\AmbiguousParameterExpression.cs">
       <Link>Expressions\AmbiguousParameterExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\ContextfulExpression.cs">
+      <Link>Expressions\ContextfulExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\ContextType.cs">
+      <Link>Expressions\ContextType.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\DispatchExpression.Candidate.cs">
       <Link>Expressions\DispatchExpression.Candidate.cs</Link>
     </Compile>
