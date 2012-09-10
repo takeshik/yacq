@@ -39,13 +39,6 @@ namespace XSpect.Yacq.Expressions
     public class IgnoredExpression
         : YacqExpression
     {
-        internal IgnoredExpression(
-            SymbolTable symbols
-        )
-            : base(symbols)
-        {
-        }
-
         /// <summary>
         /// Indicates that the node can be reduced to a simpler node. If this returns true, Reduce() can be called to produce the reduced form.
         /// </summary>
@@ -56,6 +49,13 @@ namespace XSpect.Yacq.Expressions
             {
                 return false;
             }
+        }
+
+        internal IgnoredExpression(
+            SymbolTable symbols
+        )
+            : base(symbols)
+        {
         }
 
         /// <summary>

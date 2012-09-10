@@ -52,6 +52,16 @@ namespace XSpect.Yacq.Expressions
             private set;
         }
 
+        internal LambdaListExpression(
+            SymbolTable symbols,
+            YacqList elements,
+            IList<AmbiguousParameterExpression> parameters
+        )
+            : base(symbols, elements)
+        {
+            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
+        }
+
         /// <summary>
         /// Returns a <see cref="String"/> that represents this expression.
         /// </summary>
@@ -88,16 +98,6 @@ namespace XSpect.Yacq.Expressions
                 .Select(i => AmbiguousParameter(symbols, "$" + i))
                 .ToArray()
                 .Let(ps => AmbiguousLambda(symbols, List(symbols, this.Elements), ps));
-        }
-
-        internal LambdaListExpression(
-            SymbolTable symbols,
-            YacqList elements,
-            IList<AmbiguousParameterExpression> parameters
-        )
-            : base(symbols, elements)
-        {
-            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
         }
     }
 

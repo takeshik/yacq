@@ -82,6 +82,17 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        internal AmbiguousParameterExpression(
+            SymbolTable symbols,
+            Type type,
+            String name
+        )
+            : base(symbols)
+        {
+            this._type = type;
+            this.Name = name;
+        }
+
         /// <summary>
         /// Returns a <see cref="String"/> that represents this expression.
         /// </summary>
@@ -104,17 +115,6 @@ namespace XSpect.Yacq.Expressions
             return this.IsUnfixed
                 ? null
                 : Parameter(this.Type, this.Name);
-        }
-
-        internal AmbiguousParameterExpression(
-            SymbolTable symbols,
-            Type type,
-            String name
-        )
-            : base(symbols)
-        {
-            this._type = type;
-            this.Name = name;
         }
     }
 

@@ -83,6 +83,19 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        internal AmbiguousLambdaExpression(
+            SymbolTable symbols,
+            Type returnType,
+            IList<Expression> bodies,
+            IList<AmbiguousParameterExpression> parameters
+        )
+            : base(symbols)
+        {
+            this.ReturnType = returnType;
+            this.Bodies = new ReadOnlyCollection<Expression>(bodies ?? new Expression[0]);
+            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
+        }
+
         /// <summary>
         /// Returns a <see cref="String"/> that represents this expression.
         /// </summary>
@@ -153,19 +166,6 @@ namespace XSpect.Yacq.Expressions
                                                   : null
                               )
                       );
-        }
-
-        internal AmbiguousLambdaExpression(
-            SymbolTable symbols,
-            Type returnType,
-            IList<Expression> bodies,
-            IList<AmbiguousParameterExpression> parameters
-        )
-            : base(symbols)
-        {
-            this.ReturnType = returnType;
-            this.Bodies = new ReadOnlyCollection<Expression>(bodies ?? new Expression[0]);
-            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
         }
 
         /// <summary>
