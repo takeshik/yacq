@@ -144,6 +144,7 @@
   <ItemGroup>
     <Compile Include="Collections\YacqList.cs" />
     <Compile Include="Dynamic\YacqBinaryOperationBinder.cs" />
+    <Compile Include="Dynamic\YacqBinder.cs" />
     <Compile Include="Dynamic\YacqConvertBinder.cs" />
     <Compile Include="Dynamic\YacqGetIndexBinder.cs" />
     <Compile Include="Dynamic\YacqGetMemberBinder.cs" />

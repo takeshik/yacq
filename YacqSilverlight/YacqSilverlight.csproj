@@ -164,6 +164,9 @@
     <Compile Include="..\Yacq\Dynamic\YacqBinaryOperationBinder.cs">
       <Link>Dynamic\YacqBinaryOperationBinder.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Dynamic\YacqBinder.cs">
+      <Link>Dynamic\YacqBinder.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Dynamic\YacqConvertBinder.cs">
       <Link>Dynamic\YacqConvertBinder.cs</Link>
     </Compile>
