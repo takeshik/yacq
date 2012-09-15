@@ -322,6 +322,21 @@ namespace XSpect.Yacq
             return source.Select(selector).Where(_ => _ != null);
         }
 
+        internal static TSource FirstOrLast<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
+        {
+            var iter = source.GetEnumerator();
+            TSource current = default(TSource);
+            while (iter.MoveNext())
+            {
+                current = iter.Current;
+                if (predicate(current))
+                {
+                    return current;
+                }
+            }
+            return current;
+        }
+
         internal static IEnumerable<IList<TSource>> PartitionBy<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
         {
             var list = new List<TSource>();

@@ -1951,7 +1951,7 @@ namespace XSpect.Yacq.Symbols
 
             [YacqSymbol("...")]
             public static Expression NotImplementedError
-                = Expression.Throw(Expression.Constant(new NotImplementedException()));
+                = Expression.Throw(Expression.New(typeof(NotImplementedException)));
 
             [YacqSymbol(DispatchTypes.Member, ">_<")]
             public static Expression Break(DispatchExpression e, SymbolTable s, Type t)

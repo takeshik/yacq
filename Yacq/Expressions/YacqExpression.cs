@@ -146,7 +146,43 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The additional symbol table for reducing.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        public Expression Reduce(SymbolTable symbols, Type expectedType)
+        public Expression Reduce(SymbolTable symbols, Type expectedType = null)
+        {
+            return this.ReduceScan(symbols, expectedType)
+                .FirstOrLast(e => !(e is YacqExpression));
+        }
+
+        /// <summary>
+        /// Generates a sequence of expressions by reducing this expression and enumerates its progress until the expression is not reducible.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
+        /// <returns>A sequence of the reduced expressions.</returns>
+        public IEnumerable<Expression> ReduceScan(SymbolTable symbols = null, Type expectedType = null)
+        {
+            Expression result = this.ReduceOnce(symbols, expectedType);
+            Expression expression = null;
+            while (expression != result)
+            {
+                yield return expression = result;
+                if (expression is YacqExpression)
+                {
+                    result = ((YacqExpression) expression).ReduceOnce(symbols, expectedType);
+                }
+                else
+                {
+                    result = expression.Reduce();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reduces this node to a simpler expression with additional symbol tables. This method can return another node which itself must be reduced.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
+        /// <returns>The reduced expression.</returns>
+        public Expression ReduceOnce(SymbolTable symbols = null, Type expectedType = null)
         {
             symbols = this.CreateSymbolTable(symbols);
             var hash = symbols.AllHash
@@ -171,9 +207,7 @@ namespace XSpect.Yacq.Expressions
             var expression = this.ReduceImpl(symbols, expectedType) ?? this;
             return expression == this
                 ? expression
-                : expression is YacqExpression
-                      ? ((YacqExpression) expression).Reduce(symbols, expectedType)
-                      : ImplicitConvert(expression, expectedType);
+                : ImplicitConvert(expression, expectedType);
         }
 
         internal Boolean IsCached(SymbolTable symbols, Type expectedType)
