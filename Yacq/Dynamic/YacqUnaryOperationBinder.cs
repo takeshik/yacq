@@ -53,7 +53,7 @@ namespace XSpect.Yacq.Dynamic
                 return new DynamicMetaObject(
                     YacqExpression.Function(this._symbols, GetSymbolName(this.Operation),
                         target.Expression.Reduce(_symbols).TryConvert(target.RuntimeType)
-                    ).Reduce(this._symbols),
+                    ).Reduce(this._symbols).TryConvert(typeof(Object)),
                     target.Restrictions
                 );
             }

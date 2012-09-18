@@ -118,7 +118,7 @@ namespace XSpect.Yacq
 
         internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action)
         {
-            if (EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
+            if (!EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
             {
                 action(self);
                 return self;

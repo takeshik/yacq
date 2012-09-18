@@ -318,12 +318,26 @@ namespace XSpect.Yacq.Dynamic
             return UnaryOperation(null, operation);
         }
 
-        internal static Boolean IsInDynamicContext(IEnumerable<Expression> expressions)
+        internal static Boolean IsInDynamicContext(SymbolTable symbols, Expression expression)
         {
-            return expressions.Any(e =>
-                e is DynamicExpression ||
-                (e as ContextfulExpression).Null(ce => ce.ContextType == ContextType.Dynamic)
-            );
+            return expression is DynamicExpression
+                || (expression as ContextfulExpression
+                       ?? (expression as YacqExpression)
+                              .Null(e => e.ReduceScan(symbols)
+                                  .Choose(re => re as ContextfulExpression)
+                                  .FirstOrDefault()
+                              )
+                   ).Null(ce => ce.ContextType == ContextType.Dynamic);
+        }
+
+        internal static Boolean IsInDynamicContext(SymbolTable symbols, IEnumerable<Expression> expressions)
+        {
+            return expressions.Any(e => IsInDynamicContext(symbols, e));
+        }
+
+        internal static Boolean IsInDynamicContext(SymbolTable symbols, params Expression[] expressions)
+        {
+            return IsInDynamicContext(symbols, (IEnumerable<Expression>) expressions);
         }
     }
 }

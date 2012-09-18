@@ -56,7 +56,8 @@ namespace XSpect.Yacq.Dynamic
                         .Method(this._symbols, this.Name,
                             args.SelectAll(o => o.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType))
                         )
-                        .Reduce(this._symbols),
+                        .Reduce(this._symbols)
+                        .TryConvert(typeof(Object)),
                     target.Restrictions
                 );
             }

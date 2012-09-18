@@ -1277,6 +1277,12 @@ namespace XSpect.Yacq.Symbols
                 );
             }
 
+            [YacqSymbol(DispatchTypes.Method, "dynamic")]
+            public static Expression Dynamic(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.Contextful(e.Reduce(s).TryConvert(typeof(Object)), ContextType.Dynamic);
+            }
+
             [YacqSymbol(DispatchTypes.Method, "new")]
             public static Expression CreateAnonymousInstance(DispatchExpression e, SymbolTable s, Type t)
             {
