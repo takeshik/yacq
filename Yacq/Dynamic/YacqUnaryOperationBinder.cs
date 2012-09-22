@@ -95,7 +95,7 @@ namespace XSpect.Yacq.Dynamic
                 case ExpressionType.OnesComplement:
                     return "~";
             }
-            throw new NotSupportedException("YacqBinaryOperationBinder does not supports " + operation);
+            throw new NotSupportedException("YacqUnaryOperationBinder does not supports " + operation);
         }
     }
 }

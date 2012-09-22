@@ -33,6 +33,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reactive.Linq;
+using XSpect.Yacq.Dynamic;
 using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.Expressions
@@ -167,7 +168,9 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         public static Expression DefaultMissing(DispatchExpression e, SymbolTable s, Type t)
         {
-            return e.DispatchByTypeSystem(s, t);
+            return e._left is DynamicExpression || YacqBinder.IsInDynamicContext(s, e.Left)
+                ? e.DispatchByDynamicBinder(s, t)
+                : e.DispatchByTypeSystem(s, t);
         }
 
         /// <summary>
@@ -264,6 +267,30 @@ namespace XSpect.Yacq.Expressions
             );
         }
 
+        private Expression DispatchByDynamicBinder(SymbolTable symbols, Type expectedType)
+        {
+            // TODO: Static members are not supported.
+            switch (this.DispatchType & DispatchTypes.TargetMask)
+            {
+                case DispatchTypes.Member:
+                    return Dynamic(
+                        YacqBinder.GetMember(symbols, this.Name),
+                        typeof(Object),
+                        this.Arguments.ReduceAll(symbols)
+                            .StartWith(this._left)
+                    );
+                case DispatchTypes.Method:
+                    return Dynamic(
+                        YacqBinder.InvokeMember(symbols, this.Name, Enumerable.Repeat("", this.Arguments.Count)),
+                        typeof(Object),
+                        this.Arguments.ReduceAll(symbols)
+                            .StartWith(this._left)
+                    );
+                default:
+                    throw new NotSupportedException("Dispatcher (in dynamic context) doesn't support: " + this.DispatchType);
+            }
+        }
+
         private IEnumerable<MemberInfo> GetMembers(SymbolTable symbols)
         {
             switch (this.DispatchType & DispatchTypes.TargetMask)
@@ -298,7 +325,7 @@ namespace XSpect.Yacq.Expressions
                             m.GetAccessibility() == MemberAccessibilities.Public
                         );
                 default:
-                    throw new ParseException("Dispatcher doesn't support: " + this.DispatchType);
+                    throw new NotSupportedException("Dispatcher doesn't support: " + this.DispatchType);
             }
         }
 

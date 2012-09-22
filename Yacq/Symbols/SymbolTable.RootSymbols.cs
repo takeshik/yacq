@@ -1280,7 +1280,7 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "dynamic")]
             public static Expression Dynamic(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.Contextful(e.Reduce(s).TryConvert(typeof(Object)), ContextType.Dynamic);
+                return YacqExpression.Contextful(e.Arguments[0].Reduce(s).TryConvert(typeof(Object)), ContextType.Dynamic);
             }
 
             [YacqSymbol(DispatchTypes.Method, "new")]
