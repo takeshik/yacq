@@ -82,9 +82,10 @@ namespace XSpect.Yacq.Expressions
             )
             {
                 return Variable(symbols, this.Name)
-                    .Reduce(symbols)
+                    .ReduceOnce(symbols)
                     .Let(e => (e as MacroExpression).Null(m => m.Evaluate(symbols)) ?? e);
-            }else
+            }
+            else
             {
                 throw new ParseException("Identifier evaluation failed: " + this);
             }

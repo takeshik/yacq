@@ -153,30 +153,6 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Generates a sequence of expressions by reducing this expression and enumerates its progress until the expression is not reducible.
-        /// </summary>
-        /// <param name="symbols">The additional symbol table for reducing.</param>
-        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
-        /// <returns>A sequence of the reduced expressions.</returns>
-        public IEnumerable<Expression> ReduceScan(SymbolTable symbols = null, Type expectedType = null)
-        {
-            Expression result = this.ReduceOnce(symbols, expectedType);
-            Expression expression = null;
-            while (expression != result)
-            {
-                yield return expression = result;
-                if (expression is YacqExpression)
-                {
-                    result = ((YacqExpression) expression).ReduceOnce(symbols, expectedType);
-                }
-                else
-                {
-                    result = expression.Reduce();
-                }
-            }
-        }
-
-        /// <summary>
         /// Reduces this node to a simpler expression with additional symbol tables. This method can return another node which itself must be reduced.
         /// </summary>
         /// <param name="symbols">The additional symbol table for reducing.</param>

@@ -42,31 +42,58 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Reduces this node to a simpler expression, with (if possible) additional symbol tables.
         /// </summary>
-        /// <param name="expr">The reducing expression.</param>
-        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expression">The reducing expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expression"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression.</returns>
-        public static Expression Reduce(this Expression expr, SymbolTable symbols, Type expectedType = null)
+        public static Expression Reduce(this Expression expression, SymbolTable symbols, Type expectedType = null)
         {
-            return expr != null
-                ? expr is YacqExpression
-                      ? ((YacqExpression) expr).Reduce(symbols, expectedType)
-                      : YacqExpression.ImplicitConvert(expr, expectedType)
+            return expression != null
+                ? expression is YacqExpression
+                      ? ((YacqExpression) expression).Reduce(symbols, expectedType)
+                      : YacqExpression.ImplicitConvert(expression, expectedType)
                 : null;
+        }
+
+        /// <summary>
+        /// Generates a sequence of expressions by reducing this expression and enumerates its progress until the expression is not reducible.
+        /// </summary>
+        /// <param name="expression">The reducing expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
+        /// <returns>A sequence of the reduced expressions.</returns>
+        public static IEnumerable<Expression> ReduceScan(this Expression expression, SymbolTable symbols = null, Type expectedType = null)
+        {
+            Expression result = (expression as YacqExpression)
+                .Null(e => e.ReduceOnce(symbols, expectedType))
+                ?? expression.Reduce();
+            expression = null;
+            while (expression != result)
+            {
+                yield return expression = result;
+                if (expression is YacqExpression)
+                {
+                    result = ((YacqExpression) expression).ReduceOnce(symbols, expectedType);
+                }
+                else
+                {
+                    result = expression.Reduce();
+                }
+            }
         }
 
         /// <summary>
         /// Reduces this node to a simpler expression, with (if possible) additional symbol tables. Any errors are ignored and returns <c>null</c>.
         /// </summary>
-        /// <param name="expr">The reducing expression.</param>
-        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expression">The reducing expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expression"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
         /// <returns>The reduced expression, or <c>null</c> if reducing was failed.</returns>
-        public static Expression TryReduce(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
+        public static Expression TryReduce(this Expression expression, SymbolTable symbols = null, Type expectedType = null)
         {
             try
             {
-                return expr.Reduce(symbols, expectedType);
+                return expression.Reduce(symbols, expectedType);
             }
             catch
             {
@@ -91,33 +118,33 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Gets the static type of the expression (which with reduced with additional symbol tables, if possible) that this <see cref="Expression"/> represents.
         /// </summary>
-        /// <param name="expr">The expression.</param>
-        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expression"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
-        /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>.</returns>
-        public static Type Type(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
+        /// <returns>The static type of the expression, or reduced expression if <paramref name="expression"/> is <see cref="YacqExpression"/>.</returns>
+        public static Type Type(this Expression expression, SymbolTable symbols = null, Type expectedType = null)
         {
-            return expr.Null(expr_ => (expr_ as YacqExpression).Null(e => e.CanReduce
+            return expression.Null(expr_ => (expr_ as YacqExpression).Null(e => e.CanReduce
                 ? e.Reduce(symbols, expectedType)
                       .If(_ => _ is YacqExpression, _ => null)
                       .Null(_ => _.Type)
                 : null,
-                () => expr.Type
+                () => expression.Type
             ));
         }
 
         /// <summary>
         /// Gets the static type of the expression (which with reduced with additional symbol tables, if possible) that this <see cref="Expression"/> represents. Any errors are ignored and returns <c>null</c>.
         /// </summary>
-        /// <param name="expr">The expression.</param>
-        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expr"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="symbols">The additional symbol table for reducing. If <paramref name="expression"/> is not <see cref="YacqExpression"/>, this parameter is ignored.</param>
         /// <param name="expectedType">The type which is expected as the type of reduced expression.</param>
-        /// <returns>The static type of the expression, or reduced expression if <paramref name="expr"/> is <see cref="YacqExpression"/>, or <c>null</c> if reducing was failed.</returns>
-        public static Type TryType(this Expression expr, SymbolTable symbols = null, Type expectedType = null)
+        /// <returns>The static type of the expression, or reduced expression if <paramref name="expression"/> is <see cref="YacqExpression"/>, or <c>null</c> if reducing was failed.</returns>
+        public static Type TryType(this Expression expression, SymbolTable symbols = null, Type expectedType = null)
         {
             try
             {
-                return expr.Type(symbols, expectedType);
+                return expression.Type(symbols, expectedType);
             }
             catch
             {
@@ -259,6 +286,35 @@ namespace XSpect.Yacq.Expressions
         )
         {
             return YacqExpression.Dispatch(DispatchTypes.Method, left, name, arguments);
+        }
+
+        /// <summary>
+        /// Compiles and evaluates an expression as a parameterless lambda expression.
+        /// </summary>
+        /// <param name="expression">An <see cref="Expression"/> to evaluate.</param>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The return value of the compiled expression.</returns>
+        /// <remarks>This method may reduce the performance.</remarks>
+        internal static Object Evaluate(this Expression expression, SymbolTable symbols = null)
+        {
+            return expression.Reduce(symbols).If(
+                e => e.Type.IsValueType,
+                e => Expression.Lambda(e).Compile().DynamicInvoke(),
+                e => Expression.Lambda<Func<Object>>(e).Compile()()
+            );
+        }
+
+        /// <summary>
+        /// Compiles and evaluates an expression as a parameterless lambda expression.
+        /// </summary>
+        /// <typeparam name="T">The type of the return value.</typeparam>
+        /// <param name="expression">An <see cref="Expression"/> to evaluate.</param>
+        /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <returns>The return value of the compiled expression as the specified type.</returns>
+        /// <remarks>This method may reduce the performance.</remarks>
+        public static T Evaluate<T>(this Expression expression, SymbolTable symbols = null)
+        {
+            return (T) expression.Evaluate(symbols);
         }
 
         internal static IEnumerable<Expression> List(this Expression expression, String head = null)
