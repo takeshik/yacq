@@ -43,7 +43,7 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<Assembly, AssemblyRef> _reverseCache
             = new Dictionary<Assembly, AssemblyRef>();
 
-        private static readonly String[] _loadedAssemblies = new[]
+        private static readonly String[] _loadedAssemblies = new []
         {
             "Parseq",
             "System",

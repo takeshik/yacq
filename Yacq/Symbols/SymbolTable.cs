@@ -1036,7 +1036,7 @@ namespace XSpect.Yacq.Symbols
                     .Let(s => (e != null
                         ? (e as TypeCandidateExpression)
                               .Null(te => te.Candidates.Select(Static.MakeType))
-                              ?? new[] { e.Type(this), }
+                              ?? new [] { e.Type(this), }
                         : new Type[1]
                     ).Select(t => s.ResolveMatch(expression.DispatchType, t, expression.Name)))
                 )

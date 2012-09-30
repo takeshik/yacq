@@ -35,6 +35,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
+using XSpect.Yacq.Dynamic;
 using XSpect.Yacq.Expressions;
 using System.Text.RegularExpressions;
 using System.Reflection;
@@ -85,15 +86,26 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "=")]
             public static Expression Assign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return e.Arguments[0].Reduce(s).Let(l => Expression.Assign(l, e.Arguments.Last().Reduce(s, l.Type)))
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "=", e.Arguments
-                              .Skip(1)
-                              .SkipLast(1)
-                              .EndWith(_)
+                return (e.Arguments[0].List(".")
+                    .Null(l => YacqBinder.IsInDynamicContext(s, l.First())
+                        ? Expression.Dynamic(
+                              YacqBinder.SetMember(s, l.Last().Id()),
+                              typeof(Object),
+                              l.First().Reduce(s),
+                              e.Arguments[1].Reduce()
                           )
-                        : _
-                    );
+                        : null
+                    ) ?? e.Arguments[0].Reduce(s).Let(l =>
+                        (Expression) Expression.Assign(l, e.Arguments.Last().Reduce(s, l.Type))
+                    )
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "=", e.Arguments
+                            .Skip(1)
+                            .SkipLast(1)
+                            .EndWith(_)
+                        )
+                    : _
+                );
             }
 
             [YacqSymbol(DispatchTypes.Method, "+")]
@@ -102,27 +114,39 @@ namespace XSpect.Yacq.Symbols
                 return e.Arguments.Any(a => a.Type(s) == typeof(String))
                     ? YacqExpression.TypeCandidate(typeof(String)).Method(s, "Concat", e.Arguments)
                     : e.Arguments.Count == 1
-                          ? Expression.UnaryPlus(e.Arguments[0].Reduce(s)
-                                .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, false)))
+                          ? YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                                ? (Expression) Expression.Dynamic(
+                                      YacqBinder.UnaryOperation(s, ExpressionType.UnaryPlus),
+                                      typeof(Object),
+                                      e.Arguments[0].Reduce(s)
+                                  )
+                                : Expression.UnaryPlus(e.Arguments[0].Reduce(s)
+                                      .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, false)))
                             )
-                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                                    .Let(_ => Expression.Add(a[0].TryConvert(_), a[1].TryConvert(_)))
-                                )
-                                .Let(_ => e.Arguments.Count > 2
-                                    ? (Expression) YacqExpression.Function(s, "+", e.Arguments
-                                          .Skip(2)
-                                          .StartWith(_)
+                          : (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                                ? (Expression) Expression.Dynamic(
+                                      YacqBinder.BinaryOperation(s, ExpressionType.Add),
+                                      typeof(Object),
+                                      e.Arguments.Take(2).ReduceAll(s)
+                                  )
+                                : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                      .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                          .Let(_ => Expression.Add(a[0].TryConvert(_), a[1].TryConvert(_)))
                                       )
-                                    : _
-                                );
+                            ).Let(_ => e.Arguments.Count > 2
+                                ? (Expression) YacqExpression.Function(s, "+", e.Arguments
+                                    .Skip(2)
+                                    .StartWith(_)
+                                )
+                                : _
+                            );
             }
 
             [YacqSymbol(DispatchTypes.Method, "+=")]
             public static Expression PlusAssign(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Any(a => a.Type(s) == typeof(String))
-                    ? Expression.Assign(
+                    ? YacqExpression.Function(s, "=",
                           e.Arguments[0].Reduce(s),
                           YacqExpression.TypeCandidate(typeof(String)).Method(s, "Concat", e.Arguments)
                       )
@@ -135,8 +159,9 @@ namespace XSpect.Yacq.Symbols
                               : (e.Arguments.Count == 2
                                     ? e.Arguments[1]
                                     : YacqExpression.Function(s, "+", e.Arguments.Skip(1))
-                                ).Reduce(s).Let(r =>
-                                    l.Type == r.Type &&
+                                ).Let(r =>
+                                    !YacqBinder.IsInDynamicContext(s, e.Arguments[0], r) &&
+                                    l.Type == r.Type(s) &&
                                     new []
                                     {
                                         typeof(Int16),
@@ -148,11 +173,14 @@ namespace XSpect.Yacq.Symbols
                                         typeof(Single),
                                         typeof(Double),
                                     }.Contains(l.Type) ||
-                                    l.Type.GetMethod("op_Addition", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                                        ? (Expression) Expression.AddAssign(l, r)
+                                    l.Type.GetMethod("op_Addition", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                                        ? (Expression) Expression.AddAssign(l, r.Reduce(s))
                                         : YacqExpression.Function(s, "=",
                                               l,
-                                              YacqExpression.Function(s, "+", l, r).ReduceAndTryConvert(s, l.Type)
+                                              ((Expression) YacqExpression.Function(s, "+", e.Arguments[0], r)).If(
+                                                  _ => !YacqBinder.IsInDynamicContext(s, r),
+                                                  _ => _.ReduceAndTryConvert(s, l.Type)
+                                              )
                                           )
                                 )
                       );
@@ -162,20 +190,32 @@ namespace XSpect.Yacq.Symbols
             public static Expression Minus(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 1
-                    ? Expression.Negate(e.Arguments[0].Reduce(s)
-                          .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, true)))
-                      )
-                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.Subtract(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
-                          .Let(_ => e.Arguments.Count > 2
-                              ? (Expression) YacqExpression.Function(s, "-", e.Arguments
-                                    .Skip(2)
-                                    .StartWith(_)
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.UnaryOperation(s, ExpressionType.Negate),
+                                typeof(Object),
+                                e.Arguments[0].Reduce(s)
+                            )
+                          : Expression.Negate(e.Arguments[0].Reduce(s)
+                                .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, true)))
+                            )
+                    : (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.Subtract),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.Subtract(a[0].TryConvert(_), a[1].TryConvert(_)))
                                 )
-                              : _
-                          );
+                      ).Let(_ => e.Arguments.Count > 2
+                          ? (Expression) YacqExpression.Function(s, "-", e.Arguments
+                              .Skip(2)
+                              .StartWith(_)
+                          )
+                          : _
+                      );
             }
 
             [YacqSymbol(DispatchTypes.Method, "-=")]
@@ -190,8 +230,9 @@ namespace XSpect.Yacq.Symbols
                         : (e.Arguments.Count == 2
                               ? e.Arguments[1]
                               : YacqExpression.Function(s, "+", e.Arguments.Skip(1))
-                          ).Reduce(s).Let(r =>
-                              l.Type == r.Type &&
+                          ).Let(r =>
+                              !YacqBinder.IsInDynamicContext(s, e.Arguments[0], r) &&
+                              l.Type == r.Type(s) &&
                               new []
                               {
                                   typeof(Int16),
@@ -203,11 +244,14 @@ namespace XSpect.Yacq.Symbols
                                   typeof(Single),
                                   typeof(Double),
                               }.Contains(l.Type) ||
-                              l.Type.GetMethod("op_Subtraction", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                                  ? (Expression) Expression.SubtractAssign(l, r)
+                              l.Type.GetMethod("op_Subtraction", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                                  ? (Expression) Expression.SubtractAssign(l, r.Reduce(s))
                                   : YacqExpression.Function(s, "=",
                                         l,
-                                        YacqExpression.Function(s, "-", l, r).ReduceAndTryConvert(s, l.Type)
+                                        ((Expression) YacqExpression.Function(s, "-", e.Arguments[0], r)).If(
+                                            _ => !YacqBinder.IsInDynamicContext(s, r),
+                                            _ => _.ReduceAndTryConvert(s, l.Type)
+                                        )
                                     )
                           )
                 );
@@ -216,17 +260,23 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "*")]
             public static Expression Multiply(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                        .Let(_ => Expression.Multiply(a[0].TryConvert(_), a[1].TryConvert(_)))
-                    )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "*", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.Multiply),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.Multiply(a[0].TryConvert(_), a[1].TryConvert(_)))
                           )
-                        : _
-                    );
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "*", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
 
             [YacqSymbol(DispatchTypes.Method, "*=")]
@@ -236,8 +286,8 @@ namespace XSpect.Yacq.Symbols
                     (e.Arguments.Count == 2
                         ? e.Arguments[1]
                         : YacqExpression.Function(s, "*", e.Arguments.Skip(1))
-                    ).Reduce(s).Let(r =>
-                        l.Type == r.Type &&
+                    ).Let(r =>
+                        l.Type == r.Type(s) &&
                         new []
                         {
                             typeof(Int16),
@@ -249,11 +299,14 @@ namespace XSpect.Yacq.Symbols
                             typeof(Single),
                             typeof(Double),
                         }.Contains(l.Type) ||
-                        l.Type.GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                            ? (Expression) Expression.MultiplyAssign(l, r)
+                        l.Type.GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                            ? (Expression) Expression.MultiplyAssign(l, r.Reduce(s))
                             : YacqExpression.Function(s, "=",
                                   l,
-                                  YacqExpression.Function(s, "*", l, r).ReduceAndTryConvert(s, l.Type)
+                                  ((Expression) YacqExpression.Function(s, "*", e.Arguments[0], r)).If(
+                                      _ => !YacqBinder.IsInDynamicContext(s, r),
+                                      _ => _.ReduceAndTryConvert(s, l.Type)
+                                  )
                               )
                     )
                 );
@@ -262,17 +315,23 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "/")]
             public static Expression Divide(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                        .Let(_ => Expression.Divide(a[0].TryConvert(_), a[1].TryConvert(_)))
-                    )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "/", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.Divide),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.Divide(a[0].TryConvert(_), a[1].TryConvert(_)))
                           )
-                        : _
-                    );
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "/", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "/=")]
@@ -281,9 +340,9 @@ namespace XSpect.Yacq.Symbols
                 return e.Arguments[0].Reduce(s).Let(l =>
                     (e.Arguments.Count == 2
                         ? e.Arguments[1]
-                        : YacqExpression.Function(s, "*", e.Arguments.Skip(1))
-                    ).Reduce(s).Let(r =>
-                        l.Type == r.Type &&
+                        : YacqExpression.Function(s, "/", e.Arguments.Skip(1))
+                    ).Let(r =>
+                        l.Type == r.Type(s) &&
                         new []
                         {
                             typeof(Int16),
@@ -295,11 +354,14 @@ namespace XSpect.Yacq.Symbols
                             typeof(Single),
                             typeof(Double),
                         }.Contains(l.Type) ||
-                        l.Type.GetMethod("op_Division", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                            ? (Expression) Expression.DivideAssign(l, r)
+                        l.Type.GetMethod("op_Division", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                            ? (Expression) Expression.DivideAssign(l, r.Reduce(s))
                             : YacqExpression.Function(s, "=",
                                   l,
-                                  YacqExpression.Function(s, "/", l, r).ReduceAndTryConvert(s, l.Type)
+                                  ((Expression) YacqExpression.Function(s, "/", e.Arguments[0], r)).If(
+                                      _ => !YacqBinder.IsInDynamicContext(s, r),
+                                      _ => _.ReduceAndTryConvert(s, l.Type)
+                                  )
                               )
                     )
                 );
@@ -308,18 +370,23 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "**")]
             public static Expression Power(DispatchExpression e, SymbolTable s, Type t)
             {
-                // TODO: Support type-specific Power method
-                return Expression.Power(
-                    e.Arguments[0].ReduceAndTryConvert(s, typeof(Double)),
-                    e.Arguments[1].ReduceAndTryConvert(s, typeof(Double))
-                )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "**", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
-                          )
-                        : _
-                    );
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                          YacqBinder.BinaryOperation(s, ExpressionType.Power),
+                          typeof(Object),
+                          e.Arguments.Take(2).ReduceAll(s)
+                      )
+                    : Expression.Power(
+                          e.Arguments[0].ReduceAndTryConvert(s, typeof(Double)),
+                          e.Arguments[1].ReduceAndTryConvert(s, typeof(Double))
+                      )
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "**", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "**=")]
@@ -330,12 +397,15 @@ namespace XSpect.Yacq.Symbols
                     (e.Arguments.Count == 2
                         ? e.Arguments[1]
                         : YacqExpression.Function(s, "**", e.Arguments.Skip(1))
-                    ).Reduce(s).Let(r =>
-                        l.Type == r.Type && l.Type == typeof(Double)
-                            ? (Expression) Expression.PowerAssign(l, r)
+                    ).Let(r =>
+                        l.Type == r.Type(s) && l.Type == typeof(Double)
+                            ? (Expression) Expression.PowerAssign(l, r.Reduce(s))
                             : YacqExpression.Function(s, "=",
                                   l,
-                                  YacqExpression.Function(s, "**", l, r).ReduceAndTryConvert(s, l.Type)
+                                  ((Expression) YacqExpression.Function(s, "**", e.Arguments[0], r)).If(
+                                      _ => !YacqBinder.IsInDynamicContext(s, r),
+                                      _ => _.ReduceAndTryConvert(s, l.Type)
+                                  )
                               )
                     )
                 );
@@ -344,17 +414,23 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "%")]
             public static Expression Modulo(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                        .Let(_ => Expression.Modulo(a[0].TryConvert(_), a[1].TryConvert(_)))
-                    )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "%", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.Modulo),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.Modulo(a[0].TryConvert(_), a[1].TryConvert(_)))
                           )
-                        : _
-                    );
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "%", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "%=")]
@@ -364,8 +440,8 @@ namespace XSpect.Yacq.Symbols
                     (e.Arguments.Count == 2
                         ? e.Arguments[1]
                         : YacqExpression.Function(s, "%", e.Arguments.Skip(1))
-                    ).Reduce(s).Let(r =>
-                        l.Type == r.Type &&
+                    ).Let(r =>
+                        l.Type == r.Type(s) &&
                         new []
                         {
                             typeof(Int16),
@@ -377,11 +453,14 @@ namespace XSpect.Yacq.Symbols
                             typeof(Single),
                             typeof(Double),
                         }.Contains(l.Type) ||
-                        l.Type.GetMethod("op_Modulus", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                            ? (Expression) Expression.ModuloAssign(l, r)
+                        l.Type.GetMethod("op_Modulus", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                            ? (Expression) Expression.ModuloAssign(l, r.Reduce(s))
                             : YacqExpression.Function(s, "=",
                                   l,
-                                  YacqExpression.Function(s, "%", l, r).ReduceAndTryConvert(s, l.Type)
+                                  ((Expression) YacqExpression.Function(s, "%", e.Arguments[0], r)).If(
+                                      _ => !YacqBinder.IsInDynamicContext(s, r),
+                                      _ => _.ReduceAndTryConvert(s, l.Type)
+                                  )
                               )
                     )
                 );
@@ -390,14 +469,20 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "<<")]
             public static Expression LeftShift(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.LeftShift(e.Arguments[0].Reduce(s), e.Arguments[1].ReduceAndTryConvert(s, typeof(Int32)))
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "<<", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
-                          )
-                        : _
-                    );
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                          YacqBinder.BinaryOperation(s, ExpressionType.LeftShift),
+                          typeof(Object),
+                          e.Arguments.Take(2).ReduceAll(s)
+                      )
+                    : Expression.LeftShift(e.Arguments[0].Reduce(s), e.Arguments[1].ReduceAndTryConvert(s, typeof(Int32)))
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "<<", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "<<=")]
@@ -407,8 +492,8 @@ namespace XSpect.Yacq.Symbols
                     (e.Arguments.Count == 2
                         ? e.Arguments[1]
                         : YacqExpression.Function(s, "<<", e.Arguments.Skip(1))
-                    ).Reduce(s).Let(r =>
-                        r.Type == typeof(Int32) &&
+                    ).Let(r =>
+                        r.Type(s) == typeof(Int32) &&
                         new []
                         {
                             typeof(SByte),
@@ -420,11 +505,14 @@ namespace XSpect.Yacq.Symbols
                             typeof(Int64),
                             typeof(UInt64),
                         }.Contains(l.Type) ||
-                        l.Type.GetMethod("op_LeftShift", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                            ? (Expression) Expression.LeftShiftAssign(l, r)
+                        l.Type.GetMethod("op_LeftShift", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                            ? (Expression) Expression.LeftShiftAssign(l, r.Reduce(s))
                             : YacqExpression.Function(s, "=",
                                   l,
-                                  YacqExpression.Function(s, "<<", l, r).ReduceAndTryConvert(s, l.Type)
+                                  ((Expression) YacqExpression.Function(s, "<<", e.Arguments[0], r)).If(
+                                      _ => !YacqBinder.IsInDynamicContext(s, r),
+                                      _ => _.ReduceAndTryConvert(s, l.Type)
+                                  )
                               )
                     )
                 );
@@ -433,14 +521,20 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, ">>")]
             public static Expression RightShift(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.RightShift(e.Arguments[0].Reduce(s), e.Arguments[1].ReduceAndTryConvert(s, typeof(Int32)))
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, ">>", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
-                          )
-                        : _
-                    );
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                          YacqBinder.BinaryOperation(s, ExpressionType.RightShift),
+                          typeof(Object),
+                          e.Arguments.Take(2).ReduceAll(s)
+                      )
+                    : Expression.RightShift(e.Arguments[0].Reduce(s), e.Arguments[1].ReduceAndTryConvert(s, typeof(Int32)))
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, ">>", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, ">>=")]
@@ -450,8 +544,8 @@ namespace XSpect.Yacq.Symbols
                     (e.Arguments.Count == 2
                         ? e.Arguments[1]
                         : YacqExpression.Function(s, ">>", e.Arguments.Skip(1))
-                    ).Reduce(s).Let(r =>
-                        r.Type == typeof(Int32) &&
+                    ).Let(r =>
+                        r.Type(s) == typeof(Int32) &&
                         new []
                         {
                             typeof(SByte),
@@ -463,11 +557,14 @@ namespace XSpect.Yacq.Symbols
                             typeof(Int64),
                             typeof(UInt64),
                         }.Contains(l.Type) ||
-                        l.Type.GetMethod("op_RightShift", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type, }, null) != null
-                            ? (Expression) Expression.RightShiftAssign(l, r)
+                        l.Type.GetMethod("op_RightShift", BindingFlags.Public | BindingFlags.Static, null, new [] { l.Type, r.Type(s), }, null) != null
+                            ? (Expression) Expression.RightShiftAssign(l, r.Reduce(s))
                             : YacqExpression.Function(s, "=",
                                   l,
-                                  YacqExpression.Function(s, ">>", l, r).ReduceAndTryConvert(s, l.Type)
+                                  ((Expression) YacqExpression.Function(s, ">>", e.Arguments[0], r)).If(
+                                      _ => !YacqBinder.IsInDynamicContext(s, r),
+                                      _ => _.ReduceAndTryConvert(s, l.Type)
+                                  )
                               )
                     )
                 );
@@ -477,20 +574,26 @@ namespace XSpect.Yacq.Symbols
             public static Expression Increment(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments[0].Reduce(s).Let(a =>
-                    new []
-                    {
-                        typeof(Int16),
-                        typeof(UInt16),
-                        typeof(Int32),
-                        typeof(UInt32),
-                        typeof(Int64),
-                        typeof(UInt64),
-                        typeof(Single),
-                        typeof(Double),
-                    }.Contains(a.Type) ||
-                    a.Type.GetMethod("op_Increment", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
-                        ? (Expression) Expression.Increment(a)
-                        : YacqExpression.Function(s, "+", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                    YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                        ? Expression.Dynamic(
+                              YacqBinder.UnaryOperation(s, ExpressionType.Increment),
+                              typeof(Object),
+                              a
+                          )
+                        : new []
+                          {
+                              typeof(Int16),
+                              typeof(UInt16),
+                              typeof(Int32),
+                              typeof(UInt32),
+                              typeof(Int64),
+                              typeof(UInt64),
+                              typeof(Single),
+                              typeof(Double),
+                          }.Contains(a.Type) ||
+                          a.Type.GetMethod("op_Increment", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
+                              ? (Expression) Expression.Increment(a)
+                              : YacqExpression.Function(s, "+", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
                 );
             }
             
@@ -498,23 +601,29 @@ namespace XSpect.Yacq.Symbols
             public static Expression PreIncrementAssign(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments[0].Reduce(s).Let(a =>
-                    new []
-                    {
-                        typeof(Int16),
-                        typeof(UInt16),
-                        typeof(Int32),
-                        typeof(UInt32),
-                        typeof(Int64),
-                        typeof(UInt64),
-                        typeof(Single),
-                        typeof(Double),
-                    }.Contains(a.Type) ||
-                    a.Type.GetMethod("op_Increment", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
-                        ? (Expression) Expression.PreIncrementAssign(a)
-                        : YacqExpression.Function(s, "=",
-                              a,
-                              YacqExpression.Function(s, "+", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                    YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                        ? Expression.Dynamic(
+                              YacqBinder.UnaryOperation(s, ExpressionType.PreIncrementAssign),
+                              typeof(Object),
+                              a
                           )
+                        : new []
+                          {
+                              typeof(Int16),
+                              typeof(UInt16),
+                              typeof(Int32),
+                              typeof(UInt32),
+                              typeof(Int64),
+                              typeof(UInt64),
+                              typeof(Single),
+                              typeof(Double),
+                          }.Contains(a.Type) ||
+                          a.Type.GetMethod("op_Increment", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
+                              ? (Expression) Expression.PreIncrementAssign(a)
+                              : YacqExpression.Function(s, "=",
+                                    a,
+                                    YacqExpression.Function(s, "+", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                                )
                 );
             }
             
@@ -522,30 +631,36 @@ namespace XSpect.Yacq.Symbols
             public static Expression PostIncrementAssign(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments[0].Reduce(s).Let(a =>
-                    new []
-                    {
-                        typeof(Int16),
-                        typeof(UInt16),
-                        typeof(Int32),
-                        typeof(UInt32),
-                        typeof(Int64),
-                        typeof(UInt64),
-                        typeof(Single),
-                        typeof(Double),
-                    }.Contains(a.Type) ||
-                    a.Type.GetMethod("op_Increment", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
-                        ? (Expression) Expression.PostIncrementAssign(a)
-                        : YacqExpression.Function(s, "$",
-                              YacqExpression.Vector(s,
-                                  YacqExpression.Identifier(s, "._val"),
-                                  a
-                              ),
-                              YacqExpression.Function(s, "=",
-                                  a,
-                                  YacqExpression.Function(s, "+", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
-                              ),
-                              YacqExpression.Identifier(s, "._val")
+                    YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                        ? Expression.Dynamic(
+                              YacqBinder.UnaryOperation(s, ExpressionType.PostIncrementAssign),
+                              typeof(Object),
+                              a
                           )
+                        : new []
+                          {
+                              typeof(Int16),
+                              typeof(UInt16),
+                              typeof(Int32),
+                              typeof(UInt32),
+                              typeof(Int64),
+                              typeof(UInt64),
+                              typeof(Single),
+                              typeof(Double),
+                          }.Contains(a.Type) ||
+                          a.Type.GetMethod("op_Increment", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
+                              ? (Expression) Expression.PostIncrementAssign(a)
+                              : YacqExpression.Function(s, "$",
+                                    YacqExpression.Vector(s,
+                                        YacqExpression.Identifier(s, "._val"),
+                                        a
+                                    ),
+                                    YacqExpression.Function(s, "=",
+                                        a,
+                                        YacqExpression.Function(s, "+", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                                    ),
+                                    YacqExpression.Identifier(s, "._val")
+                                )
                 );
             }
             
@@ -553,20 +668,26 @@ namespace XSpect.Yacq.Symbols
             public static Expression Decrement(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments[0].Reduce(s).Let(a =>
-                    new []
-                    {
-                        typeof(Int16),
-                        typeof(UInt16),
-                        typeof(Int32),
-                        typeof(UInt32),
-                        typeof(Int64),
-                        typeof(UInt64),
-                        typeof(Single),
-                        typeof(Double),
-                    }.Contains(a.Type) ||
-                    a.Type.GetMethod("op_Decrement", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
-                        ? (Expression) Expression.Decrement(a)
-                        : YacqExpression.Function(s, "-", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                    YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                        ? Expression.Dynamic(
+                              YacqBinder.UnaryOperation(s, ExpressionType.Decrement),
+                              typeof(Object),
+                              a
+                          )
+                        : new []
+                          {
+                              typeof(Int16),
+                              typeof(UInt16),
+                              typeof(Int32),
+                              typeof(UInt32),
+                              typeof(Int64),
+                              typeof(UInt64),
+                              typeof(Single),
+                              typeof(Double),
+                          }.Contains(a.Type) ||
+                          a.Type.GetMethod("op_Decrement", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
+                              ? (Expression) Expression.Decrement(a)
+                              : YacqExpression.Function(s, "-", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
                 );
             }
             
@@ -574,23 +695,29 @@ namespace XSpect.Yacq.Symbols
             public static Expression PreDecrementAssign(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments[0].Reduce(s).Let(a =>
-                    new []
-                    {
-                        typeof(Int16),
-                        typeof(UInt16),
-                        typeof(Int32),
-                        typeof(UInt32),
-                        typeof(Int64),
-                        typeof(UInt64),
-                        typeof(Single),
-                        typeof(Double),
-                    }.Contains(a.Type) ||
-                    a.Type.GetMethod("op_Decrement", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
-                        ? (Expression) Expression.PreDecrementAssign(a)
-                        : YacqExpression.Function(s, "=",
-                              a,
-                              YacqExpression.Function(s, "-", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                    YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                        ? Expression.Dynamic(
+                              YacqBinder.UnaryOperation(s, ExpressionType.PreDecrementAssign),
+                              typeof(Object),
+                              a
                           )
+                        : new []
+                          {
+                              typeof(Int16),
+                              typeof(UInt16),
+                              typeof(Int32),
+                              typeof(UInt32),
+                              typeof(Int64),
+                              typeof(UInt64),
+                              typeof(Single),
+                              typeof(Double),
+                          }.Contains(a.Type) ||
+                          a.Type.GetMethod("op_Decrement", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
+                              ? (Expression) Expression.PreDecrementAssign(a)
+                              : YacqExpression.Function(s, "=",
+                                    a,
+                                    YacqExpression.Function(s, "-", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                                )
                 );
             }
             
@@ -598,30 +725,36 @@ namespace XSpect.Yacq.Symbols
             public static Expression PostDecrementAssign(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments[0].Reduce(s).Let(a =>
-                    new []
-                    {
-                        typeof(Int16),
-                        typeof(UInt16),
-                        typeof(Int32),
-                        typeof(UInt32),
-                        typeof(Int64),
-                        typeof(UInt64),
-                        typeof(Single),
-                        typeof(Double),
-                    }.Contains(a.Type) ||
-                    a.Type.GetMethod("op_Decrement", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
-                        ? (Expression) Expression.PostDecrementAssign(a)
-                        : YacqExpression.Function(s, "$",
-                              YacqExpression.Vector(s,
-                                  YacqExpression.Identifier(s, "._val"),
-                                  a
-                              ),
-                              YacqExpression.Function(s, "=",
-                                  a,
-                                  YacqExpression.Function(s, "-", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
-                              ),
-                              YacqExpression.Identifier(s, "._val")
+                    YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                        ? Expression.Dynamic(
+                              YacqBinder.UnaryOperation(s, ExpressionType.PostDecrementAssign),
+                              typeof(Object),
+                              a
                           )
+                        : new []
+                          {
+                              typeof(Int16),
+                              typeof(UInt16),
+                              typeof(Int32),
+                              typeof(UInt32),
+                              typeof(Int64),
+                              typeof(UInt64),
+                              typeof(Single),
+                              typeof(Double),
+                          }.Contains(a.Type) ||
+                          a.Type.GetMethod("op_Decrement", BindingFlags.Public | BindingFlags.Static, null, new [] { a.Type, }, null) != null
+                              ? (Expression) Expression.PostDecrementAssign(a)
+                              : YacqExpression.Function(s, "$",
+                                    YacqExpression.Vector(s,
+                                        YacqExpression.Identifier(s, "._val"),
+                                        a
+                                    ),
+                                    YacqExpression.Function(s, "=",
+                                        a,
+                                        YacqExpression.Function(s, "-", a, Expression.Constant(1)).ReduceAndTryConvert(s, a.Type)
+                                    ),
+                                    YacqExpression.Identifier(s, "._val")
+                                )
                 );
             }
             
@@ -632,25 +765,43 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "!")]
             public static Expression Not(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Not(e.Arguments[0].Reduce(s));
+                return YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                    ? (Expression) Expression.Dynamic(
+                          YacqBinder.UnaryOperation(s, ExpressionType.Not),
+                          typeof(Object),
+                          e.Arguments[0].Reduce(s)
+                      )
+                    : Expression.Not(e.Arguments[0].Reduce(s));
             }
 
             [YacqSymbol(DispatchTypes.Method, "~")]
             public static Expression OnesComplement(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.OnesComplement(e.Arguments[0].Reduce(s)
-                    .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, false)))
-                );
+                return YacqBinder.IsInDynamicContext(s, e.Arguments[0])
+                    ? (Expression) Expression.Dynamic(
+                          YacqBinder.UnaryOperation(s, ExpressionType.OnesComplement),
+                          typeof(Object),
+                          e.Arguments[0].Reduce(s)
+                      )
+                    : Expression.OnesComplement(e.Arguments[0].Reduce(s)
+                          .Let(_ => _.TryConvert(YacqExpression.ConvertNumericTypeForAlithmetics(_.Type, false)))
+                      );
             }
             
             [YacqSymbol(DispatchTypes.Method, "<")]
             public static Expression LessThan(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.LessThan(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.LessThan),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.LessThan(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "<", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "<", e.Arguments.Skip(1))
@@ -661,10 +812,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression LessThanOrEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.LessThanOrEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.LessThanOrEqual),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.LessThanOrEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "<=", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "<=", e.Arguments.Skip(1))
@@ -675,10 +832,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression GreaterThan(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.GreaterThan(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.GreaterThan),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.GreaterThan(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, ">", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, ">", e.Arguments.Skip(1))
@@ -689,10 +852,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression GreaterThanOrEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.GreaterThanOrEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.GreaterThanOrEqual),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.GreaterThanOrEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, ">=", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, ">=", e.Arguments.Skip(1))
@@ -709,10 +878,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression Equal(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                              .Let(_ => Expression.Equal(a[0].TryConvert(_), a[1].TryConvert(_)))
-                          )
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.Equal),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.Equal(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "==", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "==", e.Arguments.Skip(1))
@@ -723,15 +898,21 @@ namespace XSpect.Yacq.Symbols
             public static Expression NotEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 1
-                    ? e.Arguments[0].Reduce(s).Let(a => YacqExpression.Function(s, "=",
-                          a,
-                          YacqExpression.Function(s, "!", a)
-                      ))
+                    ? YacqExpression.Function(s, "=",
+                          e.Arguments[0],
+                          YacqExpression.Function(s, "!", e.Arguments[0])
+                      )
                     : e.Arguments.Count == 2
-                          ? (Expression) new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                                    .Let(_ => Expression.NotEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
-                                )
+                          ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                                ? (Expression) Expression.Dynamic(
+                                      YacqBinder.BinaryOperation(s, ExpressionType.NotEqual),
+                                      typeof(Object),
+                                      e.Arguments.Take(2).ReduceAll(s)
+                                  )
+                                : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                      .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                          .Let(_ => Expression.NotEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                      )
                           : YacqExpression.Function(s, "&&",
                                 YacqExpression.Function(s, "!=", e.Arguments[0], e.Arguments[1]),
                                 YacqExpression.Function(s, "!=", e.Arguments.Skip(1))
@@ -742,7 +923,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression ReferenceEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.ReferenceEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.Equal),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.ReferenceEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "===", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "===", e.Arguments.Skip(1))
@@ -753,7 +943,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression ReferenceNotEqual(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments.Count == 2
-                    ? (Expression) Expression.ReferenceNotEqual(e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s))
+                    ? YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                          ? (Expression) Expression.Dynamic(
+                                YacqBinder.BinaryOperation(s, ExpressionType.NotEqual),
+                                typeof(Object),
+                                e.Arguments.Take(2).ReduceAll(s)
+                            )
+                          : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                                .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                                    .Let(_ => Expression.ReferenceNotEqual(a[0].TryConvert(_), a[1].TryConvert(_)))
+                                )
                     : YacqExpression.Function(s, "&&",
                           YacqExpression.Function(s, "!==", e.Arguments[0], e.Arguments[1]),
                           YacqExpression.Function(s, "!==", e.Arguments.Skip(1))
@@ -763,38 +962,51 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "&")]
             public static Expression And(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                        .Let(_ => Expression.And(a[0].TryConvert(_), a[1].TryConvert(_)))
-                    )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "&", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.And),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.And(a[0].TryConvert(_), a[1].TryConvert(_)))
                           )
-                        : _
-                    );
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "&", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "&=")]
             public static Expression AndAssign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.AndAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
-                    ? e.Arguments[1].Reduce(s)
-                    : YacqExpression.Function(s, "&", e.Arguments.Skip(1)).Reduce(s)
-                );
+                return YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) YacqExpression.Function(s, "=",
+                          e.Arguments[0],
+                          YacqExpression.Function(s, "&", e.Arguments)
+                      )
+                    : Expression.AndAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                          ? e.Arguments[1].Reduce(s)
+                          : YacqExpression.Function(s, "&", e.Arguments.Skip(1)).Reduce(s)
+                      );
             }
 
             [YacqSymbol(DispatchTypes.Method, "!&")]
             public static Expression NotAnd(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Not(YacqExpression.Function(s, "&", e.Arguments));
+                return YacqExpression.Function(s, "!",
+                    YacqExpression.Function(s, "&", e.Arguments)
+                );
             }
 
             [YacqSymbol(DispatchTypes.Method, "!&=")]
             public static Expression NotAndAssign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Assign(
+                return YacqExpression.Function(s, "=",
                     e.Arguments[0].Reduce(s),
                     YacqExpression.Function(s, "!&", e.Arguments)
                 );
@@ -803,38 +1015,51 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "|")]
             public static Expression Or(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                        .Let(_ => Expression.Or(a[0].TryConvert(_), a[1].TryConvert(_)))
-                    )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "|", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.Or),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.Or(a[0].TryConvert(_), a[1].TryConvert(_)))
                           )
-                        : _
-                    );
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "|", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "|=")]
             public static Expression OrAssign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.OrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
-                    ? e.Arguments[1].Reduce(s)
-                    : YacqExpression.Function(s, "|", e.Arguments.Skip(1)).Reduce(s)
-                );
+                return YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) YacqExpression.Function(s, "=",
+                          e.Arguments[0],
+                          YacqExpression.Function(s, "|", e.Arguments)
+                      )
+                    : Expression.OrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                          ? e.Arguments[1].Reduce(s)
+                          : YacqExpression.Function(s, "|", e.Arguments.Skip(1)).Reduce(s)
+                      );
             }
 
             [YacqSymbol(DispatchTypes.Method, "!|")]
             public static Expression NotOr(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Not(YacqExpression.Function(s, "|", e.Arguments));
+                return YacqExpression.Function(s, "!",
+                    YacqExpression.Function(s, "|", e.Arguments)
+                );
             }
 
             [YacqSymbol(DispatchTypes.Method, "!|=")]
             public static Expression NotOrAssign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Assign(
+                return YacqExpression.Function(s, "=",
                     e.Arguments[0].Reduce(s),
                     YacqExpression.Function(s, "!|", e.Arguments)
                 );
@@ -843,56 +1068,97 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "^")]
             public static Expression ExclusiveOr(DispatchExpression e, SymbolTable s, Type t)
             {
-                return new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
-                    .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
-                        .Let(_ => Expression.ExclusiveOr(a[0].TryConvert(_), a[1].TryConvert(_)))
-                    )
-                    .Let(_ => e.Arguments.Count > 2
-                        ? (Expression) YacqExpression.Function(s, "^", e.Arguments
-                              .Skip(2)
-                              .StartWith(_)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.ExclusiveOr),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.ExclusiveOr(a[0].TryConvert(_), a[1].TryConvert(_)))
                           )
-                        : _
-                    );
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "^", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
+                );
             }
             
             [YacqSymbol(DispatchTypes.Method, "^=")]
             public static Expression ExclusiveOrAssign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.ExclusiveOrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
-                    ? e.Arguments[1].Reduce(s)
-                    : YacqExpression.Function(s, "^", e.Arguments.Skip(1)).Reduce(s)
-                );
+                return YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) YacqExpression.Function(s, "=",
+                          e.Arguments[0],
+                          YacqExpression.Function(s, "^", e.Arguments)
+                      )
+                    : Expression.ExclusiveOrAssign(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
+                          ? e.Arguments[1].Reduce(s)
+                          : YacqExpression.Function(s, "^", e.Arguments.Skip(1)).Reduce(s)
+                      );
             }
             
             [YacqSymbol(DispatchTypes.Method, "&&")]
             public static Expression AndAlso(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.AndAlso(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
-                    ? e.Arguments[1].Reduce(s)
-                    : YacqExpression.Function(s, "&&", e.Arguments.Skip(1)).Reduce(s)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.And),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.AndAlso(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "&&", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
                 );
             }
 
             [YacqSymbol(DispatchTypes.Method, "!&&")]
             public static Expression NotAndAlso(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Not(YacqExpression.Function(s, "&&", e.Arguments));
+                return YacqExpression.Function(s, "!",
+                    YacqExpression.Function(s, "&&", e.Arguments)
+                );
             }
 
             [YacqSymbol(DispatchTypes.Method, "||")]
             public static Expression OrElse(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.OrElse(e.Arguments[0].Reduce(s), e.Arguments.Count == 2
-                    ? e.Arguments[1].Reduce(s)
-                    : YacqExpression.Function(s, "||", e.Arguments.Skip(1)).Reduce(s)
+                return (YacqBinder.IsInDynamicContext(s, e.Arguments.Take(2))
+                    ? (Expression) Expression.Dynamic(
+                            YacqBinder.BinaryOperation(s, ExpressionType.Or),
+                            typeof(Object),
+                            e.Arguments.Take(2).ReduceAll(s)
+                        )
+                    : new [] { e.Arguments[0].Reduce(s), e.Arguments[1].Reduce(s), }
+                          .Let(a => YacqExpression.ConvertNumericTypeForAlithmetics(a[0].Type, a[1].Type)
+                              .Let(_ => Expression.OrElse(a[0].TryConvert(_), a[1].TryConvert(_)))
+                          )
+                ).Let(_ => e.Arguments.Count > 2
+                    ? (Expression) YacqExpression.Function(s, "||", e.Arguments
+                            .Skip(2)
+                            .StartWith(_)
+                        )
+                    : _
                 );
             }
             
             [YacqSymbol(DispatchTypes.Method, "!||")]
             public static Expression NotOrElse(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Expression.Not(YacqExpression.Function(s, "||", e.Arguments));
+                return YacqExpression.Function(s, "!",
+                    YacqExpression.Function(s, "&&", e.Arguments)
+                );
             }
             
             #endregion
@@ -1038,12 +1304,20 @@ namespace XSpect.Yacq.Symbols
                                     : EnumerableEx.Return(_)
                                 ))
                                 .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
-                                    v.Reduce(s_).Apply(r => s_.Add(n, r is YacqExpression ? r : Expression.Variable(r.Type, n)))
+                                    v.Reduce(s_).Apply(r => s_.Add(n, r is YacqExpression
+                                        ? r
+                                        : ((Expression) Expression.Variable(r.Type, n)).If(
+                                              ve => YacqBinder.IsInDynamicContext(s_, v),
+                                              ve => YacqExpression.Contextful(s_, ve, ContextType.Dynamic)
+                                          )
+                                    ))
                                 )))
                                 .ToArray()
                                 .Let(_ => Expression.Block(
                                     s_.Literals.Values
-                                        .OfType<ParameterExpression>(),
+                                        .Choose(v => v as ParameterExpression
+                                            ?? (ParameterExpression) (v as ContextfulExpression).Expression
+                                        ),
                                     (e.Arguments.Count > 1
                                         ? e.Arguments
                                               .Skip(1)
@@ -1056,8 +1330,8 @@ namespace XSpect.Yacq.Symbols
                                           )
                                     )
                                         .StartWith(s_.Literals.Values
-                                            .OfType<ParameterExpression>()
-                                            .Zip(_.Where(a => !(a is YacqExpression)), Expression.Assign)
+                                            .Choose(v => v as ParameterExpression ?? (v as ContextfulExpression).Expression)
+                                            .Zip(_.Where(a => !(a is YacqExpression)), (l, r) => YacqExpression.Function(s_, "=", l, r))
                                             .ToArray()
                                         )
                                 ))
@@ -1540,9 +1814,9 @@ namespace XSpect.Yacq.Symbols
                     ).Reduce(s).Let(r =>
                         l.Type.GetEnumerableElementType().Let(lt =>
                             r.Type.GetEnumerableElementType().Let(rt =>
-                                new[] { lt, rt, }.GetCommonType().Let(ct =>
-                                    (lt != ct ? l.Method(s, "Cast", new[] { ct, }) : l).Method(s, "Concat",
-                                        rt != ct ? r.Method(s, "Cast", new[] { ct, }) : r
+                                new [] { lt, rt, }.GetCommonType().Let(ct =>
+                                    (lt != ct ? l.Method(s, "Cast", new [] { ct, }) : l).Method(s, "Concat",
+                                        rt != ct ? r.Method(s, "Cast", new [] { ct, }) : r
                                     )
                                 )
                             )
@@ -1879,7 +2153,7 @@ namespace XSpect.Yacq.Symbols
             public static Expression UndefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
                 e.Left.Reduce(s).Const<SymbolTable>().Apply(_ =>
-                    new[] { SymbolEntry.Parse(e.Arguments[0], s, true), SymbolEntry.Parse(e.Arguments[0], s, false), }
+                    new [] { SymbolEntry.Parse(e.Arguments[0], s, true), SymbolEntry.Parse(e.Arguments[0], s, false), }
                         .ForEach(k => _.Remove(k))
                 );
                 return Expression.Empty();
@@ -1939,6 +2213,16 @@ namespace XSpect.Yacq.Symbols
             public static Expression Reduce(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.TypeCandidate(typeof(YacqExtensions)).Method(s, "Reduce",
+                    e.Left,
+                    Expression.Constant(s),
+                    Expression.Default(typeof(Type))
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Expression), "reduceScan")]
+            public static Expression ReduceScan(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExtensions)).Method(s, "ReduceScan",
                     e.Left,
                     Expression.Constant(s),
                     Expression.Default(typeof(Type))
