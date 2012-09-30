@@ -335,6 +335,7 @@ namespace XSpect.Yacq.Dynamic
                                       .FirstOrDefault()
                                   )
                        ).Null(ce => ce.ContextType == ContextType.Dynamic)
+                    || expr.Reduce(symbols) is DynamicExpression
                 );
         }
 

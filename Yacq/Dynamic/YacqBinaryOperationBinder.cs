@@ -86,15 +86,15 @@ namespace XSpect.Yacq.Dynamic
                 case ExpressionType.ExclusiveOr:
                     return "^";
                 case ExpressionType.GreaterThan:
-                    return "<";
+                    return ">";
                 case ExpressionType.GreaterThanOrEqual:
-                    return "<=";
+                    return ">=";
                 case ExpressionType.LeftShift:
                     return "<<";
                 case ExpressionType.LessThan:
-                    return ">";
+                    return "<";
                 case ExpressionType.LessThanOrEqual:
-                    return ">=";
+                    return "<=";
                 case ExpressionType.Modulo:
                     return "%";
                 case ExpressionType.Multiply:

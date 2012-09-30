@@ -66,7 +66,7 @@ namespace XSpect.Yacq.Expressions
         {
             Expression result = (expression as YacqExpression)
                 .Null(e => e.ReduceOnce(symbols, expectedType))
-                ?? expression.Reduce();
+                ?? expression.Reduce(symbols, expectedType);
             expression = null;
             while (expression != result)
             {
