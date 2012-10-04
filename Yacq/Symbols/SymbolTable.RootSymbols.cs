@@ -1866,6 +1866,23 @@ namespace XSpect.Yacq.Symbols
                 );
             }
 
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "dynamic")]
+            public static Expression DynamicObject(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return (e.Arguments[0].List(":")
+                    .Null(l => Tuple.Create(l.First(), l.Last()))
+                        ?? Tuple.Create(e.Arguments[0], default(Expression))
+                ).Let(tt => (Expression) YacqExpression.Function(s, "let",
+                    e.Arguments
+                        .Skip(1)
+                        .StartWith(YacqExpression.Vector(
+                            s,
+                            tt.Item1,
+                            YacqExpression.Function(s, "dynamic", e.Left)
+                        ))
+                ).If(_ => tt.Item2 != null, _ => _.Method(s, "to", tt.Item2)));
+            }
+
             [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "cond")]
             public static Expression Condition(DispatchExpression e, SymbolTable s, Type t)
             {
