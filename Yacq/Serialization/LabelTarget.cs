@@ -27,60 +27,47 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
+using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
-    [DataContract()]
-    internal class Block
-        : Node
+    internal class LabelTarget
     {
         [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        public TypeRef Type
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public String Name
         {
             get;
             set;
         }
 
-        public override Expression Deserialize()
+        internal static LabelTarget Serialize(E.LabelTarget target)
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
-        }
-    }
-
-    partial class Node
-    {
-        internal static Block Block(BlockExpression expression)
-        {
-            return new Block()
+            return new LabelTarget()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
+                Name = target.Name,
+                Type = target.Type != typeof(void)
+                    ? TypeRef.Serialize(target.Type)
                     : null,
             };
+        }
+
+        internal E.LabelTarget Deserialize()
+        {
+            return E.Expression.Label(
+                this.Type.Null(t => t.Deserialize()) ?? typeof(void),
+                this.Name
+            );
         }
     }
 }

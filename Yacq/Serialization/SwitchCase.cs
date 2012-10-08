@@ -27,60 +27,45 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
+using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
-    [DataContract()]
-    internal class Block
-        : Node
+    internal class SwitchCase
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public Node[] TestValues
         {
             get;
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        [DataMember(Order = 1)]
+        public Node Body
         {
             get;
             set;
         }
 
-        public override Expression Deserialize()
+        internal static SwitchCase Serialize(E.SwitchCase @case)
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
-        }
-    }
-
-    partial class Node
-    {
-        internal static Block Block(BlockExpression expression)
-        {
-            return new Block()
+            return new SwitchCase()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                TestValues = @case.TestValues.Select(Node.Serialize).ToArray(),
+                Body = Node.Serialize(@case.Body),
             };
+        }
+
+        internal E.SwitchCase Deserialize()
+        {
+            return E.Expression.SwitchCase(
+                this.Body.Deserialize(),
+                this.TestValues.Select(n => n.Deserialize())
+            );
         }
     }
 }

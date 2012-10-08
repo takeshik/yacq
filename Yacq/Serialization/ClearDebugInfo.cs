@@ -27,59 +27,30 @@
  */
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
-        : Node
+    internal class ClearDebugInfo
+        : DebugInfo
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
-        {
-            get;
-            set;
-        }
-
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
-        {
-            get;
-            set;
-        }
-
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return Expression.ClearDebugInfo(
+                this.Document.Deserialize()
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static ClearDebugInfo ClearDebugInfo(DebugInfoExpression expression)
         {
-            return new Block()
+            return new ClearDebugInfo()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                Document = SymbolDocumentInfo.Serialize(expression.Document),
             };
         }
     }

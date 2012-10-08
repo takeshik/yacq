@@ -27,60 +27,70 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
+using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
-    [DataContract()]
-    internal class Block
-        : Node
+    internal class CatchBlock
     {
         [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        public TypeRef Test
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public Parameter Variable
         {
             get;
             set;
         }
 
-        public override Expression Deserialize()
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public Node Filter
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            get;
+            set;
         }
-    }
 
-    partial class Node
-    {
-        internal static Block Block(BlockExpression expression)
+        [DataMember(Order = 3)]
+        public Node Body
         {
-            return new Block()
+            get;
+            set;
+        }
+
+        internal static CatchBlock Serialize(E.CatchBlock handler)
+        {
+            return new CatchBlock()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
+                Test = handler.Variable == null
+                    ? TypeRef.Serialize(handler.Test)
                     : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                Variable = handler.Variable.Null(v => Node.Parameter(v)),
+                Filter = handler.Filter.Null(e => Node.Serialize(e)),
+                Body = Node.Serialize(handler.Body),
             };
+        }
+
+        internal E.CatchBlock Deserialize()
+        {
+            return this.Variable != null
+                ? E.Expression.Catch(
+                      this.Variable.Deserialize<E.ParameterExpression>(),
+                      this.Body.Deserialize(),
+                      this.Filter.Null(n => n.Deserialize())
+                  )
+                : E.Expression.Catch(
+                      this.Test.Deserialize(),
+                      this.Body.Deserialize(),
+                      this.Filter.Null(n => n.Deserialize())
+                  );
         }
     }
 }

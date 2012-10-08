@@ -43,17 +43,29 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(Call))]
     [KnownType(typeof(Condition))]
     [KnownType(typeof(Constant))]
+    [KnownType(typeof(DebugInfo))]
     [KnownType(typeof(Default))]
     [KnownType(typeof(Goto))]
     [KnownType(typeof(Index))]
     [KnownType(typeof(Invoke))]
+    [KnownType(typeof(Label))]
     [KnownType(typeof(Lambda))]
+    [KnownType(typeof(ListInit))]
+    [KnownType(typeof(Loop))]
     [KnownType(typeof(MemberAccess))]
+    [KnownType(typeof(MemberInit))]
     [KnownType(typeof(New))]
     [KnownType(typeof(Parameter))]
+    [KnownType(typeof(RuntimeVariables))]
+    [KnownType(typeof(Switch))]
+    [KnownType(typeof(Try))]
     [KnownType(typeof(AssemblyRef))]
     [KnownType(typeof(TypeRef))]
     [KnownType(typeof(MemberRef))]
+    [KnownType(typeof(ElementInit))]
+    [KnownType(typeof(LabelTarget))]
+    [KnownType(typeof(MemberBinding))]
+    [KnownType(typeof(SymbolDocumentInfo))]
     internal abstract partial class Node
     {
         public const String Namespace = "http://yacq.net/schema";
@@ -114,11 +126,11 @@ namespace XSpect.Yacq.Serialization
                 case ExpressionType.LessThanOrEqual:
                     return LessThanOrEqual((BinaryExpression) expression);
                 case ExpressionType.ListInit:
-                    break;
+                    return ListInit((ListInitExpression) expression);
                 case ExpressionType.MemberAccess:
                     return MemberAccess((MemberExpression) expression);
                 case ExpressionType.MemberInit:
-                    break;
+                    return MemberInit((MemberInitExpression) expression);
                 case ExpressionType.Modulo:
                     return Modulo((BinaryExpression) expression);
                 case ExpressionType.Multiply:
@@ -166,7 +178,7 @@ namespace XSpect.Yacq.Serialization
                 case ExpressionType.Block:
                     return Block((BlockExpression) expression);
                 case ExpressionType.DebugInfo:
-                    break;
+                    return DebugInfo((DebugInfoExpression) expression);
                 case ExpressionType.Decrement:
                     return Decrement((UnaryExpression) expression);
                 case ExpressionType.Dynamic:
@@ -182,17 +194,17 @@ namespace XSpect.Yacq.Serialization
                 case ExpressionType.Index:
                     return Index((IndexExpression) expression);
                 case ExpressionType.Label:
-                    break;
+                    return Label((LabelExpression) expression);
                 case ExpressionType.RuntimeVariables:
-                    break;
+                    return RuntimeVariables((RuntimeVariablesExpression) expression);
                 case ExpressionType.Loop:
-                    break;
+                    return Loop((LoopExpression) expression);
                 case ExpressionType.Switch:
-                    break;
+                    return Switch((SwitchExpression) expression);
                 case ExpressionType.Throw:
                     return Throw((UnaryExpression) expression);
                 case ExpressionType.Try:
-                    break;
+                    return Try((TryExpression) expression);
                 case ExpressionType.Unbox:
                     return Unbox((UnaryExpression) expression);
                 case ExpressionType.AddAssign:

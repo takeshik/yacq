@@ -27,25 +27,46 @@
  */
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
+    [KnownType(typeof(ClearDebugInfo))]
+    internal class DebugInfo
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public SymbolDocumentInfo Document
         {
             get;
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        [DataMember(Order = 1)]
+        public Int32 StartLine
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 2)]
+        public Int32 StartColumn
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 3)]
+        public Int32 EndLine
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 4)]
+        public Int32 EndColumn
         {
             get;
             set;
@@ -53,34 +74,30 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return Expression.DebugInfo(
+                this.Document.Deserialize(),
+                this.StartLine,
+                this.StartColumn,
+                this.EndLine,
+                this.EndColumn
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static DebugInfo DebugInfo(DebugInfoExpression expression)
         {
-            return new Block()
-            {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
-            };
+            return expression.IsClear
+                ? ClearDebugInfo(expression)
+                : new DebugInfo()
+                  {
+                      Document = SymbolDocumentInfo.Serialize(expression.Document),
+                      StartLine = expression.StartLine,
+                      StartColumn = expression.StartColumn,
+                      EndLine = expression.EndLine,
+                      EndColumn = expression.EndColumn,
+                  };
         }
     }
 }

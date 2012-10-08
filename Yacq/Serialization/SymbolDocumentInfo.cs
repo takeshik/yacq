@@ -28,59 +28,61 @@
 
 using System;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
+using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
-    [DataContract()]
-    internal class Block
-        : Node
+    internal class SymbolDocumentInfo
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public String FileName
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public Guid Language
         {
             get;
             set;
         }
 
-        public override Expression Deserialize()
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public Guid LanguageVendor
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            get;
+            set;
         }
-    }
 
-    partial class Node
-    {
-        internal static Block Block(BlockExpression expression)
+        [DataMember(Order = 3, EmitDefaultValue = false)]
+        public Guid DocumentType
         {
-            return new Block()
+            get;
+            set;
+        }
+
+        public static SymbolDocumentInfo Serialize(E.SymbolDocumentInfo document)
+        {
+            return new SymbolDocumentInfo()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                FileName = document.FileName,
+                Language = document.Language,
+                LanguageVendor = document.LanguageVendor,
+                DocumentType = document.DocumentType,
             };
+        }
+
+        public E.SymbolDocumentInfo Deserialize()
+        {
+            return E.Expression.SymbolDocument(
+                this.FileName,
+                this.Language,
+                this.LanguageVendor,
+                this.DocumentType
+            );
         }
     }
 }

@@ -28,59 +28,58 @@
 
 using System;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
+using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
-        : Node
+    [KnownType(typeof(MemberAssignment))]
+    [KnownType(typeof(MemberMemberBinding))]
+    [KnownType(typeof(MemberListBinding))]
+    internal abstract class MemberBinding
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public MemberRef Member
         {
             get;
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public static MemberBinding Serialize(E.MemberBinding binding)
         {
-            get;
-            set;
-        }
-
-        public override Expression Deserialize()
-        {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
-        }
-    }
-
-    partial class Node
-    {
-        internal static Block Block(BlockExpression expression)
-        {
-            return new Block()
+            switch (binding.BindingType)
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
-            };
+                case E.MemberBindingType.Assignment:
+                    return MemberAssignment.Serialize((E.MemberAssignment) binding);
+                case E.MemberBindingType.MemberBinding:
+                    return MemberMemberBinding.Serialize((E.MemberMemberBinding) binding);
+                case E.MemberBindingType.ListBinding:
+                    return MemberListBinding.Serialize((E.MemberListBinding) binding);
+                default:
+                    throw new ArgumentOutOfRangeException("binding.BindingType");
+            }
+        }
+
+        public E.MemberBinding Deserialize()
+        {
+            if (this is MemberAssignment)
+            {
+                return ((MemberAssignment) this).Deserialize();
+            }
+            else if (this is MemberMemberBinding)
+            {
+                return ((MemberMemberBinding) this).Deserialize();
+            }
+            else if (this is MemberListBinding)
+            {
+                return ((MemberListBinding) this).Deserialize();
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("this");
+            }
         }
     }
 }

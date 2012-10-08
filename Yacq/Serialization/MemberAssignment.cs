@@ -28,59 +28,38 @@
 
 using System;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
+using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
-        : Node
+    internal class MemberAssignment
+        : MemberBinding
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public Node Expression
         {
             get;
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public static MemberAssignment Serialize(E.MemberAssignment binding)
         {
-            get;
-            set;
-        }
-
-        public override Expression Deserialize()
-        {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
-        }
-    }
-
-    partial class Node
-    {
-        internal static Block Block(BlockExpression expression)
-        {
-            return new Block()
+            return new MemberAssignment()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                Member = MemberRef.Serialize(binding.Member),
+                Expression = Node.Serialize(binding.Expression),
             };
+        }
+
+        public new E.MemberAssignment Deserialize()
+        {
+            return E.Expression.Bind(
+                this.Member.Deserialize(),
+                this.Expression.Deserialize()
+            );
         }
     }
 }

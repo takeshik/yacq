@@ -35,12 +35,14 @@ namespace XSpect.Yacq.Serialization
     internal class Goto
         : Node
     {
+        [DataMember(Order = 0)]
         public LabelTarget Target
         {
             get;
             set;
         }
 
+        [DataMember(Order = 1)]
         public Node Value
         {
             get;
@@ -50,11 +52,9 @@ namespace XSpect.Yacq.Serialization
         public override Expression Deserialize()
         {
             return Expression.Goto(
-                this.Target,
+                this.Target.Deserialize(),
                 this.Value.Deserialize(),
-                this.Type != null
-                    ? this.Type.Deserialize()
-                    : typeof(void)
+                this.Type.Null(t => t.Deserialize()) ?? typeof(void)
             );
         }
     }
@@ -68,7 +68,7 @@ namespace XSpect.Yacq.Serialization
                 Type = expression.Type != typeof(void)
                     ? TypeRef.Serialize(expression.Type)
                     : null,
-                Target = expression.Target,
+                Target = LabelTarget.Serialize(expression.Target),
                 Value = Serialize(expression.Value),
             };
         }

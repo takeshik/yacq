@@ -26,26 +26,31 @@
  * THE SOFTWARE.
  */
 
-using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
+    internal class Loop
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public Node Body
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public LabelTarget BreakLabel
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public LabelTarget ContinueLabel
         {
             get;
             set;
@@ -53,33 +58,23 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return Expression.Loop(
+                this.Body.Deserialize(),
+                this.BreakLabel.Null(l => l.Deserialize()),
+                this.ContinueLabel.Null(l => l.Deserialize())
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static Loop Loop(LoopExpression expression)
         {
-            return new Block()
+            return new Loop()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
-                    : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                Body = Serialize(expression.Body),
+                BreakLabel = expression.BreakLabel.Null(l => LabelTarget.Serialize(l)),
+                ContinueLabel = expression.ContinueLabel.Null(l => LabelTarget.Serialize(l)),
             };
         }
     }

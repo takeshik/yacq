@@ -26,7 +26,6 @@
  * THE SOFTWARE.
  */
 
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -34,18 +33,32 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
+    internal class Switch
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public Node SwitchValue
         {
             get;
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        [DataMember(Order = 1)]
+        public SwitchCase[] Cases
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public Node DefaultBody
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 3, EmitDefaultValue = false)]
+        public MethodRef Comparison
         {
             get;
             set;
@@ -53,33 +66,29 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return Expression.Switch(
+                this.Type.Null(t => t.Deserialize()),
+                this.SwitchValue.Deserialize(),
+                this.DefaultBody.Null(n => n.Deserialize()),
+                this.Comparison.Null(m => m.DeserializeAsMethod()),
+                this.Cases.Select(c => c.Deserialize())
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static Switch Switch(SwitchExpression expression)
         {
-            return new Block()
+            return new Switch()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
+                Type = expression.Type != expression.Cases[0].Body.Type
                     ? TypeRef.Serialize(expression.Type)
                     : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                SwitchValue = Serialize(expression.SwitchValue),
+                Cases = expression.Cases.Select(SwitchCase.Serialize).ToArray(),
+                DefaultBody = expression.DefaultBody.Null(e => Serialize(e)),
+                Comparison = expression.Comparison.Null(m => MethodRef.Serialize(m)),
             };
         }
     }

@@ -26,7 +26,6 @@
  * THE SOFTWARE.
  */
 
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -34,18 +33,32 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
+    internal class Try
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0)]
+        public Node Body
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Nodes
+        public CatchBlock[] Handlers
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public Node Fault
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 3, EmitDefaultValue = false)]
+        public Node Finally
         {
             get;
             set;
@@ -53,33 +66,29 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Nodes
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return Expression.MakeTry(
+                this.Type.Null(t => t.Deserialize()),
+                this.Body.Deserialize(),
+                this.Finally.Null(n => n.Deserialize()),
+                this.Fault.Null(n => n.Deserialize()),
+                this.Handlers.Null(hs => hs.Select(c => c.Deserialize()))
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static Try Try(TryExpression expression)
         {
-            return new Block()
+            return new Try()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
+                Type = expression.Type != expression.Body.Type
                     ? TypeRef.Serialize(expression.Type)
                     : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Nodes = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                Body = Serialize(expression.Body),
+                Handlers = expression.Handlers.Select(CatchBlock.Serialize).ToArray(),
+                Fault = expression.Fault.Null(e => Serialize(e)),
+                Finally = expression.Finally.Null(e => Serialize(e)),
             };
         }
     }
