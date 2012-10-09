@@ -34,6 +34,7 @@ using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
+    [DataContract()]
     internal class SymbolDocumentInfo
     {
         [DataMember(Order = 0)]

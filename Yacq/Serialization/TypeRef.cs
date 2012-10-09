@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
@@ -36,6 +37,8 @@ namespace XSpect.Yacq.Serialization
     [DataContract(Name = "Type", IsReference = true)]
     internal class TypeRef
     {
+        private static readonly Assembly _mscorlib = typeof(Object).Assembly;
+
         private static readonly Dictionary<TypeRef, Type> _cache
             = new Dictionary<TypeRef, Type>();
 
@@ -62,8 +65,12 @@ namespace XSpect.Yacq.Serialization
                 ? _reverseCache[type]
                 : new TypeRef()
                   {
-                      Assembly = AssemblyRef.Serialize(type.Assembly),
-                      Name = type != typeof(Object) ? type.FullName : null,
+                      Assembly = type.Assembly != _mscorlib
+                          ? AssemblyRef.Serialize(type.Assembly)
+                          : null,
+                      Name = type != typeof(Object)
+                          ? type.FullName
+                          : null,
                   }.Apply(t => _reverseCache.Add(type, t));
         }
 
@@ -71,7 +78,8 @@ namespace XSpect.Yacq.Serialization
         {
             return _cache.ContainsKey(this)
                 ? _cache[this]
-                : this.Assembly.Deserialize()
+                : this.Assembly
+                      .Null(a => a.Deserialize() ?? _mscorlib)
                       .GetType(this.Name ?? "System.Object")
                       .Apply(t => _cache.Add(this, t));
         }
