@@ -64,9 +64,10 @@ namespace XSpect.Yacq.Expressions
         /// <returns>A sequence of the reduced expressions.</returns>
         public static IEnumerable<Expression> ReduceScan(this Expression expression, SymbolTable symbols = null, Type expectedType = null)
         {
-            Expression result = (expression as YacqExpression)
-                .Null(e => e.ReduceOnce(symbols, expectedType))
-                ?? expression.Reduce(symbols, expectedType);
+            Expression result = (expression as YacqExpression).Null(
+                e => e.ReduceOnce(symbols, expectedType),
+                () => expression.Reduce(symbols, expectedType)
+            );
             expression = null;
             while (expression != result)
             {

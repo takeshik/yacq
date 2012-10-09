@@ -169,21 +169,16 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                var expression = this.ForceReduce(symbols, expectedType);
+                var expression = (this.ReduceImpl(symbols, expectedType) ?? this).If(
+                    e => e != this && !(e is YacqExpression),
+                    e => ImplicitConvert(e, expectedType)
+                );
                 if (expression != this)
                 {
                     this._reducedExpressions[hash] = expression;
                 }
                 return expression;
             }
-        }
-
-        internal Expression ForceReduce(SymbolTable symbols, Type expectedType)
-        {
-            var expression = this.ReduceImpl(symbols, expectedType) ?? this;
-            return expression == this
-                ? expression
-                : ImplicitConvert(expression, expectedType);
         }
 
         internal Boolean IsCached(SymbolTable symbols, Type expectedType)
