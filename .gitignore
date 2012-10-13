@@ -1,4 +1,5 @@
 /_ReSharper.*/
+/packages/
 /report/
 /TestResults/
 /*.cache
