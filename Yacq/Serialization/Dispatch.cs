@@ -1,5 +1,5 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// $Id$
+// $Id: 67fa9f3a2b0df9d3ed1721ea15891907a856aaff $
 /* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
  * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
@@ -30,22 +30,45 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using XSpect.Yacq.Expressions;
+using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
-        : Node
+    internal class Dispatch
+        : YacqNode
     {
         [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        public DispatchTypes DispatchType
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Expressions
+        public Node Left
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public String Name
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 3, EmitDefaultValue = false)]
+        public TypeRef[] TypeArguments
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 4, EmitDefaultValue = false)]
+        public Node[] Arguments
         {
             get;
             set;
@@ -53,32 +76,30 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Expressions
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return YacqExpression.Dispatch(
+                this.DispatchType,
+                this.Left.Null(n => Deserialize()),
+                this.Name,
+                this.TypeArguments.Null(_ => _.Select(t => t.Deserialize())),
+                this.Arguments.Null(_ => _.Select(n => n.Deserialize()))
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static Dispatch Dispatch(DispatchExpression expression)
         {
-            return new Block()
+            return new Dispatch()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
+                DispatchType = expression.DispatchType,
+                Left = expression.Left.Null(e => Serialize(e)),
+                Name = expression.Name,
+                TypeArguments = expression.TypeArguments.Any()
+                    ? expression.TypeArguments.Select(TypeRef.Serialize).ToArray()
                     : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Expressions = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
+                Arguments = expression.Arguments.Any()
+                    ? expression.Arguments.Select(Serialize).ToArray()
                     : null,
             };
         }

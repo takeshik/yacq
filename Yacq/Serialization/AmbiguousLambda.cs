@@ -1,5 +1,5 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// $Id$
+// $Id: 67fa9f3a2b0df9d3ed1721ea15891907a856aaff $
 /* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
  * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
@@ -30,22 +30,30 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
-    internal class Block
-        : Node
+    internal class AmbiguousLambda
+        : YacqNode
     {
         [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        public TypeRef ReturnType
         {
             get;
             set;
         }
 
         [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Expressions
+        public AmbiguousParameter[] Parameters
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 2, EmitDefaultValue = false)]
+        public Node[] Bodies
         {
             get;
             set;
@@ -53,32 +61,26 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Expressions
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
-                    .Let(es => this.Type != null
-                        ? Expression.Block(this.Type.Deserialize(), vs, es)
-                        : Expression.Block(vs, es)
-                    )
-                );
+            return YacqExpression.AmbiguousLambda(
+                this.ReturnType.Null(t => t.Deserialize()),
+                this.Bodies.Null(_ => _.Select(n => n.Deserialize())),
+                this.Parameters.Null(_ => _.Select(p => p.Deserialize<AmbiguousParameterExpression>()))
+            );
         }
     }
 
     partial class Node
     {
-        internal static Block Block(BlockExpression expression)
+        internal static AmbiguousLambda AmbiguousLambda(AmbiguousLambdaExpression expression)
         {
-            return new Block()
+            return new AmbiguousLambda()
             {
-                Type = expression.Type != expression.Expressions.Last().Type
-                    ? TypeRef.Serialize(expression.Type)
+                ReturnType = expression.ReturnType.Null(t => TypeRef.Serialize(t)),
+                Parameters = expression.Parameters.Any()
+                    ? expression.Parameters.Select(AmbiguousParameter).ToArray()
                     : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Expressions = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
+                Bodies = expression.Bodies.Any()
+                    ? expression.Bodies.Select(Serialize).ToArray()
                     : null,
             };
         }

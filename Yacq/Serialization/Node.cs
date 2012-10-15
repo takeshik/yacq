@@ -38,6 +38,7 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(NewArrayNode))]
     [KnownType(typeof(TypeBinaryNode))]
     [KnownType(typeof(UnaryNode))]
+    [KnownType(typeof(YacqNode))]
     [KnownType(typeof(ArrayIndex))]
     [KnownType(typeof(Block))]
     [KnownType(typeof(Call))]
@@ -186,6 +187,44 @@ namespace XSpect.Yacq.Serialization
                 case ExpressionType.Default:
                     return Default((DefaultExpression) expression);
                 case ExpressionType.Extension:
+                    if (expression is YacqExpression)
+                    {
+                        switch (expression.GetType().Name)
+                        {
+                            case "AmbiguousLambdaExpression":
+                                return AmbiguousLambda((AmbiguousLambdaExpression) expression);
+                            case "AmbiguousParameterExpression":
+                                return AmbiguousParameter((AmbiguousParameterExpression) expression);
+                            case "ContextfulExpression":
+                                return Contextful((ContextfulExpression) expression);
+                            case "DispatchExpression":
+                                return Dispatch((DispatchExpression) expression);
+                            case "IdentifierExpression":
+                                return Identifier((IdentifierExpression) expression);
+                            case "IgnoredExpression":
+                                return Ignored((IgnoredExpression) expression);
+                            case "LambdaListExpression":
+                                return LambdaList((LambdaListExpression) expression);
+                            case "ListExpression":
+                                return List((ListExpression) expression);
+                            case "MacroExpression":
+                                return Macro((MacroExpression) expression);
+                            case "NumberExpression":
+                                return Number((NumberExpression) expression);
+                            case "QuotedExpression":
+                                return Quoted((QuotedExpression) expression);
+                            case "SerializedExpression":
+                                return Serialized((SerializedExpression) expression);
+                            case "SymbolTableExpression":
+                                break;
+                            case "TextExpression":
+                                return Text((TextExpression) expression);
+                            case "TypeCandidateExpression":
+                                return TypeCandidate((TypeCandidateExpression) expression);
+                            case "VectorExpression":
+                                return Vector((VectorExpression) expression);
+                        }
+                    }
                     break;
                 case ExpressionType.Goto:
                     return Goto((GotoExpression) expression);

@@ -48,8 +48,6 @@ namespace XSpect.Yacq.Expressions
         private static readonly DataContractSerializer _serializer
             = new DataContractSerializer(typeof(Node), "Expression", Node.Namespace);
 
-        private readonly Node _value;
-
         internal static DataContractSerializer Serializer
         {
             get
@@ -58,13 +56,19 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
+        internal Node Node
+        {
+            get;
+            private set;
+        }
+
         internal SerializedExpression(
             SymbolTable symbols,
-            Node value
+            Node node
         )
             : base(symbols)
         {
-            this._value = value;
+            this.Node = node;
         }
 
         /// <summary>
@@ -95,7 +99,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The deserialized expression of this expression.</returns>
         public Expression Deserialize()
         {
-            return this._value.Deserialize();
+            return this.Node.Deserialize();
         }
 
         /// <summary>
@@ -104,7 +108,7 @@ namespace XSpect.Yacq.Expressions
         /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
         public void Save(XmlDictionaryWriter writer)
         {
-            Serializer.WriteObject(writer, this._value);
+            Serializer.WriteObject(writer, this.Node);
             writer.Flush();
         }
 

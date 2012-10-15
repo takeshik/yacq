@@ -304,6 +304,12 @@
     <Compile Include="..\Yacq\Serialization\AddChecked.cs">
       <Link>Serialization\AddChecked.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\AmbiguousLambda.cs">
+      <Link>Serialization\AmbiguousLambda.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\AmbiguousParameter.cs">
+      <Link>Serialization\AmbiguousParameter.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\And.cs">
       <Link>Serialization\And.cs</Link>
     </Compile>
@@ -349,6 +355,9 @@
     <Compile Include="..\Yacq\Serialization\Constant.cs">
       <Link>Serialization\Constant.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\Contextful.cs">
+      <Link>Serialization\Contextful.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\Convert.cs">
       <Link>Serialization\Convert.cs</Link>
     </Compile>
@@ -363,6 +372,9 @@
     </Compile>
     <Compile Include="..\Yacq\Serialization\Default.cs">
       <Link>Serialization\Default.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Dispatch.cs">
+      <Link>Serialization\Dispatch.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Serialization\Divide.cs">
       <Link>Serialization\Divide.cs</Link>
@@ -397,6 +409,12 @@
     <Compile Include="..\Yacq\Serialization\GreaterThanOrEqual.cs">
       <Link>Serialization\GreaterThanOrEqual.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\Identifier.cs">
+      <Link>Serialization\Identifier.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Ignored.cs">
+      <Link>Serialization\Ignored.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\Increment.cs">
       <Link>Serialization\Increment.cs</Link>
     </Compile>
@@ -421,6 +439,9 @@
     <Compile Include="..\Yacq\Serialization\Lambda.cs">
       <Link>Serialization\Lambda.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\LambdaList.cs">
+      <Link>Serialization\LambdaList.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\LeftShift.cs">
       <Link>Serialization\LeftShift.cs</Link>
     </Compile>
@@ -433,11 +454,17 @@
     <Compile Include="..\Yacq\Serialization\LessThanOrEqual.cs">
       <Link>Serialization\LessThanOrEqual.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\List.cs">
+      <Link>Serialization\List.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\ListInit.cs">
       <Link>Serialization\ListInit.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Serialization\Loop.cs">
       <Link>Serialization\Loop.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Macro.cs">
+      <Link>Serialization\Macro.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Serialization\MemberAccess.cs">
       <Link>Serialization\MemberAccess.cs</Link>
@@ -508,6 +535,9 @@
     <Compile Include="..\Yacq\Serialization\NotEqual.cs">
       <Link>Serialization\NotEqual.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\Number.cs">
+      <Link>Serialization\Number.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\OnesComplement.cs">
       <Link>Serialization\OnesComplement.cs</Link>
     </Compile>
@@ -544,8 +574,14 @@
     <Compile Include="..\Yacq\Serialization\PropertyRef.cs">
       <Link>Serialization\PropertyRef.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\Quasiquoted.cs">
+      <Link>Serialization\Quasiquoted.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\Quote.cs">
       <Link>Serialization\Quote.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Quoted.cs">
+      <Link>Serialization\Quoted.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Serialization\ReferenceEqual.cs">
       <Link>Serialization\ReferenceEqual.cs</Link>
@@ -564,6 +600,9 @@
     </Compile>
     <Compile Include="..\Yacq\Serialization\RuntimeVariables.cs">
       <Link>Serialization\RuntimeVariables.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Serialized.cs">
+      <Link>Serialization\Serialized.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Serialization\Subtract.cs">
       <Link>Serialization\Subtract.cs</Link>
@@ -586,6 +625,9 @@
     <Compile Include="..\Yacq\Serialization\SymbolDocumentInfo.cs">
       <Link>Serialization\SymbolDocumentInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\Text.cs">
+      <Link>Serialization\Text.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\Throw.cs">
       <Link>Serialization\Throw.cs</Link>
     </Compile>
@@ -597,6 +639,9 @@
     </Compile>
     <Compile Include="..\Yacq\Serialization\TypeBinaryNode.cs">
       <Link>Serialization\TypeBinaryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeCandidate.cs">
+      <Link>Serialization\TypeCandidate.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Serialization\TypeEqual.cs">
       <Link>Serialization\TypeEqual.cs</Link>
@@ -615,6 +660,15 @@
     </Compile>
     <Compile Include="..\Yacq\Serialization\Unbox.cs">
       <Link>Serialization\Unbox.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\Vector.cs">
+      <Link>Serialization\Vector.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\YacqNode.cs">
+      <Link>Serialization\YacqNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\YacqSequenceNode.cs">
+      <Link>Serialization\YacqSequenceNode.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Symbols\DispatchTypes.cs">
       <Link>Symbols\DispatchTypes.cs</Link>
