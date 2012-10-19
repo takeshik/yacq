@@ -43,8 +43,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NUnit.2.6.1\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Parseq">
-      <HintPath>..\packages\Parseq.1.3.0.1\lib\net40\Parseq.dll</HintPath>
+    <Reference Include="Parseq, Version=1.3.0.2, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Parseq.1.3.0.2\lib\net40\Parseq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
