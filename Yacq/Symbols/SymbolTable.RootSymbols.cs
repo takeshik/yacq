@@ -1316,7 +1316,7 @@ namespace XSpect.Yacq.Symbols
                                 .Let(_ => Expression.Block(
                                     s_.Literals.Values
                                         .Choose(v => v as ParameterExpression
-                                            ?? (ParameterExpression) (v as ContextfulExpression).Expression
+                                            ?? (ParameterExpression) (v as ContextfulExpression).Null(ce => ce.Expression)
                                         ),
                                     (e.Arguments.Count > 1
                                         ? e.Arguments
@@ -1330,7 +1330,7 @@ namespace XSpect.Yacq.Symbols
                                           )
                                     )
                                         .StartWith(s_.Literals.Values
-                                            .Choose(v => v as ParameterExpression ?? (v as ContextfulExpression).Expression)
+                                            .Choose(v => v as ParameterExpression ?? (v as ContextfulExpression).Null(ce => ce.Expression))
                                             .Zip(_.Where(a => !(a is YacqExpression)), (l, r) => YacqExpression.Function(s_, "=", l, r))
                                             .ToArray()
                                         )
@@ -1704,21 +1704,21 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "def")]
             public static Expression Define(DispatchExpression e, SymbolTable s, Type t)
             {
-                return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
+                return s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t)
                     .Method(s, "def", e.Arguments);
             }
             
             [YacqSymbol(DispatchTypes.Method, "def!")]
             public static Expression ForceDefine(DispatchExpression e, SymbolTable s, Type t)
             {
-                return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
+                return s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t)
                     .Method(s, "def!", e.Arguments);
             }
             
             [YacqSymbol(DispatchTypes.Method, "undef")]
             public static Expression Undefine(DispatchExpression e, SymbolTable s, Type t)
             {
-                return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
+                return s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t)
                     .Method(s, "undef", e.Arguments);
             }
 
@@ -1726,7 +1726,7 @@ namespace XSpect.Yacq.Symbols
             public static Expression Module(DispatchExpression e, SymbolTable s, Type t)
             {
                 return ModuleLoader.CreatePathSymbols(
-                    s.Resolve(DispatchTypes.Member, "$here")(e, s, t).Const<SymbolTable>(),
+                    s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t).Const<SymbolTable>(),
                     GetIdentifierFragments(e.Arguments[0])
                 ).Let(s_ => YacqExpression.Function(s_, "$",
                     e.Arguments
@@ -1738,14 +1738,14 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "load")]
             public static Expression Load(DispatchExpression e, SymbolTable s, Type t)
             {
-                return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
+                return s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t)
                     .Method(s, "load", e.Arguments);
             }
 
             [YacqSymbol(DispatchTypes.Method, "import")]
             public static Expression Import(DispatchExpression e, SymbolTable s, Type t)
             {
-                return s.Resolve(DispatchTypes.Member, "$here")(e, s, t)
+                return s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t)
                     .Method(s, "import", e.Arguments);
             }
 
@@ -2179,9 +2179,13 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "load")]
             public static Expression LoadTo(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Root["*modules*"].Const<ModuleLoader>().Load(
-                    e.Left.Reduce(s).Const<SymbolTable>(),
-                    e.Arguments[0].Reduce(s).Const<String>()
+                return Root["*modules*"].Const<ModuleLoader>().Let(m =>
+                    e.Left.Reduce(s).Const<SymbolTable>().Let(l =>
+                        e.Arguments[0].Reduce(s).If(_ => _ is SymbolTableExpression,
+                            _ => m.Load(l, ((SymbolTableExpression) _).Symbols),
+                            _ => m.Load(l, _.Const<String>())
+                        )
+                    )
                 );
             }
 
@@ -2332,7 +2336,7 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Member, "here")]
             public static Expression Here(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.SymbolTable(YacqExpression.Variable(s, "$here").Const<SymbolTable>());
+                return YacqExpression.SymbolTable(YacqExpression.Variable(s, ModuleIdentifier).Const<SymbolTable>());
             }
 
             [YacqSymbol(DispatchTypes.Member, "global")]

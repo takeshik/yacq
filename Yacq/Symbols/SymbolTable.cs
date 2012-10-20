@@ -44,6 +44,8 @@ namespace XSpect.Yacq.Symbols
     public partial class SymbolTable
         : IDictionary<SymbolEntry, SymbolDefinition>
     {
+        internal const String ModuleIdentifier = "$here";
+
         private readonly IDictionary<SymbolEntry, SymbolDefinition> _symbols;
 
         private readonly Lazy<SymbolTable[]> _chain;
@@ -362,6 +364,19 @@ namespace XSpect.Yacq.Symbols
             get
             {
                 return this.Chain.Aggregate(0, (sa, s) => sa ^ s.Hash);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this symbol table is module.
+        /// </summary>
+        /// <value><c>true</c> if this symbol table is module; otherwise, <c>false</c>.</value>
+        /// <remarks>Module is symbol table with a special member symbol named <c>$here</c>. Module can provide separated namespace by <see cref="SymbolTableExpression"/>.</remarks>
+        public Boolean IsModule
+        {
+            get
+            {
+                return this.ContainsKey(DispatchTypes.Member, ModuleIdentifier);
             }
         }
 
@@ -1041,6 +1056,25 @@ namespace XSpect.Yacq.Symbols
                     ).Select(t => s.ResolveMatch(expression.DispatchType, t, expression.Name)))
                 )
                 .FirstOrDefault(_ => _ != null);
+        }
+
+        /// <summary>
+        /// Gets the module symbol table to which this symbol table belongs.
+        /// </summary>
+        /// <returns>The module symbol table to which this symbol table belongs.</returns>
+        public SymbolTable ResolveModule()
+        {
+            return this.Resolve(DispatchTypes.Member, ModuleIdentifier)
+                (null, this, typeof(SymbolTable))
+                .Const<SymbolTable>();
+        }
+
+        /// <summary>
+        /// Mark this symbol table is module, which can provide separated namespace.
+        /// </summary>
+        public void MarkAsModule()
+        {
+            this[ModuleIdentifier] = Expression.Constant(this);
         }
 
         private void PrepareModify()

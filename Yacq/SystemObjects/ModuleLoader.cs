@@ -121,7 +121,7 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Load the file and apply to specified <see cref="SymbolTable"/>.
+        /// Loads the file and apply to specified <see cref="SymbolTable"/>.
         /// </summary>
         /// <param name="symbols">The symbol table as the applying target.</param>
         /// <param name="name">Name of loading file. File extension can be omitted.</param>
@@ -134,7 +134,19 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Load the file, apply to new <see cref="SymbolTable"/> and add the symbol with specified name, which refers to it in specified <see cref="SymbolTable"/>.
+        /// Adds symbols in specified <see cref="SymbolTable"/>.
+        /// </summary>
+        /// <param name="symbols">The symbol table as the adding target.</param>
+        /// <param name="sourceSymbols">The symbol table as the source to add.</param>
+        /// <returns><see cref="Expression.Empty()"/>.</returns>
+        public Expression Load(SymbolTable symbols, SymbolTable sourceSymbols)
+        {
+            sourceSymbols.ForEach(p => symbols[p.Key] = p.Value);
+            return Expression.Empty();
+        }
+
+        /// <summary>
+        /// Loads the file, apply to new <see cref="SymbolTable"/> and add the symbol with specified name, which refers to it in specified <see cref="SymbolTable"/>.
         /// </summary>
         /// <param name="symbols">The symbol table to add the reference to the applied symbols.</param>
         /// <param name="name">Name of loading file. File extension can be omitted.</param>
@@ -153,7 +165,7 @@ namespace XSpect.Yacq.SystemObjects
         }
 
         /// <summary>
-        /// Load the file, apply to new <see cref="SymbolTable"/> and add the symbol named as file name, which refers to it in specified <see cref="SymbolTable"/>.
+        /// Loads the file, apply to new <see cref="SymbolTable"/> and add the symbol named as file name, which refers to it in specified <see cref="SymbolTable"/>.
         /// </summary>
         /// <param name="symbols">The symbol table to add the reference to the applied symbols.</param>
         /// <param name="name">Name of loading file. File extension can be omitted.</param>
@@ -280,17 +292,14 @@ namespace XSpect.Yacq.SystemObjects
         internal static SymbolTable CreatePathSymbols(SymbolTable symbols, IEnumerable<String> fragments)
         {
             return ((SymbolTableExpression) EnumerableEx.Generate(
-                Tuple.Create(fragments, symbols
-                    .Resolve(DispatchTypes.Member, "$here")(null, symbols, typeof(SymbolTable))
-                        .Const<SymbolTable>()
-                ),
+                Tuple.Create(fragments, symbols.ResolveModule()),
                 _ => _.Item1.Any(),
                 _ => Tuple.Create(_.Item1.Skip(1), _.Item1.First()
                     .Let(f => _.Item2.ExistsKey(f) && _.Item2.Resolve(f) is SymbolTableExpression
                         ? ((SymbolTableExpression) _.Item2.Resolve(f)).Symbols
                         : new SymbolTable().Apply(
-                              s => _.Item2[f] = YacqExpression.SymbolTable(s),
-                              s => s["$here"] = YacqExpression.Constant(s)
+                              s => s.MarkAsModule(),
+                              s => _.Item2[f] = YacqExpression.SymbolTable(s)
                           )
                 )),
                 _ => _.Item2
