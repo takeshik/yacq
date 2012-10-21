@@ -214,6 +214,39 @@ namespace XSpect.Yacq.Expressions
             this.EndPosition = end;
         }
 
+        internal void SetPosition(IEnumerable<Position> positions)
+        {
+            positions
+                .Where(p => p != default(Position))
+                .OrderBy(p => p.Index)
+                .ToArray()
+                .Apply(
+                    ps => this.StartPosition = ps.FirstOrDefault(),
+                    ps => this.EndPosition = ps.LastOrDefault()
+                );
+        }
+
+        internal void SetPosition(params Position[] positions)
+        {
+            this.SetPosition((IEnumerable<Position>) positions);
+        }
+
+        internal void SetPosition(IEnumerable<Expression> expressions)
+        {
+            this.SetPosition(
+                expressions.SelectMany(e => (e as YacqExpression).Null(_ => new []
+                {
+                    _.StartPosition,
+                    _.EndPosition,
+                }) ?? new Position[0])
+            );
+        }
+
+        internal void SetPosition(params Expression[] expressions)
+        {
+            this.SetPosition((IEnumerable<Expression>) expressions);
+        }
+
         internal static Expression ImplicitConvert(Expression expression, Type expectedType)
         {
             if (expectedType == null)

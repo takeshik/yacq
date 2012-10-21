@@ -68,6 +68,7 @@ namespace XSpect.Yacq.Expressions
         {
             this.Expression = expression;
             this.ContextType = contextType;
+            this.SetPosition(expression);
         }
 
         /// <summary>

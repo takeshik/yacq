@@ -247,7 +247,7 @@ namespace XSpect.Yacq
                     (startPosition != null ? startPosition.Value.ToString() : null),
                     (endPosition != null ? endPosition.Value.ToString() : null)
                 )).Let(_ => _.Item2 != null
-                    ? _.Item1 + " - " + _.Item1
+                    ? _.Item1 + " - " + _.Item2
                     : _.Item1
                 );
         }

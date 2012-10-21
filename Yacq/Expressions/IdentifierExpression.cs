@@ -87,7 +87,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                throw new ParseException("Identifier evaluation failed: " + this);
+                throw new ParseException("Identifier evaluation failed: " + this, this);
             }
         }
     }

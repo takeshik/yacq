@@ -113,7 +113,7 @@ namespace XSpect.Yacq.Expressions
             {
                 return value;
             }
-            throw new ParseException("List evaluation failed: " + this);
+            throw new ParseException("List evaluation failed: " + this, this);
         }
     }
 

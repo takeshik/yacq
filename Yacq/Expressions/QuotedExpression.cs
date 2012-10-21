@@ -69,6 +69,7 @@ namespace XSpect.Yacq.Expressions
         {
             this.QuoteType = quoteType;
             this.Expression = expression ?? Empty();
+            this.SetPosition(this.Expression);
         }
 
         /// <summary>

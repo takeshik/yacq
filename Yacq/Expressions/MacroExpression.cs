@@ -83,6 +83,7 @@ namespace XSpect.Yacq.Expressions
             }
             this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
             this.Body = body ?? Empty();
+            this.SetPosition(this.Parameters.EndWith(this.Body));
         }
 
         /// <summary>

@@ -94,6 +94,7 @@ namespace XSpect.Yacq.Expressions
             this.ReturnType = returnType;
             this.Bodies = new ReadOnlyCollection<Expression>(bodies ?? new Expression[0]);
             this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
+            this.SetPosition(this.Bodies.Concat(this.Parameters));
         }
 
         /// <summary>

@@ -99,6 +99,7 @@ namespace XSpect.Yacq.Expressions
             : base(symbols)
         {
             this.Elements = elements ?? YacqList.Empty;
+            this.SetPosition(this.Elements);
         }
 
         /// <summary>

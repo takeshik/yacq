@@ -115,6 +115,7 @@ namespace XSpect.Yacq.Expressions
             this.Name = name;
             this.TypeArguments = new ReadOnlyCollection<Type>(typeArguments ?? new Type[0]);
             this.Arguments = new ReadOnlyCollection<Expression>(arguments ?? new Expression[0]);
+            this.SetPosition(arguments.StartWith(left));
         }
 
         /// <summary>
@@ -508,7 +509,7 @@ namespace XSpect.Yacq.Expressions
             }
             else
             {
-                throw new ParseException("Dispatch failed: " + this);
+                throw new ParseException("Dispatch failed: " + this, this);
             }
         }
 
