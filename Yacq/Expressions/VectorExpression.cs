@@ -69,38 +69,39 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             return this.Elements.Any()
+                // TODO: Use expectedType?
                 ? this.Elements.Select(e => e.List(":"))
-                    .ToArray()
-                    .If(ps => ps.All(p => p != null),
-                        ps => ps.Select(p => p.First().Reduce(symbols)).ToArray().Let(ks =>
-                            ps.Select(p => p.Last().Reduce(symbols)).ToArray().Let(vs =>
-                                ks.Select(k => k.Type).GetCommonType().Let(kt =>
-                                    vs.Select(v => v.Type).GetCommonType().Let(vt =>
-                                        Dispatch(symbols, DispatchTypes.Constructor,
-                                            TypeCandidate(typeof(Dictionary<,>).MakeGenericType(kt, vt)),
-                                            null
-                                        ).Method(symbols, "has", ks
-                                            .Select(k => ImplicitConvert(k, kt))
-                                            .Zip(vs.Select(v => ImplicitConvert(v, vt)),
-                                                (k, v) => Vector(symbols, k, v)
-                                            )
+                      .ToArray()
+                      .If(ps => ps.All(p => p != null),
+                          ps => ps.Select(p => p.First().Reduce(symbols)).ToArray().Let(ks =>
+                              ps.Select(p => p.Last().Reduce(symbols)).ToArray().Let(vs =>
+                                  ks.Select(k => k.Type).GetCommonType().Let(kt =>
+                                      vs.Select(v => v.Type).GetCommonType().Let(vt =>
+                                          Dispatch(symbols, DispatchTypes.Constructor,
+                                              TypeCandidate(typeof(Dictionary<,>).MakeGenericType(kt, vt)),
+                                              null
+                                          ).Method(symbols, "has", ks
+                                              .Select(k => ImplicitConvert(k, kt))
+                                              .Zip(vs.Select(v => ImplicitConvert(v, vt)),
+                                                  (k, v) => Vector(symbols, k, v)
+                                              )
 #if SILVERLIGHT
-                                            .Cast<Expression>()
+                                              .Cast<Expression>()
 #endif
-                                        )
-                                    )
-                                )
-                            )
-                        ),
-                        _ => (Expression) this.Elements.ReduceAll(symbols)
-                            .Let(es => es
-                                .Select(e => e.Type)
-                                .Distinct()
-                                .GetCommonType()
-                                .Let(t => NewArrayInit(t, es.Select(e => ImplicitConvert(e, t))))
-                            )
-                    )
-                : NewArrayInit(typeof(Object));
+                                          )
+                                      )
+                                  )
+                              )
+                          ),
+                          _ => (Expression) this.Elements.ReduceAll(symbols)
+                              .Let(es => es
+                                  .Select(e => e.Type)
+                                  .Distinct()
+                                  .GetCommonType()
+                                  .Let(t => NewArrayInit(t, es.Select(e => ImplicitConvert(e, t))))
+                              )
+                      )
+                : NewArrayInit(expectedType.Null(t => t.GetElementType()) ?? typeof(Object));
         }
     }
 

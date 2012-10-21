@@ -296,7 +296,7 @@ namespace XSpect.Yacq.Expressions
         /// <param name="symbols">The additional symbol table for reducing.</param>
         /// <returns>The return value of the compiled expression.</returns>
         /// <remarks>This method may reduce the performance.</remarks>
-        internal static Object Evaluate(this Expression expression, SymbolTable symbols = null)
+        public static Object Evaluate(this Expression expression, SymbolTable symbols = null)
         {
             return expression.Reduce(symbols).If(
                 e => e.Type.IsValueType,
