@@ -1725,9 +1725,12 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "module")]
             public static Expression Module(DispatchExpression e, SymbolTable s, Type t)
             {
-                return ModuleLoader.CreatePathSymbols(
-                    s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t).Const<SymbolTable>(),
-                    GetIdentifierFragments(e.Arguments[0])
+                return (e.Arguments[0].List().Null(_ => _.IsEmpty())
+                    ? new SymbolTable().Apply(s_ => s_.MarkAsModule())
+                    : ModuleLoader.CreatePathSymbols(
+                          s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t).Const<SymbolTable>(),
+                          GetIdentifierFragments(e.Arguments[0])
+                      )
                 ).Let(s_ => YacqExpression.Function(s_, "$",
                     e.Arguments
                         .Skip(1)
