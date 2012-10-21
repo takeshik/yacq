@@ -75,9 +75,9 @@ namespace XSpect.Yacq
         /// Read code string and generate expressions without reducing.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read.</param>
+        /// <param name="code">Code (character sequence or string) to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
-        public static YacqExpression[] ReadAll(Reader reader, String code)
+        public static YacqExpression[] ReadAll(Reader reader, IEnumerable<Char> code)
         {
             return (reader ?? new Reader()).Read(code);
         }
@@ -85,9 +85,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Read code string and generate expressions without reducing.
         /// </summary>
-        /// <param name="code">Code string to read.</param>
+        /// <param name="code">Code (character sequence or string) to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
-        public static YacqExpression[] ReadAll(String code)
+        public static YacqExpression[] ReadAll(IEnumerable<Char> code)
         {
             return ReadAll(null, code);
         }
@@ -100,9 +100,9 @@ namespace XSpect.Yacq
         /// Read code string and generate expressions without reducing.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read.</param>
+        /// <param name="code">Code (character sequence or string) to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
-        public static YacqExpression Read(Reader reader, String code)
+        public static YacqExpression Read(Reader reader, IEnumerable<Char> code)
         {
             return ReadAll(reader, code).LastOrDefault();
         }
@@ -110,9 +110,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Read code string and generate expressions without reducing.
         /// </summary>
-        /// <param name="code">Code string to read.</param>
+        /// <param name="code">Code (character sequence or string) to read.</param>
         /// <returns>All expressions without reducing, generated from the code.</returns>
-        public static YacqExpression Read(String code)
+        public static YacqExpression Read(IEnumerable<Char> code)
         {
             return Read(null, code);
         }
@@ -125,9 +125,9 @@ namespace XSpect.Yacq
         /// Parse code string and generate expressions.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse.</param>
+        /// <param name="code">Code (character sequence or string) to parse.</param>
         /// <returns>All expressions generated from the code.</returns>
-        public static Expression[] ParseAll(SymbolTable symbols, String code)
+        public static Expression[] ParseAll(SymbolTable symbols, IEnumerable<Char> code)
         {
             return CreateSymbolTable(symbols).Let(s =>
                 ReadAll(s.Resolve("*reader*").Const<Reader>(), code)
@@ -141,9 +141,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Parse code string and generate expressions.
         /// </summary>
-        /// <param name="code">Code string to parse.</param>
+        /// <param name="code">Code (character sequence or string) to parse.</param>
         /// <returns>All expressions generated from the code.</returns>
-        public static Expression[] ParseAll(String code)
+        public static Expression[] ParseAll(IEnumerable<Char> code)
         {
             return ParseAll(null, code);
         }
@@ -156,9 +156,9 @@ namespace XSpect.Yacq
         /// Parse code string and generate expressions, only return the last expression.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse.</param>
+        /// <param name="code">Code (character sequence or string) to parse.</param>
         /// <returns>The last expressions generated from the code.</returns>
-        public static Expression Parse(SymbolTable symbols, String code)
+        public static Expression Parse(SymbolTable symbols, IEnumerable<Char> code)
         {
             return ParseAll(symbols, code).Last();
         }
@@ -166,9 +166,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Parse code string and generate expressions, only return the last expression.
         /// </summary>
-        /// <param name="code">Code string to parse.</param>
+        /// <param name="code">Code (character sequence or string) to parse.</param>
         /// <returns>The last expressions generated from the code.</returns>
-        public static Expression Parse(String code)
+        public static Expression Parse(IEnumerable<Char> code)
         {
             return Parse(null, code);
         }
@@ -182,10 +182,10 @@ namespace XSpect.Yacq
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
         /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameters">Parameters of the function.</param>
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
-        public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, String code, params AmbiguousParameterExpression[] parameters)
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, IEnumerable<Char> code, params AmbiguousParameterExpression[] parameters)
         {
             symbols = CreateSymbolTable(symbols);
             var expressions = ReadAll(symbols.Resolve("*reader*").Const<Reader>(), code);
@@ -207,10 +207,10 @@ namespace XSpect.Yacq
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameters">Parameters of the function.</param>
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
-        public static LambdaExpression ParseLambda(SymbolTable symbols, String code, params AmbiguousParameterExpression[] parameters)
+        public static LambdaExpression ParseLambda(SymbolTable symbols, IEnumerable<Char> code, params AmbiguousParameterExpression[] parameters)
         {
             return ParseLambda(symbols, null, code, parameters);
         }
@@ -221,9 +221,9 @@ namespace XSpect.Yacq
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
         /// <param name="itType">The type of "it" parameter.</param>
         /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, Type returnType, String code)
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, Type returnType, IEnumerable<Char> code)
         {
             return ParseLambda(symbols, returnType, code, YacqExpression.AmbiguousParameter(itType, "it"));
         }
@@ -233,9 +233,9 @@ namespace XSpect.Yacq
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
         /// <param name="itType">The type of "it" parameter.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, String code)
+        public static LambdaExpression ParseLambda(SymbolTable symbols, Type itType, IEnumerable<Char> code)
         {
             return ParseLambda(symbols, itType, null, code);
         }
@@ -245,10 +245,10 @@ namespace XSpect.Yacq
         /// </summary>
         /// <typeparam name="TDelegate">The type of the delegate that the generating lambda expression represents.</typeparam>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameterNames">Parameter names of the function. Their types are inferred by <typeparamref name="TDelegate"/>.</param>
         /// <returns>The type-explicit lambda expression generated from the code and specified parameter names.</returns>
-        public static Expression<TDelegate> ParseLambda<TDelegate>(SymbolTable symbols, String code, params String[] parameterNames)
+        public static Expression<TDelegate> ParseLambda<TDelegate>(SymbolTable symbols, IEnumerable<Char> code, params String[] parameterNames)
         {
             return (Expression<TDelegate>) ParseLambda(
                 symbols,
@@ -269,10 +269,10 @@ namespace XSpect.Yacq
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
         /// </summary>
         /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameters">Parameters of the function.</param>
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
-        public static LambdaExpression ParseLambda(Type returnType, String code, params AmbiguousParameterExpression[] parameters)
+        public static LambdaExpression ParseLambda(Type returnType, IEnumerable<Char> code, params AmbiguousParameterExpression[] parameters)
         {
             return ParseLambda(null, returnType, code, parameters);
         }
@@ -280,10 +280,10 @@ namespace XSpect.Yacq
         /// <summary>
         /// Parse code string as the body of the function and generate lambda expression with specified parameters.
         /// </summary>
-        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameters">Parameters of the function.</param>
         /// <returns>The lambda expressions generated from the code and specified parameters.</returns>
-        public static LambdaExpression ParseLambda(String code, params AmbiguousParameterExpression[] parameters)
+        public static LambdaExpression ParseLambda(IEnumerable<Char> code, params AmbiguousParameterExpression[] parameters)
         {
             return ParseLambda(default(SymbolTable), code, parameters);
         }
@@ -293,9 +293,9 @@ namespace XSpect.Yacq
         /// </summary>
         /// <param name="itType">The type of "it" parameter.</param>
         /// <param name="returnType">The return type of this expression; typeof(<see cref="Void"/>) indicates this expression doesn't return value, or <c>null</c> if undetermined.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static LambdaExpression ParseLambda(Type itType, Type returnType, String code)
+        public static LambdaExpression ParseLambda(Type itType, Type returnType, IEnumerable<Char> code)
         {
             return ParseLambda(null, itType, returnType, code);
         }
@@ -304,9 +304,9 @@ namespace XSpect.Yacq
         /// Parse code string as the body of function and generate lambda expression with only one parameter named "it".
         /// </summary>
         /// <param name="itType">The type of "it" parameter.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static LambdaExpression ParseLambda(Type itType, String code)
+        public static LambdaExpression ParseLambda(Type itType, IEnumerable<Char> code)
         {
             return ParseLambda(default(SymbolTable), itType, code);
         }
@@ -315,10 +315,10 @@ namespace XSpect.Yacq
         /// Parse code string as the body of function and generate lambda expression with specified parameter names.
         /// </summary>
         /// <typeparam name="TDelegate">The type of the delegate that the generating lambda expression represents.</typeparam>
-        /// <param name="code">Code string to parse as the body of function. The code can contain specified parameter symbol names.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain specified parameter symbol names.</param>
         /// <param name="parameterNames">Parameter names of the function. Their types are inferred by <typeparamref name="TDelegate"/>.</param>
         /// <returns>The type-explicit lambda expression generated from the code and specified parameter names.</returns>
-        public static Expression<TDelegate> ParseLambda<TDelegate>(String code, params String[] parameterNames)
+        public static Expression<TDelegate> ParseLambda<TDelegate>(IEnumerable<Char> code, params String[] parameterNames)
         {
             return ParseLambda<TDelegate>(null, code, parameterNames);
         }
@@ -331,9 +331,9 @@ namespace XSpect.Yacq
         /// Parse code string as the body of function and generate lambda expression with no return value and no parameters.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function.</param>
         /// <returns>The lambda expression generated from the code.</returns>
-        public static Expression<Action> ParseAction(SymbolTable symbols, String code)
+        public static Expression<Action> ParseAction(SymbolTable symbols, IEnumerable<Char> code)
         {
             return (Expression<Action>) ParseLambda(symbols, typeof(void), code, new AmbiguousParameterExpression[0]);
         }
@@ -343,9 +343,9 @@ namespace XSpect.Yacq
         /// </summary>
         /// <typeparam name="T">The type of "it" parameter.</typeparam>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static Expression<Action<T>> ParseAction<T>(SymbolTable symbols, String code)
+        public static Expression<Action<T>> ParseAction<T>(SymbolTable symbols, IEnumerable<Char> code)
         {
             return (Expression<Action<T>>) ParseLambda(symbols, typeof(T), typeof(void), code);
         }
@@ -353,9 +353,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Parse code string as the body of function and generate lambda expression with no return value and no parameters.
         /// </summary>
-        /// <param name="code">Code string to parse as the body of function.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function.</param>
         /// <returns>The lambda expression generated from the code.</returns>
-        public static Expression<Action> ParseAction(String code)
+        public static Expression<Action> ParseAction(IEnumerable<Char> code)
         {
             return ParseAction(null, code);
         }
@@ -364,9 +364,9 @@ namespace XSpect.Yacq
         /// Parse code string as the body of function and generate lambda expression with no return value and only one parameter named "it".
         /// </summary>
         /// <typeparam name="T">The type of "it" parameter.</typeparam>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static Expression<Action<T>> ParseAction<T>(String code)
+        public static Expression<Action<T>> ParseAction<T>(IEnumerable<Char> code)
         {
             return ParseAction<T>(null, code);
         }
@@ -380,9 +380,9 @@ namespace XSpect.Yacq
         /// </summary>
         /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function.</param>
         /// <returns>The lambda expression generated from the code.</returns>
-        public static Expression<Func<TReturn>> ParseFunc<TReturn>(SymbolTable symbols, String code)
+        public static Expression<Func<TReturn>> ParseFunc<TReturn>(SymbolTable symbols, IEnumerable<Char> code)
         {
             return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code, new AmbiguousParameterExpression[0]);
         }
@@ -393,9 +393,9 @@ namespace XSpect.Yacq
         /// <typeparam name="T">The type of "it" parameter.</typeparam>
         /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(SymbolTable symbols, String code)
+        public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(SymbolTable symbols, IEnumerable<Char> code)
         {
             return (Expression<Func<T, TReturn>>) ParseLambda(symbols, typeof(T), typeof(TReturn), code);
         }
@@ -404,9 +404,9 @@ namespace XSpect.Yacq
         /// Parse code string as the body of function and generate lambda expression with return value and no parameters.
         /// </summary>
         /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
-        /// <param name="code">Code string to parse as the body of function.</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function.</param>
         /// <returns>The lambda expression generated from the code.</returns>
-        public static Expression<Func<TReturn>> ParseFunc<TReturn>(String code)
+        public static Expression<Func<TReturn>> ParseFunc<TReturn>(IEnumerable<Char> code)
         {
             return ParseFunc<TReturn>(null, code);
         }
@@ -416,9 +416,9 @@ namespace XSpect.Yacq
         /// </summary>
         /// <typeparam name="T">The type of "it" parameter.</typeparam>
         /// <typeparam name="TReturn">The return type of the generating lambda expression.</typeparam>
-        /// <param name="code">Code string to parse as the body of function. The code can contain the parameter symbol name (it).</param>
+        /// <param name="code">Code (character sequence or string) to parse as the body of function. The code can contain the parameter symbol name (it).</param>
         /// <returns>The lambda expression generated from the code and the parameter.</returns>
-        public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(String code)
+        public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(IEnumerable<Char> code)
         {
             return ParseFunc<T, TReturn>(null, code);
         }
@@ -590,9 +590,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents the read expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
-        public static void ReadAndSave(Reader reader, String code, XmlDictionaryWriter writer)
+        public static void ReadAndSave(Reader reader, IEnumerable<Char> code, XmlDictionaryWriter writer)
         {
             Save(Read(reader, code), writer);
         }
@@ -600,9 +600,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents the read expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
-        public static void ReadAndSave(String code, XmlDictionaryWriter writer)
+        public static void ReadAndSave(IEnumerable<Char> code, XmlDictionaryWriter writer)
         {
             ReadAndSave(null, code, writer);
         }
@@ -615,9 +615,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents read expression from specified code as Data Contract XML data into an output stream.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ReadAndSaveText(Reader reader, String code, Stream stream)
+        public static void ReadAndSaveText(Reader reader, IEnumerable<Char> code, Stream stream)
         {
             SaveText(Read(reader, code), stream);
         }
@@ -626,9 +626,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents read expression from specified code as Data Contract XML data to specified file.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ReadAndSaveText(Reader reader, String code, FileInfo file)
+        public static void ReadAndSaveText(Reader reader, IEnumerable<Char> code, FileInfo file)
         {
             SaveText(Read(reader, code), file);
         }
@@ -637,9 +637,9 @@ namespace XSpect.Yacq
         /// Gets the object graph which represents read expression from specified code as Data Contract XML data.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
-        public static String ReadAndSaveText(Reader reader, String code)
+        public static String ReadAndSaveText(Reader reader, IEnumerable<Char> code)
         {
             return SaveText(Read(reader, code));
         }
@@ -647,9 +647,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents read expression from specified code as Data Contract XML data into an output stream.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ReadAndSaveText(String code, Stream stream)
+        public static void ReadAndSaveText(IEnumerable<Char> code, Stream stream)
         {
             ReadAndSaveText(null, code, stream);
         }
@@ -657,9 +657,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents read expression from specified code as Data Contract XML data to specified file.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ReadAndSaveText(String code, FileInfo file)
+        public static void ReadAndSaveText(IEnumerable<Char> code, FileInfo file)
         {
             ReadAndSaveText(null, code, file);
         }
@@ -667,9 +667,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Gets the object graph which represents read expression from specified code as Data Contract XML data.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
-        public static String ReadAndSaveText(String code)
+        public static String ReadAndSaveText(IEnumerable<Char> code)
         {
             return ReadAndSaveText(null, code);
         }
@@ -682,9 +682,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents read expression from specified code as Data Contract binary data into an output stream.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ReadAndSaveBinary(Reader reader, String code, Stream stream)
+        public static void ReadAndSaveBinary(Reader reader, IEnumerable<Char> code, Stream stream)
         {
             SaveBinary(Read(reader, code), stream);
         }
@@ -693,9 +693,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents read expression from specified code as Data Contract binary data to specified file.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ReadAndSaveBinary(Reader reader, String code, FileInfo file)
+        public static void ReadAndSaveBinary(Reader reader, IEnumerable<Char> code, FileInfo file)
         {
             SaveBinary(Read(reader, code), file);
         }
@@ -704,9 +704,9 @@ namespace XSpect.Yacq
         /// Gets the object graph which represents read expression from specified code as Data Contract binary data.
         /// </summary>
         /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
-        public static Byte[] ReadAndSaveBinary(Reader reader, String code)
+        public static Byte[] ReadAndSaveBinary(Reader reader, IEnumerable<Char> code)
         {
             return SaveBinary(Read(reader, code));
         }
@@ -714,9 +714,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents read expression from specified code as Data Contract binary data into an output stream.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ReadAndSaveBinary(String code, Stream stream)
+        public static void ReadAndSaveBinary(IEnumerable<Char> code, Stream stream)
         {
             ReadAndSaveBinary(null, code, stream);
         }
@@ -724,9 +724,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents read expression from specified code as Data Contract binary data to specified file.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ReadAndSaveBinary(String code, FileInfo file)
+        public static void ReadAndSaveBinary(IEnumerable<Char> code, FileInfo file)
         {
             ReadAndSaveBinary(null, code, file);
         }
@@ -734,9 +734,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Gets the object graph which represents read expression from specified code as Data Contract binary data.
         /// </summary>
-        /// <param name="code">Code string to read and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
         /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
-        public static Byte[] ReadAndSaveBinary(String code)
+        public static Byte[] ReadAndSaveBinary(IEnumerable<Char> code)
         {
             return ReadAndSaveBinary(null, code);
         }
@@ -749,9 +749,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents the parsed expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
-        public static void ParseAndSave(SymbolTable symbols, String code, XmlDictionaryWriter writer)
+        public static void ParseAndSave(SymbolTable symbols, IEnumerable<Char> code, XmlDictionaryWriter writer)
         {
             Save(Parse(symbols, code), writer);
         }
@@ -759,9 +759,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents the parsed expression from specified code using the specified <see cref="XmlDictionaryWriter"/>.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="writer">An <see cref="XmlDictionaryWriter"/> used to write the object graph.</param>
-        public static void ParseAndSave(String code, XmlDictionaryWriter writer)
+        public static void ParseAndSave(IEnumerable<Char> code, XmlDictionaryWriter writer)
         {
             ParseAndSave(null, code, writer);
         }
@@ -774,9 +774,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data into an output stream.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ParseAndSaveText(SymbolTable symbols, String code, Stream stream)
+        public static void ParseAndSaveText(SymbolTable symbols, IEnumerable<Char> code, Stream stream)
         {
             SaveText(Parse(symbols, code), stream);
         }
@@ -785,9 +785,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data to specified file.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ParseAndSaveText(SymbolTable symbols, String code, FileInfo file)
+        public static void ParseAndSaveText(SymbolTable symbols, IEnumerable<Char> code, FileInfo file)
         {
             SaveText(Parse(symbols, code), file);
         }
@@ -796,9 +796,9 @@ namespace XSpect.Yacq
         /// Gets the object graph which represents parsed expression from specified code as Data Contract XML data.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
-        public static String ParseAndSaveText(SymbolTable symbols, String code)
+        public static String ParseAndSaveText(SymbolTable symbols, IEnumerable<Char> code)
         {
             return SaveText(Parse(symbols, code));
         }
@@ -806,9 +806,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data into an output stream.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ParseAndSaveText(String code, Stream stream)
+        public static void ParseAndSaveText(IEnumerable<Char> code, Stream stream)
         {
             ParseAndSaveText(null, code, stream);
         }
@@ -816,9 +816,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents parsed expression from specified code as Data Contract XML data to specified file.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ParseAndSaveText(String code, FileInfo file)
+        public static void ParseAndSaveText(IEnumerable<Char> code, FileInfo file)
         {
             ParseAndSaveText(null, code, file);
         }
@@ -826,9 +826,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Gets the object graph which represents parsed expression from specified code as Data Contract XML data.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <returns>The Data Contract XML data that represents the parsed expression.</returns>
-        public static String ParseAndSaveText(String code)
+        public static String ParseAndSaveText(IEnumerable<Char> code)
         {
             return ParseAndSaveText(null, code);
         }
@@ -841,9 +841,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data into an output stream.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ParseAndSaveBinary(SymbolTable symbols, String code, Stream stream)
+        public static void ParseAndSaveBinary(SymbolTable symbols, IEnumerable<Char> code, Stream stream)
         {
             SaveBinary(Parse(symbols, code), stream);
         }
@@ -852,9 +852,9 @@ namespace XSpect.Yacq
         /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data to specified file.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ParseAndSaveBinary(SymbolTable symbols, String code, FileInfo file)
+        public static void ParseAndSaveBinary(SymbolTable symbols, IEnumerable<Char> code, FileInfo file)
         {
             SaveBinary(Parse(symbols, code), file);
         }
@@ -863,9 +863,9 @@ namespace XSpect.Yacq
         /// Gets the object graph which represents parsed expression from specified code as Data Contract binary data.
         /// </summary>
         /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
-        public static Byte[] ParseAndSaveBinary(SymbolTable symbols, String code)
+        public static Byte[] ParseAndSaveBinary(SymbolTable symbols, IEnumerable<Char> code)
         {
             return SaveBinary(Parse(symbols, code));
         }
@@ -873,9 +873,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data into an output stream.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="stream">The destination stream.</param>
-        public static void ParseAndSaveBinary(String code, Stream stream)
+        public static void ParseAndSaveBinary(IEnumerable<Char> code, Stream stream)
         {
             ParseAndSaveBinary(null, code, stream);
         }
@@ -883,9 +883,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Saves the object graph which represents parsed expression from specified code as Data Contract binary data to specified file.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <param name="file">The file to write the output to.</param>
-        public static void ParseAndSaveBinary(String code, FileInfo file)
+        public static void ParseAndSaveBinary(IEnumerable<Char> code, FileInfo file)
         {
             ParseAndSaveBinary(null, code, file);
         }
@@ -893,9 +893,9 @@ namespace XSpect.Yacq
         /// <summary>
         /// Gets the object graph which represents parsed expression from specified code as Data Contract binary data.
         /// </summary>
-        /// <param name="code">Code string to parse and serialize.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
         /// <returns>The Data Contract binary data that represents the parsed expression.</returns>
-        public static Byte[] ParseAndSaveBinary(String code)
+        public static Byte[] ParseAndSaveBinary(IEnumerable<Char> code)
         {
             return ParseAndSaveBinary(null, code);
         }

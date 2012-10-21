@@ -72,9 +72,9 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="input">The code string to read.</param>
         /// <returns>Generated expressions.</returns>
-        public YacqExpression[] Read(String input)
+        public YacqExpression[] Read(IEnumerable<Char> input)
         {
-            using (var stream = new ReaderStream(input ?? ""))
+            using (var stream = (input ?? "").AsStream())
             {
                 Reply<Char, IEnumerable<YacqExpression>> reply;
                 IEnumerable<YacqExpression> result;

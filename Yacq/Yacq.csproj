@@ -166,7 +166,6 @@
     <Compile Include="Expressions\SymbolTableExpression.cs" />
     <Compile Include="Expressions\YacqSequenceExpression.cs" />
     <Compile Include="LanguageServices\Reader.Defaults.cs" />
-    <Compile Include="LanguageServices\ReaderStream.cs" />
     <Compile Include="MemberAccessibilities.cs" />
     <Compile Include="Serialization\Add.cs" />
     <Compile Include="Serialization\AddAssign.cs" />

@@ -271,9 +271,6 @@
     <Compile Include="..\Yacq\LanguageServices\Reader.Defaults.cs">
       <Link>LanguageServices\Reader.Defaults.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\ReaderStream.cs">
-      <Link>LanguageServices\ReaderStream.cs</Link>
-    </Compile>
     <Compile Include="..\Yacq\Linq\YacqQbservable.cs">
       <Link>Linq\YacqQbservable.cs</Link>
     </Compile>
