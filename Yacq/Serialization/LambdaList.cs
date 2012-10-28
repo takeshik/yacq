@@ -1,5 +1,5 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// $Id: 67fa9f3a2b0df9d3ed1721ea15891907a856aaff $
+// $Id$
 /* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
  * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
@@ -38,18 +38,10 @@ namespace XSpect.Yacq.Serialization
     internal class LambdaList
         : YacqSequenceNode
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public AmbiguousParameter[] Parameters
-        {
-            get;
-            set;
-        }
-
         public override Expression Deserialize()
         {
             return YacqExpression.LambdaList(
-                this.Elements.Null(_ => _.Select(n => n.Deserialize())),
-                this.Parameters.Null(_ => _.Select(p => p.Deserialize<AmbiguousParameterExpression>()))
+                this.Elements.Null(_ => _.Select(n => n.Deserialize()))
             );
         }
     }
@@ -60,9 +52,6 @@ namespace XSpect.Yacq.Serialization
         {
             return new LambdaList()
             {
-                Parameters = expression.Parameters.Any()
-                    ? expression.Parameters.Select(AmbiguousParameter).ToArray()
-                    : null,
                 Elements = expression.Elements.Any()
                     ? expression.Elements.Select(Serialize).ToArray()
                     : null,
