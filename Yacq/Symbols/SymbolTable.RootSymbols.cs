@@ -1828,6 +1828,57 @@ namespace XSpect.Yacq.Symbols
                 );
             }
 
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "..")]
+            public static Expression Range(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(EnumerableEx)).Method(s, "Generate",
+                    e.Left,
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "<=", YacqExpression.Identifier(s, "$_"), e.Arguments[0]), p)
+                    ),
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "++", YacqExpression.Identifier(s, "$_")), p)
+                    ),
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Identifier(s, "$_"), p)
+                    )
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "...")]
+            public static Expression RangeExclusive(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(EnumerableEx)).Method(s, "Generate",
+                    e.Left,
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "<", YacqExpression.Identifier(s, "$_"), e.Arguments[0]), p)
+                    ),
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "++", YacqExpression.Identifier(s, "$_")), p)
+                    ),
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Identifier(s, "$_"), p)
+                    )
+                );
+            }
+
+            [YacqSymbol(DispatchTypes.Method, typeof(Object), "step")]
+            public static Expression Step(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(EnumerableEx)).Method(s, "Generate",
+                    e.Left,
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, Expression.Constant(true), p)
+                    ),
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "+", YacqExpression.Identifier(s, "$_"), e.Arguments[0]), p)
+                    ),
+                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
+                        YacqExpression.AmbiguousLambda(s, YacqExpression.Identifier(s, "$_"), p)
+                    )
+                );
+            }
+
             #endregion
 
             #region Method - Flow
