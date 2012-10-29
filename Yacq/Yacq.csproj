@@ -164,6 +164,7 @@
     <Compile Include="Expressions\QuoteType.cs" />
     <Compile Include="Expressions\SerializedExpression.cs" />
     <Compile Include="Expressions\SymbolTableExpression.cs" />
+    <Compile Include="Expressions\YacqExpressionVisitor.cs" />
     <Compile Include="Expressions\YacqSequenceExpression.cs" />
     <Compile Include="LanguageServices\Reader.Defaults.cs" />
     <Compile Include="MemberAccessibilities.cs" />
