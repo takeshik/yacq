@@ -59,12 +59,13 @@ namespace XSpect.Yacq.Dynamic
                     target.Restrictions
                 );
             }
-            catch
+            catch (Exception ex)
             {
-                return new DynamicMetaObject(
-                    Expression.Default(typeof(object)),
-                    target.Restrictions
-                );
+                return errorSuggestion
+                    ?? new DynamicMetaObject(
+                           Expression.Throw(Expression.Constant(ex), typeof(Object)),
+                           BindingRestrictions.Empty
+                       );
             }
         }
     }
