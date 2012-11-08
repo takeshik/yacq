@@ -57,24 +57,29 @@ namespace XSpect.Yacq.Symbols
                 : null;
         }
 
-        public static Type MakeType(Type type)
+        public static Type GetTargetType(Object obj)
+        {
+            return GetTargetType(obj.GetType());
+        }
+
+        public static Type Type(Type type)
         {
             return typeof(Static<>).MakeGenericType(type);
         }
 
-        public static Type MakeType<T>()
+        public static Type Type<T>()
         {
-            return MakeType(typeof(T));
+            return Type(typeof(T));
         }
 
         public static Object Value(Type type)
         {
-            return Activator.CreateInstance(MakeType(type));
+            return Activator.CreateInstance(Type(type));
         }
 
-        public static Object Value<T>()
+        public static Static<T> Value<T>()
         {
-            return Activator.CreateInstance(MakeType<T>());
+            return (Static<T>) Activator.CreateInstance(Type<T>());
         }
     }
 }

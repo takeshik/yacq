@@ -2675,7 +2675,7 @@ namespace XSpect.Yacq.Symbols
             public static Expression GetStaticMembersAndSymbols(DispatchExpression e, SymbolTable s, Type t)
             {
                 return Expression.Constant(((TypeCandidateExpression) e.Left.Reduce(s)).Candidates
-                    .Select(Static.MakeType)
+                    .Select(Static.Type)
                     .ToArray()
                     .Let(ts =>
                     DispatchExpression.GetMembers(s, ts)

@@ -169,7 +169,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         public static Expression DefaultMissing(DispatchExpression e, SymbolTable s, Type t)
         {
-            return e._left is DynamicExpression || YacqBinder.IsInDynamicContext(s, e.Left)
+            return e._left is DynamicExpression || YacqBinder.IsInDynamicContext(s, e.Arguments.StartWith(e.Left))
                 ? e.DispatchByDynamicBinder(s, t)
                 : e.DispatchByTypeSystem(s, t);
         }
@@ -278,14 +278,20 @@ namespace XSpect.Yacq.Expressions
                         YacqBinder.GetMember(symbols, this.Name),
                         typeof(Object),
                         this.Arguments.ReduceAll(symbols)
-                            .StartWith(this._left)
+                            .StartWith((this._left as TypeCandidateExpression)
+                                .Null(tc => Constant(Static.Value(tc.ElectedType)))
+                                ?? this._left
+                            )
                     );
                 case DispatchTypes.Method:
                     return Dynamic(
                         YacqBinder.InvokeMember(symbols, this.Name, Enumerable.Repeat("", this.Arguments.Count)),
                         typeof(Object),
                         this.Arguments.ReduceAll(symbols)
-                            .StartWith(this._left)
+                            .StartWith((this._left as TypeCandidateExpression)
+                                .Null(tc => Constant(Static.Value(tc.ElectedType)))
+                                ?? this._left
+                            )
                     );
                 default:
                     throw new NotSupportedException("Dispatcher (in dynamic context) doesn't support: " + this.DispatchType);
@@ -522,7 +528,7 @@ namespace XSpect.Yacq.Expressions
 
         private static IEnumerable<Type> GetTypes(TypeCandidateExpression expression)
         {
-            return expression.Candidates.Select(Static.MakeType);
+            return expression.Candidates.Select(Static.Type);
         }
     }
 

@@ -210,7 +210,7 @@ namespace XSpect.Yacq.Symbols
         public static SymbolEntry Parse(Expression expression, SymbolTable symbols, Boolean isLiteral)
         {
             return (expression.List(".").Null(l => Tuple.Create(
-                (l.First() as VectorExpression).Null(v => Static.MakeType(((TypeCandidateExpression) v.Elements.First().Reduce(symbols)).ElectedType))
+                (l.First() as VectorExpression).Null(v => Static.Type(((TypeCandidateExpression) v.Elements.First().Reduce(symbols)).ElectedType))
                     ?? ((TypeCandidateExpression) l.First().Reduce(symbols)).ElectedType,
                 l.Last()
             ))

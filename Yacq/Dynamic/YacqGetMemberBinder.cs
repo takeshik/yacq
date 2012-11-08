@@ -51,8 +51,10 @@ namespace XSpect.Yacq.Dynamic
             try
             {
                 return new DynamicMetaObject(
-                    target.Expression
-                        .Reduce(this._symbols).TryConvert(target.RuntimeType)
+                    (Static.GetTargetType(target.Value)
+                        .Null(t => YacqExpression.TypeCandidate(this._symbols, t))
+                        ?? target.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType)
+                    )
                         .Member(this._symbols, this.Name)
                         .Reduce(this._symbols)
                         .TryConvert(typeof(Object)),

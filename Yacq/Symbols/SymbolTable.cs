@@ -998,7 +998,7 @@ namespace XSpect.Yacq.Symbols
                 expression.DispatchType,
                 expression.Left.Reduce(this)
                     .Null(e => e is TypeCandidateExpression
-                        ? Static.MakeType(((TypeCandidateExpression) e).ElectedType)
+                        ? Static.Type(((TypeCandidateExpression) e).ElectedType)
                         : e.Type
                     ),
                 expression.Name
@@ -1050,7 +1050,7 @@ namespace XSpect.Yacq.Symbols
                     .Null(se => se.Symbols, this)
                     .Let(s => (e != null
                         ? (e as TypeCandidateExpression)
-                              .Null(te => te.Candidates.Select(Static.MakeType))
+                              .Null(te => te.Candidates.Select(Static.Type))
                               ?? new [] { e.Type(this), }
                         : new Type[1]
                     ).Select(t => s.ResolveMatch(expression.DispatchType, t, expression.Name)))

@@ -52,9 +52,10 @@ namespace XSpect.Yacq.Dynamic
             {
                 return new DynamicMetaObject(
                     YacqExpression.Function(this._symbols, "=",
-                        target.Expression
-                            .Reduce(this._symbols).TryConvert(target.RuntimeType)
-                            .Member(this._symbols, this.Name),
+                        (Static.GetTargetType(target.Value)
+                            .Null(t => YacqExpression.TypeCandidate(this._symbols, t))
+                            ?? target.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType)
+                        ).Member(this._symbols, this.Name),
                         value.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType)
                     ).Reduce(this._symbols).TryConvert(typeof(Object)),
                     target.Restrictions
