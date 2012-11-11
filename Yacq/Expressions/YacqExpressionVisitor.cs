@@ -771,7 +771,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Visits the children of the <see cref="Expression{T}"/>.
+        /// Visits the children of the <see cref="System.Linq.Expressions.Expression{TDelegate}"/>.
         /// </summary>
         /// <typeparam name="T">The type of the delegate.</typeparam>
         /// <param name="node">The expression to visit.</param>

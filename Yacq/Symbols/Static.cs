@@ -48,8 +48,16 @@ namespace XSpect.Yacq.Symbols
         }
     }
 
-    internal static class Static
+    /// <summary>
+    /// Supports to create and inspect <see cref="Static{T}"/> objects.
+    /// </summary>
+    public static class Static
     {
+        /// <summary>
+        /// Gets the target type of static calls on <see cref="Static{T}"/> type.
+        /// </summary>
+        /// <param name="type">The type to get the target type of static calls.</param>
+        /// <returns>The target type of static calls.</returns>
         public static Type GetTargetType(Type type)
         {
             return type.TryGetGenericTypeDefinition() == typeof(Static<>)
@@ -57,26 +65,51 @@ namespace XSpect.Yacq.Symbols
                 : null;
         }
 
+        /// <summary>
+        /// Gets the target type of static calls on <see cref="Static{T}"/> object.
+        /// </summary>
+        /// <param name="obj">The object to get the target type of static calls.</param>
+        /// <returns>The target type of static calls.</returns>
         public static Type GetTargetType(Object obj)
         {
             return GetTargetType(obj.GetType());
         }
 
+        /// <summary>
+        /// Gets <see cref="Static{T}"/> type from target type of static calls.
+        /// </summary>
+        /// <param name="type">The target type of static calls.</param>
+        /// <returns>The <see cref="Static{T}"/> type with specified target type of static calls.</returns>
         public static Type Type(Type type)
         {
             return typeof(Static<>).MakeGenericType(type);
         }
 
+        /// <summary>
+        /// Gets <see cref="Static{T}"/> type from target type of static calls.
+        /// </summary>
+        /// <typeparam name="T">The target type of static calls.</typeparam>
+        /// <returns>The <see cref="Static{T}"/> type with specified target type of static calls.</returns>
         public static Type Type<T>()
         {
             return Type(typeof(T));
         }
 
+        /// <summary>
+        /// Creates new <see cref="Static{T}"/> with specified target type of static calls.
+        /// </summary>
+        /// <param name="type">The target type of static calls.</param>
+        /// <returns>New <see cref="Static{T}"/> object with specified target type of static calls.</returns>
         public static Object Value(Type type)
         {
             return Activator.CreateInstance(Type(type));
         }
 
+        /// <summary>
+        /// Creates new <see cref="Static{T}"/> with specified target type of static calls.
+        /// </summary>
+        /// <typeparam name="T">The target type of static calls.</typeparam>
+        /// <returns>New <see cref="Static{T}"/> object with specified target type of static calls.</returns>
         public static Static<T> Value<T>()
         {
             return (Static<T>) Activator.CreateInstance(Type<T>());
