@@ -466,6 +466,8 @@ namespace XSpect.Yacq
             return str.EndsWith(value, StringComparison.InvariantCulture);
         }
 
+        #region Zip
+
         internal static IEnumerable<TResult> Zip<TSource1, TSource2, TSource3, TResult>(
             this IEnumerable<TSource1> source1,
             IEnumerable<TSource2> source2,
@@ -495,10 +497,11 @@ namespace XSpect.Yacq
             using (var iter1 = source1.GetEnumerator())
             using (var iter2 = source2.GetEnumerator())
             using (var iter3 = source3.GetEnumerator())
+            using (var iter4 = source4.GetEnumerator())
             {
-                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext())
+                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext() && iter4.MoveNext())
                 {
-                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current);
+                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current, iter4.Current);
                 }
             }
         }
@@ -515,10 +518,12 @@ namespace XSpect.Yacq
             using (var iter1 = source1.GetEnumerator())
             using (var iter2 = source2.GetEnumerator())
             using (var iter3 = source3.GetEnumerator())
+            using (var iter4 = source4.GetEnumerator())
+            using (var iter5 = source5.GetEnumerator())
             {
-                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext())
+                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext() && iter4.MoveNext() && iter5.MoveNext())
                 {
-                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current);
+                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current, iter4.Current, iter5.Current);
                 }
             }
         }
@@ -536,10 +541,13 @@ namespace XSpect.Yacq
             using (var iter1 = source1.GetEnumerator())
             using (var iter2 = source2.GetEnumerator())
             using (var iter3 = source3.GetEnumerator())
+            using (var iter4 = source4.GetEnumerator())
+            using (var iter5 = source5.GetEnumerator())
+            using (var iter6 = source6.GetEnumerator())
             {
-                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext())
+                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext() && iter4.MoveNext() && iter5.MoveNext() && iter6.MoveNext())
                 {
-                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current);
+                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current, iter4.Current, iter5.Current, iter6.Current);
                 }
             }
         }
@@ -558,10 +566,14 @@ namespace XSpect.Yacq
             using (var iter1 = source1.GetEnumerator())
             using (var iter2 = source2.GetEnumerator())
             using (var iter3 = source3.GetEnumerator())
+            using (var iter4 = source4.GetEnumerator())
+            using (var iter5 = source5.GetEnumerator())
+            using (var iter6 = source6.GetEnumerator())
+            using (var iter7 = source7.GetEnumerator())
             {
-                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext())
+                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext() && iter4.MoveNext() && iter5.MoveNext() && iter6.MoveNext() && iter7.MoveNext())
                 {
-                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current);
+                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current, iter4.Current, iter5.Current, iter6.Current, iter7.Current);
                 }
             }
         }
@@ -581,13 +593,20 @@ namespace XSpect.Yacq
             using (var iter1 = source1.GetEnumerator())
             using (var iter2 = source2.GetEnumerator())
             using (var iter3 = source3.GetEnumerator())
+            using (var iter4 = source4.GetEnumerator())
+            using (var iter5 = source5.GetEnumerator())
+            using (var iter6 = source6.GetEnumerator())
+            using (var iter7 = source7.GetEnumerator())
+            using (var iter8 = source8.GetEnumerator())
             {
-                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext())
+                while (iter1.MoveNext() && iter2.MoveNext() && iter3.MoveNext() && iter4.MoveNext() && iter5.MoveNext() && iter6.MoveNext() && iter7.MoveNext() && iter8.MoveNext())
                 {
-                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current);
+                    yield return resultSelector(iter1.Current, iter2.Current, iter3.Current, iter4.Current, iter5.Current, iter6.Current, iter7.Current, iter8.Current);
                 }
             }
         }
+
+        #endregion
 
         internal static IEnumerable<TResult> Choose<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
             where TSource : class

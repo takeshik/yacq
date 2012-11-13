@@ -52,12 +52,20 @@ namespace XSpect.Yacq.Dynamic
             try
             {
                 return new DynamicMetaObject(
-                    target.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType)
+                    (Static.GetTargetType(target.Value)
+                        .Null(t => YacqExpression.TypeCandidate(this._symbols, t))
+                        ?? target.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType)
+                    )
                         .Method(this._symbols, this.Name,
-                            args.SelectAll(o => o.Expression.Reduce(this._symbols).TryConvert(target.RuntimeType))
+                            args.SelectAll(o => o.Expression.Reduce(this._symbols).TryConvert(o.RuntimeType))
                         )
                         .Reduce(this._symbols)
-                        .TryConvert(typeof(Object)),
+                        .If(e => e.Type == typeof(void), e =>
+                            Expression.Block(e, Expression.Default(typeof(Object)))
+                        )
+                        .If(e => e.Type.IsValueType, e =>
+                            e.TryConvert(typeof(Object))
+                        ),
                     target.Restrictions
                 );
             }

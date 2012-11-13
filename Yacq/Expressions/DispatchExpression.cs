@@ -270,7 +270,6 @@ namespace XSpect.Yacq.Expressions
 
         private Expression DispatchByDynamicBinder(SymbolTable symbols, Type expectedType)
         {
-            // TODO: Static members are not supported.
             switch (this.DispatchType & DispatchTypes.TargetMask)
             {
                 case DispatchTypes.Member:
