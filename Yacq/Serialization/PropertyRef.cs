@@ -46,22 +46,20 @@ namespace XSpect.Yacq.Serialization
 
         public static PropertyRef Serialize(PropertyInfo property)
         {
-            return _reverseCache.ContainsKey(property)
-                ? _reverseCache[property]
-                : new PropertyRef()
-                {
-                    Type = TypeRef.Serialize(property.ReflectedType),
-                    Name = property.Name,
-                }.Apply(p => _reverseCache.Add(property, p));
+            return _reverseCache.TryGetValue(property)
+                ?? new PropertyRef()
+                   {
+                       Type = TypeRef.Serialize(property.ReflectedType),
+                       Name = property.Name,
+                   }.Apply(p => _reverseCache.Add(property, p));
         }
 
         public new PropertyInfo Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : this.Type.Deserialize()
-                      .GetProperty(this.Name, Binding)
-                      .Apply(p => _cache.Add(this, p));
+            return _cache.TryGetValue(this)
+                ?? this.Type.Deserialize()
+                       .GetProperty(this.Name, Binding)
+                       .Apply(p => _cache.Add(this, p));
         }
     }
 }

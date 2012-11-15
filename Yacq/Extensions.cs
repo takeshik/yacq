@@ -331,10 +331,9 @@ namespace XSpect.Yacq
                 ? type.GetGenericTypeDefinition()
                       .MakeGenericType(
                           type.GetGenericArguments()
-                              .Select(t => (typeArgumentMap.ContainsKey(t)
-                                  ? typeArgumentMap[t]
-                                  : t
-                              ).ReplaceGenericArguments(typeArgumentMap))
+                              .Select(t => (typeArgumentMap.TryGetValue(t) ?? t)
+                                  .ReplaceGenericArguments(typeArgumentMap)
+                              )
                               .ToArray()
                       )
                 : type;

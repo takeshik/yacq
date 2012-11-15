@@ -2310,6 +2310,15 @@ namespace XSpect.Yacq.Symbols
                 return Expression.Lambda<Func<Expression>>(e.Left.Reduce(s)).Compile()();
             }
 
+            [YacqSymbol(DispatchTypes.Method, typeof(Expression), "serialize")]
+            public static Expression Serialize(DispatchExpression e, SymbolTable s, Type t)
+            {
+                return YacqExpression.TypeCandidate(typeof(YacqExpression)).Method(s, "Serialize",
+                    Expression.Constant(s),
+                    e.Left
+                );
+            }
+
             #endregion
 
             #region Variable - Flow

@@ -49,12 +49,11 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : Expression.Parameter(
-                      this.Type.Deserialize(),
-                      this.Name
-                  ).Apply(p => _cache.Add(this, p));
+            return _cache.TryGetValue(this)
+                ?? Expression.Parameter(
+                       this.Type.Deserialize(),
+                       this.Name
+                   ).Apply(p => _cache.Add(this, p));
         }
     }
 
@@ -65,13 +64,12 @@ namespace XSpect.Yacq.Serialization
 
         internal static Parameter Parameter(ParameterExpression expression)
         {
-            return _parameterReverseCache.ContainsKey(expression)
-                ? _parameterReverseCache[expression]
-                : new Parameter()
-                  {
-                      Type = TypeRef.Serialize(expression.Type),
-                      Name = expression.Name,
-                  }.Apply(p => _parameterReverseCache.Add(expression, p));
+            return _parameterReverseCache.TryGetValue(expression)
+                ?? new Parameter()
+                   {
+                       Type = TypeRef.Serialize(expression.Type),
+                       Name = expression.Name,
+                   }.Apply(p => _parameterReverseCache.Add(expression, p));
         }
     }
 }

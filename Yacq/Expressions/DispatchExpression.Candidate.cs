@@ -236,9 +236,8 @@ namespace XSpect.Yacq.Expressions
                                     .ToDictionary(_ => _.Item1, _ => _.Item2)
                                     .Let(d => this.Parameters.Select(p => Tuple.Create(
                                         p.ParameterType,
-                                        d.ContainsKey(p.Name)
-                                            ? d[p.Name]
-                                            : Constant(p.DefaultValue, p.ParameterType)
+                                        d.TryGetValue(p.Name)
+                                            ?? Constant(p.DefaultValue, p.ParameterType)
                                    )))
                               : null
                     )

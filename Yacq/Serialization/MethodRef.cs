@@ -53,41 +53,39 @@ namespace XSpect.Yacq.Serialization
 
         public static MethodRef Serialize(MethodBase method)
         {
-            return _reverseCache.ContainsKey(method)
-                ? _reverseCache[method]
-                : new MethodRef()
-                  {
-                      Type = TypeRef.Serialize(method.ReflectedType),
-                      Name = method.Name != ".ctor"
-                          ? method.Name
-                          : null,
-                      Signature = method.ToString(),
-                      TypeArgs = method.IsGenericMethod && !method.IsGenericMethodDefinition
-                          ? method.GetGenericArguments().SelectAll(TypeRef.Serialize)
-                          : null,
-                  }.Apply(m => _reverseCache.Add(method, m));
+            return _reverseCache.TryGetValue(method)
+                ?? new MethodRef()
+                    {
+                        Type = TypeRef.Serialize(method.ReflectedType),
+                        Name = method.Name != ".ctor"
+                            ? method.Name
+                            : null,
+                        Signature = method.ToString(),
+                        TypeArgs = method.IsGenericMethod && !method.IsGenericMethodDefinition
+                            ? method.GetGenericArguments().SelectAll(TypeRef.Serialize)
+                            : null,
+                    }.Apply(m => _reverseCache.Add(method, m));
         }
 
         public new MethodBase Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : (this.Name != null
-                      ? (MethodBase) this.Type.Deserialize()
-                            .GetMethods(Binding)
-                            .Select(m => this.Name == m.Name && this.Signature == m.ToString()
-                                ? m
-                                : this.TypeArgs != null &&
-                                  this.TypeArgs.Length == m.GetGenericArguments().Length
-                                      ? m.MakeGenericMethod(this.TypeArgs.SelectAll(t => t.Deserialize()))
-                                            .If(mg => this.Signature != mg.ToString(), default(MethodInfo))
-                                      : null
-                            )
-                            .First(m => m != null)
-                      : this.Type.Deserialize()
-                            .GetConstructors(Binding)
-                            .First(c => this.Signature == c.ToString())
-                  ).Apply(m => _cache.Add(this, m));
+            return _cache.TryGetValue(this)
+                ?? (this.Name != null
+                       ? (MethodBase) this.Type.Deserialize()
+                             .GetMethods(Binding)
+                             .Select(m => this.Name == m.Name && this.Signature == m.ToString()
+                                 ? m
+                                 : this.TypeArgs != null &&
+                                   this.TypeArgs.Length == m.GetGenericArguments().Length
+                                       ? m.MakeGenericMethod(this.TypeArgs.SelectAll(t => t.Deserialize()))
+                                             .If(mg => this.Signature != mg.ToString(), default(MethodInfo))
+                                       : null
+                             )
+                             .First(m => m != null)
+                       : this.Type.Deserialize()
+                             .GetConstructors(Binding)
+                             .First(c => this.Signature == c.ToString())
+                   ).Apply(m => _cache.Add(this, m));
         }
 
         public MethodInfo DeserializeAsMethod()

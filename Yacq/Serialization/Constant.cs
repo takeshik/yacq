@@ -49,12 +49,11 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : (this.Type != null
-                      ? Expression.Constant(this.Value, this.Type.Deserialize())
-                      : Expression.Constant(this.Value)
-                  ).Apply(c => _cache.Add(this, c));
+            return _cache.TryGetValue(this)
+                ?? (this.Type != null
+                       ? Expression.Constant(this.Value, this.Type.Deserialize())
+                       : Expression.Constant(this.Value)
+                   ).Apply(c => _cache.Add(this, c));
         }
     }
 
@@ -65,15 +64,14 @@ namespace XSpect.Yacq.Serialization
 
         internal static Constant Constant(ConstantExpression expression)
         {
-            return _constantReverseCache.ContainsKey(expression)
-                ? _constantReverseCache[expression]
-                : new Constant()
-                  {
-                      Type = expression.Value != null && expression.Value.GetType() == expression.Type
-                          ? TypeRef.Serialize(expression.Type)
-                          : null,
-                      Value = expression.Value,
-                  }.Apply(c => _constantReverseCache.Add(expression, c));
+            return _constantReverseCache.TryGetValue(expression)
+                ?? new Constant()
+                   {
+                       Type = expression.Value != null && expression.Value.GetType() == expression.Type
+                           ? TypeRef.Serialize(expression.Type)
+                           : null,
+                       Value = expression.Value,
+                   }.Apply(c => _constantReverseCache.Add(expression, c));
         }
     }
 }

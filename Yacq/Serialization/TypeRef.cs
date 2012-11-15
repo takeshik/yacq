@@ -61,27 +61,25 @@ namespace XSpect.Yacq.Serialization
 
         public static TypeRef Serialize(Type type)
         {
-            return _reverseCache.ContainsKey(type)
-                ? _reverseCache[type]
-                : new TypeRef()
-                  {
-                      Assembly = type.Assembly != _mscorlib
-                          ? AssemblyRef.Serialize(type.Assembly)
-                          : null,
-                      Name = type != typeof(Object)
-                          ? type.FullName
-                          : null,
-                  }.Apply(t => _reverseCache.Add(type, t));
+            return _reverseCache.TryGetValue(type)
+                ?? new TypeRef()
+                   {
+                       Assembly = type.Assembly != _mscorlib
+                           ? AssemblyRef.Serialize(type.Assembly)
+                           : null,
+                       Name = type != typeof(Object)
+                           ? type.FullName
+                           : null,
+                   }.Apply(t => _reverseCache.Add(type, t));
         }
 
         public Type Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : this.Assembly
-                      .Null(a => a.Deserialize() ?? _mscorlib)
-                      .GetType(this.Name ?? "System.Object")
-                      .Apply(t => _cache.Add(this, t));
+            return _cache.TryGetValue(this)
+                ?? this.Assembly
+                       .Null(a => a.Deserialize() ?? _mscorlib)
+                       .GetType(this.Name ?? "System.Object")
+                       .Apply(t => _cache.Add(this, t));
         }
     }
 }

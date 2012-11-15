@@ -70,33 +70,31 @@ namespace XSpect.Yacq.Serialization
 
         internal static AssemblyRef Serialize(Assembly assembly)
         {
-            return _reverseCache.ContainsKey(assembly)
-                ? _reverseCache[assembly]
+            return _reverseCache.TryGetValue(assembly) ??
 #if SILVERLIGHT
-                : assembly.FullName.Split(',')[0]
+                assembly.FullName.Split(',')[0]
 #else
-                : assembly.GetName().Name
+                assembly.GetName().Name
 #endif
-                      .Let(n => new AssemblyRef()
-                      {
-                          Name = n == "mscorlib"
-                              ? null
-                              : _loadedAssemblies.Contains(n)
-                                    ? n
-                                    : assembly.FullName,
-                      })
-                      .Apply(a => _reverseCache.Add(assembly, a));
+                    .Let(n => new AssemblyRef()
+                    {
+                        Name = n == "mscorlib"
+                            ? null
+                            : _loadedAssemblies.Contains(n)
+                                  ? n
+                                  : assembly.FullName,
+                    })
+                    .Apply(a => _reverseCache.Add(assembly, a));
         }
 
         internal Assembly Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : Assembly.Load(
-                      String.IsNullOrWhiteSpace(this.Name)
-                          ? "mscorlib"
-                          : this.Name
-                  ).Apply(a => _cache.Add(this, a));
+            return _cache.TryGetValue(this)
+                ?? Assembly.Load(
+                       String.IsNullOrWhiteSpace(this.Name)
+                           ? "mscorlib"
+                           : this.Name
+                   ).Apply(a => _cache.Add(this, a));
         }
     }
 }

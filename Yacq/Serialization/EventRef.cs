@@ -46,22 +46,20 @@ namespace XSpect.Yacq.Serialization
 
         public static EventRef Serialize(EventInfo @event)
         {
-            return _reverseCache.ContainsKey(@event)
-                ? _reverseCache[@event]
-                : new EventRef()
-                  {
-                      Type = TypeRef.Serialize(@event.ReflectedType),
-                      Name = @event.Name,
-                  }.Apply(e => _reverseCache.Add(@event, e));
+            return _reverseCache.TryGetValue(@event)
+                ?? new EventRef()
+                   {
+                       Type = TypeRef.Serialize(@event.ReflectedType),
+                       Name = @event.Name,
+                   }.Apply(e => _reverseCache.Add(@event, e));
         }
 
         public new EventInfo Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : this.Type.Deserialize()
-                      .GetEvent(this.Name, Binding)
-                      .Apply(e => _cache.Add(this, e));
+            return _cache.TryGetValue(this)
+                ?? this.Type.Deserialize()
+                       .GetEvent(this.Name, Binding)
+                       .Apply(e => _cache.Add(this, e));
         }
     }
 }

@@ -122,14 +122,13 @@ namespace XSpect.Yacq.SystemObjects
 
         private DocumentSet LoadDocumentSet(String key)
         {
-            return this.DocumentSets.ContainsKey(key)
-                ? this.DocumentSets[key]
-                : (this.SearchPaths
-                      .Where(d => d.Exists)
-                      .SelectMany(d => d.EnumerateFiles(key + ".xml"))
-                      .FirstOrDefault()
-                      .Null(f => new DocumentSet(f))
-                  ).Apply(s => this.DocumentSets.Add(key, s));
+            return this.DocumentSets.TryGetValue(key)
+                ?? (this.SearchPaths
+                       .Where(d => d.Exists)
+                       .SelectMany(d => d.EnumerateFiles(key + ".xml"))
+                       .FirstOrDefault()
+                       .Null(f => new DocumentSet(f))
+                   ).Apply(s => this.DocumentSets.Add(key, s));
         }
 
         private DocumentSet LoadDocumentSet(MemberInfo member)

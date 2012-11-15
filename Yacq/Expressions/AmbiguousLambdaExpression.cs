@@ -198,9 +198,7 @@ namespace XSpect.Yacq.Expressions
             return this.ApplyTypeArguments(this.Parameters
                 .Select(p => AmbiguousParameter(
                     p.Symbols,
-                    p.Type != null && typeArgumentMap.ContainsKey(p.Type)
-                        ? typeArgumentMap[p.Type]
-                        : p.Type,
+                    typeArgumentMap.TryGetValue(p.Type) ?? p.Type,
                     p.Name
                 ))
             );

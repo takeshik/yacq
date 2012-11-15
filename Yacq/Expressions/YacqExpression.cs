@@ -163,22 +163,14 @@ namespace XSpect.Yacq.Expressions
             symbols = this.CreateSymbolTable(symbols);
             var hash = symbols.AllHash
                 ^ (expectedType != null ? expectedType.GetHashCode() : 0);
-            if (this._reducedExpressions.ContainsKey(hash))
-            {
-                return this._reducedExpressions[hash];
-            }
-            else
-            {
-                var expression = (this.ReduceImpl(symbols, expectedType) ?? this).If(
-                    e => e != this && !(e is YacqExpression),
-                    e => ImplicitConvert(e, expectedType)
-                );
-                if (expression != this)
-                {
-                    this._reducedExpressions[hash] = expression;
-                }
-                return expression;
-            }
+            return this._reducedExpressions.TryGetValue(hash)
+                ?? (this.ReduceImpl(symbols, expectedType) ?? this)
+                       .If(e => e != this && !(e is YacqExpression), e =>
+                           ImplicitConvert(e, expectedType)
+                       )
+                       .If(e => e != this, e =>
+                           this._reducedExpressions[hash] = e
+                       );
         }
 
         internal Boolean IsCached(SymbolTable symbols, Type expectedType)

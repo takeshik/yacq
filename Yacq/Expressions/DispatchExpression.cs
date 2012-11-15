@@ -399,7 +399,7 @@ namespace XSpect.Yacq.Expressions
                                           {
                                               method.GetParameters()
                                                   .Select(p => p.ParameterType.Let(t => t.IsGenericParameter
-                                                      ? map.ContainsKey(t) ? map[t] : null
+                                                      ? map.TryGetValue(t)
                                                       : t
                                                   ))
                                                   .If(ts => ts.All(t => t != null), ts =>

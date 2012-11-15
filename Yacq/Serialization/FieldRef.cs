@@ -46,22 +46,20 @@ namespace XSpect.Yacq.Serialization
 
         public static FieldRef Serialize(FieldInfo field)
         {
-            return _reverseCache.ContainsKey(field)
-                ? _reverseCache[field]
-                : new FieldRef()
-                {
-                    Type = TypeRef.Serialize(field.ReflectedType),
-                    Name = field.Name,
-                }.Apply(f => _reverseCache.Add(field, f));
+            return _reverseCache.TryGetValue(field)
+                ?? new FieldRef()
+                   {
+                       Type = TypeRef.Serialize(field.ReflectedType),
+                       Name = field.Name,
+                   }.Apply(f => _reverseCache.Add(field, f));
         }
 
         public new FieldInfo Deserialize()
         {
-            return _cache.ContainsKey(this)
-                ? _cache[this]
-                : this.Type.Deserialize()
-                      .GetField(this.Name, Binding)
-                      .Apply(f => _cache.Add(this, f));
+            return _cache.TryGetValue(this)
+                ?? this.Type.Deserialize()
+                       .GetField(this.Name, Binding)
+                       .Apply(f => _cache.Add(this, f));
         }
     }
 }
