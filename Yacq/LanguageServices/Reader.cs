@@ -62,9 +62,8 @@ namespace XSpect.Yacq.LanguageServices
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
         public Reader()
-            : this(null)
+            : this(Defaults.Yacq)
         {
-            this.Parser = Defaults.Yacq;
         }
 
         /// <summary>

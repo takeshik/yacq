@@ -33,6 +33,9 @@ using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
+    /// <summary>
+    /// Represents serializable object graph of <see cref="Expression"/>.
+    /// </summary>
     [DataContract(IsReference = true)]
     [KnownType(typeof(BinaryNode))]
     [KnownType(typeof(NewArrayNode))]
@@ -67,18 +70,26 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(LabelTarget))]
     [KnownType(typeof(MemberBinding))]
     [KnownType(typeof(SymbolDocumentInfo))]
-    internal abstract partial class Node
+    public abstract partial class Node
     {
+        /// <summary>
+        /// The name of XML namespace for serialized expressions.
+        /// </summary>
         public const String Namespace = "http://yacq.net/schema";
 
         [DataMember(Order = 0, EmitDefaultValue = false)]
-        public TypeRef Type
+        internal TypeRef Type
         {
             get;
             set;
         }
 
-        internal static Node Serialize(Expression expression)
+        /// <summary>
+        /// Returns the object graph which represents specified expression.
+        /// </summary>
+        /// <param name="expression">The expression to get object graph.</param>
+        /// <returns>The object graph which represents specified expression to serialize.</returns>
+        public static Node Serialize(Expression expression)
         {
             switch (expression.NodeType)
             {
@@ -296,8 +307,17 @@ namespace XSpect.Yacq.Serialization
             throw new NotSupportedException(String.Format("Expression node type '{0}' is not supported.", expression.NodeType));
         }
 
+        /// <summary>
+        /// Returns the expression which is represented by this object graph.
+        /// </summary>
+        /// <returns>The expression which is represented by this object graph.</returns>
         public abstract Expression Deserialize();
 
+        /// <summary>
+        /// Returns the expression which is represented by this object graph.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of expression.</typeparam>
+        /// <returns>The expression as the specified type which is represented by this object graph.</returns>
         public TExpression Deserialize<TExpression>()
             where TExpression : Expression
         {

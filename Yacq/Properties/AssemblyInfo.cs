@@ -30,9 +30,10 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using XSpect.Yacq.Serialization;
 
 [assembly: CLSCompliant(true)]
-[assembly: ContractNamespace("http://yacq.net/schema", ClrNamespace = "XSpect.Yacq.Serialization")]
+[assembly: ContractNamespace(Node.Namespace, ClrNamespace = "XSpect.Yacq.Serialization")]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information

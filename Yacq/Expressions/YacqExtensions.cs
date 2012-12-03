@@ -294,15 +294,17 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="expression">An <see cref="Expression"/> to evaluate.</param>
         /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="args">An array to pass to the compiled expression as arguments.</param>
         /// <returns>The return value of the compiled expression.</returns>
         /// <remarks>This method may reduce the performance.</remarks>
-        public static Object Evaluate(this Expression expression, SymbolTable symbols = null)
+        public static Object Evaluate(this Expression expression, SymbolTable symbols = null, params Object[] args)
         {
-            return expression.Reduce(symbols).If(
-                e => e.Type.IsValueType,
-                e => Expression.Lambda(e).Compile().DynamicInvoke(),
-                e => Expression.Lambda<Func<Object>>(e).Compile()()
-            );
+            return expression.Reduce(symbols)
+                .Let(e => e as LambdaExpression
+                    ?? Expression.Lambda(e)
+                )
+                .Compile()
+                .DynamicInvoke(args);
         }
 
         /// <summary>
@@ -311,11 +313,12 @@ namespace XSpect.Yacq.Expressions
         /// <typeparam name="T">The type of the return value.</typeparam>
         /// <param name="expression">An <see cref="Expression"/> to evaluate.</param>
         /// <param name="symbols">The additional symbol table for reducing.</param>
+        /// <param name="args">An array to pass to the compiled expression as arguments.</param>
         /// <returns>The return value of the compiled expression as the specified type.</returns>
         /// <remarks>This method may reduce the performance.</remarks>
-        public static T Evaluate<T>(this Expression expression, SymbolTable symbols = null)
+        public static T Evaluate<T>(this Expression expression, SymbolTable symbols = null, params Object[] args)
         {
-            return (T) expression.Evaluate(symbols);
+            return (T) expression.Evaluate(symbols, args);
         }
 
         internal static IEnumerable<Expression> List(this Expression expression, String head = null)

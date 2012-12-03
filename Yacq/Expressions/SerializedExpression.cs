@@ -56,7 +56,11 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
-        internal Node Node
+        /// <summary>
+        /// Gets the object graph which represents expression.
+        /// </summary>
+        /// <value>The object graph which represents expression.</value>
+        public Node Node
         {
             get;
             private set;
@@ -184,6 +188,17 @@ namespace XSpect.Yacq.Expressions
         #region Serialize
 
         /// <summary>
+        /// Creates a <see cref="SerializedExpression"/> with specified object graph.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="node">The <see cref="Node"/> which represents expression.</param>
+        /// <returns>A <see cref="SerializedExpression"/> that has specified object graph.</returns>
+        public static SerializedExpression Serialize(SymbolTable symbols, Node node)
+        {
+            return new SerializedExpression(symbols, node);
+        }
+
+        /// <summary>
         /// Creates a <see cref="SerializedExpression"/> to get object graph which represents specified expression.
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
@@ -191,7 +206,17 @@ namespace XSpect.Yacq.Expressions
         /// <returns>A <see cref="SerializedExpression"/> that has the object graph which represents specified expression.</returns>
         public static SerializedExpression Serialize(SymbolTable symbols, Expression expression)
         {
-            return new SerializedExpression(symbols, Node.Serialize(expression));
+            return Serialize(symbols, Node.Serialize(expression));
+        }
+
+        /// <summary>
+        /// Creates a <see cref="SerializedExpression"/> with specified object graph.
+        /// </summary>
+        /// <param name="node">The <see cref="Node"/> which represents expression.</param>
+        /// <returns>A <see cref="SerializedExpression"/> that has specified object graph.</returns>
+        public static SerializedExpression Serialize(Node node)
+        {
+            return Serialize(null, node);
         }
 
         /// <summary>

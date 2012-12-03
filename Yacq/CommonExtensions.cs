@@ -25,7 +25,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  * 
- * This code is originally in: https://github.com/takeshik/common-exts.cs/
+ * This code is originally in: https://github.com/takeshik/cs-util-codes/
  */
 
 using System;
@@ -33,7 +33,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace XSpect.Yacq
+namespace XSpect
 {
     [DebuggerStepThrough()]
     internal static class CommonExtensions
