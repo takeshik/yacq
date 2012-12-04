@@ -299,12 +299,13 @@ namespace XSpect.Yacq.Expressions
         /// <remarks>This method may reduce the performance.</remarks>
         public static Object Evaluate(this Expression expression, SymbolTable symbols = null, params Object[] args)
         {
-            return expression.Reduce(symbols)
-                .Let(e => e as LambdaExpression
-                    ?? Expression.Lambda(e)
-                )
-                .Compile()
-                .DynamicInvoke(args);
+            return expression.Reduce(symbols).If(
+                    e => e is ConstantExpression,
+                    e => ((ConstantExpression) e).Value,
+                    e => (e as LambdaExpression ?? Expression.Lambda(e))
+                        .Compile()
+                        .DynamicInvoke(args)
+            );
         }
 
         /// <summary>
