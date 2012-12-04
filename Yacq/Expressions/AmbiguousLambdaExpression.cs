@@ -180,7 +180,7 @@ namespace XSpect.Yacq.Expressions
                 this.Symbols,
                 // HACK: Clear all cache in Bodies to suppress undefied ParameterExpression errors.
                 this.Bodies.Apply(_ => _
-                    .SelectMany(e => e.GetDescendants())
+                    .SelectMany(YacqExpressionVisitor.Traverse)
                     .OfType<YacqExpression>()
                     .ForEach(e => e.ClearCache())
                 ),

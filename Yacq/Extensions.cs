@@ -52,35 +52,6 @@ namespace XSpect.Yacq
                 ?? expr.Reduce(symbols).TryConvert(expectedType);
         }
 
-        internal static IEnumerable<Expression> GetDescendants(this Expression self)
-        {
-            return self.GetType().GetConvertibleTypes()
-#if SILVERLIGHT
-                .SelectMany(t => t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(p => 
-                        (typeof(Expression).IsAssignableFrom(p.PropertyType)
-                            || p.PropertyType.GetInterfaces()
-                                   .Any(_ => _.TryGetGenericTypeDefinition() == typeof(IEnumerable<>)
-                                       && typeof(Expression).IsAssignableFrom(_.GetGenericArguments()[0])
-                                   )
-                        ) && p.GetIndexParameters().IsEmpty()
-                    )
-                )
-                .Select(p => p.GetValue(self, null))
-#else
-                .SelectMany(t => t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
-                .Select(p => p.GetValue(self))
-#endif
-                .SelectMany(_ => _ as IEnumerable<Expression>
-                    ?? (_ is Expression
-                           ? EnumerableEx.Return((Expression) _)
-                           : Enumerable.Empty<Expression>()
-                       )
-                )
-                .SelectMany(GetDescendants)
-                .StartWith(self);
-        }
-
         internal static Boolean EqualsExact(this Expression self, Expression other)
         {
             return self.GetType() == other.GetType() &&
@@ -351,6 +322,12 @@ namespace XSpect.Yacq
         internal static IEnumerable<ParameterInfo> GetAllParameters(this MethodInfo method)
         {
             return method.GetParameters().EndWith(method.ReturnParameter);
+        }
+
+        internal static Type GetNominalType(this Type type)
+        {
+            return EnumerableEx.Generate(type, t => t != null, t => t.BaseType, _ => _)
+                .First(t => t.IsPublic);
         }
     }
 }

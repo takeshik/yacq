@@ -71,7 +71,7 @@ namespace XSpect.Yacq.Expressions
         {
             return Enumerable.Range(0, Math.Max(
                 this.Elements
-                    .SelectMany(e => e.GetDescendants())
+                    .SelectMany(YacqExpressionVisitor.Traverse)
                     .Max(e =>
                     {
                         Int32 value = -1;

@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -585,6 +586,19 @@ namespace XSpect.Yacq.Expressions
         public YacqExpressionVisitor(YacqExpressionVisitor parent = null)
         {
             this.Parent = parent;
+        }
+
+        /// <summary>
+        /// Gets the descendant expression nodes of the expression.
+        /// </summary>
+        /// <param name="expression">The expression to traverse.</param>
+        /// <returns>Descendant expression nodes of <paramref name="expression"/>, and <paramref name="expression"/> itself at the head of sequence.</returns>
+        public static IEnumerable<Expression> Traverse(Expression expression)
+        {
+            return TraverseImpl(expression)
+                .Where(e => e != null)
+                .SelectMany(Traverse)
+                .StartWith(expression);
         }
 
         /// <summary>
@@ -1344,6 +1358,152 @@ namespace XSpect.Yacq.Expressions
                 : this.Parent != null
                       ? this.Parent.Vector(this, node)
                       : base.VisitExtension(node);
+        }
+
+        private static IEnumerable<Expression> TraverseImpl(Expression expression)
+        {
+            switch (expression.GetType().GetNominalType().Name)
+            {
+                case "BinaryExpression":
+                    return ((BinaryExpression) expression).Let(e => new []
+                    {
+                        e.Conversion,
+                        e.Left,
+                        e.Right,
+                    });
+                case "BlockExpression":
+                    return ((BlockExpression) expression).Let(e =>
+                        e.Expressions.Concat(e.Variables)
+                    );
+                case "ConditionalExpression":
+                    return ((ConditionalExpression) expression).Let(e => new []
+                    {
+                        e.IfFalse,
+                        e.IfTrue,
+                        e.Test,
+                    });
+                case "DynamicExpression":
+                    return ((DynamicExpression) expression).Arguments;
+                case "GotoExpression":
+                    return new []
+                    {
+                        ((GotoExpression) expression).Value,
+                    };
+                case "IndexExpression":
+                    return ((IndexExpression) expression).Let(e =>
+                        e.Arguments.EndWith(e.Object)
+                    );
+                case "InvocationExpression":
+                    return ((InvocationExpression) expression).Let(
+                        e => e.Arguments.EndWith(e.Expression)
+                    );
+                case "LabelExpression":
+                    return new []
+                    {
+                        ((LabelExpression) expression).DefaultValue,
+                    };
+                case "ListInitExpression":
+                    return ((ListInitExpression) expression).Let(e =>
+                        e.Initializers
+                            .SelectMany(i => i.Arguments)
+                            .EndWith(e.NewExpression)
+                        );
+                case "LoopExpression":
+                    return new []
+                    {
+                        ((LoopExpression) expression).Body,
+                    };
+                case "MemberExpression":
+                    return new []
+                    {
+                        ((MemberExpression) expression).Expression,
+                    };
+                case "MemberInitExpression":
+                    return new []
+                    {
+                        ((MemberInitExpression) expression).NewExpression,
+                    };
+                case "MethodCallExpression":
+                    return ((MethodCallExpression) expression).Let(e =>
+                        e.Arguments.EndWith(e.Object)
+                    );
+                case "NewArrayExpression":
+                    return ((NewArrayExpression) expression).Expressions;
+                case "NewExpression":
+                    return ((NewExpression) expression).Arguments;
+                case "RuntimeVariablesExpression":
+                    return ((RuntimeVariablesExpression) expression).Variables;
+                case "SwitchExpression":
+                    return ((SwitchExpression) expression).Let(e =>
+                        e.Cases
+                            .SelectMany(c => c.TestValues.EndWith(c.Body))
+                            .EndWith(e.DefaultBody, e.SwitchValue)
+                    );
+                case "TryExpression":
+                    return ((TryExpression) expression).Let(e =>
+                        e.Handlers
+                            .SelectMany(h => new []
+                            {
+                                h.Body,
+                                h.Filter,
+                                h.Variable,
+                            })
+                            .EndWith(e.Body, e.Fault, e.Finally)
+                    );
+                case "TypeBinaryExpression":
+                    return new []
+                    {
+                        ((TypeBinaryExpression) expression).Expression,
+                    };
+                case "UnaryExpression":
+                    return new []
+                    {
+                        ((UnaryExpression) expression).Operand,
+                    };
+                case "AmbiguousLambdaExpression":
+                    return ((AmbiguousLambdaExpression) expression).Let(e =>
+                        e.Bodies.Concat(e.Parameters)
+                    );
+                case "ContextfulExpression":
+                    return new []
+                    {
+                        ((ContextfulExpression) expression).Expression,
+                    };
+                case "DispatchExpression":
+                    return ((DispatchExpression) expression).Let(e =>
+                        e.Arguments.EndWith(e.Left)
+                    );
+                case "LambdaListExpression":
+                    return ((LambdaListExpression) expression).Elements;
+                case "ListExpression":
+                    return ((ListExpression) expression).Elements;
+                case "MacroExpression":
+                    return ((MacroExpression) expression).Let(e =>
+                        e.Parameters.EndWith(e.Body)
+                    );
+                case "QuotedExpression":
+                    return new []
+                    {
+                        ((QuotedExpression) expression).Expression,
+                    };
+                case "VectorExpression":
+                    return ((VectorExpression) expression).Elements;
+                case "ConstantExpression":
+                case "DebugInfoExpression":
+                case "DefaultExpression":
+                case "ParameterExpression":
+                case "AmbiguousParameterExpression":
+                case "IdentifierExpression":
+                case "IgnoredExpression":
+                case "NumberExpression":
+                case "SerializedExpression":
+                case "SymbolTableExpression":
+                case "TextExpression":
+                case "TypeCandidateExpression":
+                    return new Expression[0];
+                default:
+                    throw new ArgumentException("Expression node type '" + expression.GetType().Name + "' is not supported.", "expression");
+            }
         }
     }
 }
