@@ -215,9 +215,9 @@ namespace XSpect.Yacq.Symbols
                 l.Last()
             ))
                 ?? Tuple.Create(default(Type), expression)
-            ).Let(_ => _.Item2 is ListExpression
-                ? new SymbolEntry(DispatchTypes.Method | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.List().First().Id())
-                : new SymbolEntry(DispatchTypes.Member | (isLiteral ? DispatchTypes.Literal : 0), _.Item1, _.Item2.Id())
+            ).Let((l, r) => r is ListExpression
+                ? new SymbolEntry(DispatchTypes.Method | (isLiteral ? DispatchTypes.Literal : 0), l, r.List().First().Id())
+                : new SymbolEntry(DispatchTypes.Member | (isLiteral ? DispatchTypes.Literal : 0), l, r.Id())
             );
         }
 

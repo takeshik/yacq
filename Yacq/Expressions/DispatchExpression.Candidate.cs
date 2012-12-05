@@ -73,7 +73,7 @@ namespace XSpect.Yacq.Expressions
                         ? (this.Method.Null(m => m.TryGetGenericMethodDefinition()) ?? this.MethodBase)
                               .GetGenericArguments()
                               .Zip(value, Tuple.Create)
-                              .ToDictionary(_ => _.Item1, _ => _.Item2)
+                              .ToDictionary()
                         : new Dictionary<Type, Type>();
                 }
             }
@@ -233,7 +233,7 @@ namespace XSpect.Yacq.Expressions
                               && this.Parameters.All(p => this.FilledArgumentNames.Contains(p.Name) || p.IsOptional)
                               ? this.FilledArgumentNames
                                     .Zip(this.Arguments, Tuple.Create)
-                                    .ToDictionary(_ => _.Item1, _ => _.Item2)
+                                    .ToDictionary()
                                     .Let(d => this.Parameters.Select(p => Tuple.Create(
                                         p.ParameterType,
                                         d.TryGetValue(p.Name)

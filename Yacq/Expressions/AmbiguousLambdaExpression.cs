@@ -157,7 +157,7 @@ namespace XSpect.Yacq.Expressions
                                                                 .Select(p => p.ParameterType)
                                                                 .Zip(ps.Select(p => p.Type).EndWith(e.Type), Tuple.Create)
                                                                 .Where(_ => _.Item1.IsGenericParameter)
-                                                                .ToDictionary(_ => _.Item1, _ => _.Item2)
+                                                                .ToDictionary()
                                                             )
                                                         )
                                                         .Let(et => typeof(LambdaExpression).IsAssignableFrom(expectedType)

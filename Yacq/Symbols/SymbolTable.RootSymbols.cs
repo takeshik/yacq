@@ -1926,15 +1926,15 @@ namespace XSpect.Yacq.Symbols
                 return (e.Arguments[0].List(":")
                     .Null(l => Tuple.Create(l.First(), l.Last()))
                         ?? Tuple.Create(e.Arguments[0], default(Expression))
-                ).Let(tt => (Expression) YacqExpression.Function(s, "let",
+                ).Let((id, rt) => (Expression) YacqExpression.Function(s, "let",
                     e.Arguments
                         .Skip(1)
                         .StartWith(YacqExpression.Vector(
                             s,
-                            tt.Item1,
+                            id,
                             YacqExpression.Function(s, "dynamic", e.Left)
                         ))
-                ).If(_ => tt.Item2 != null, _ => _.Method(s, "to", tt.Item2)));
+                ).If(_ => rt != null, _ => _.Method(s, "to", rt)));
             }
 
             [YacqSymbol(DispatchTypes.Method, typeof(Boolean), "cond")]
