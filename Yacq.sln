@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yacq", "Yacq\Yacq.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqRun", "YacqRun\YacqRun.csproj", "{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqRepl", "YacqRepl\YacqRepl.csproj", "{7B5E93FC-D1CC-43DC-839D-9F0E59224962}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqSilverlight", "YacqSilverlight\YacqSilverlight.csproj", "{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqSilverlightRun", "YacqSilverlightRun\YacqSilverlightRun.csproj", "{A726FAEF-C23A-4811-A947-E06B9A3A206C}"
@@ -28,6 +30,10 @@ Global
 		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5E93FC-D1CC-43DC-839D-9F0E59224962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5E93FC-D1CC-43DC-839D-9F0E59224962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5E93FC-D1CC-43DC-839D-9F0E59224962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5E93FC-D1CC-43DC-839D-9F0E59224962}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B5B3F09-9CDD-4CCB-AC8C-A03BEE691674}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,0 +1,64 @@
+﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
+// $Id: f11cdf26be2df17b9601745f738ca022ac231687 $
+/* YACQ REPL
+ *   REPL and remote code evaluating system provider of YACQ
+ * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+ * All rights reserved.
+ * 
+ * This file is part of YACQ REPL.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+[assembly: CLSCompliant(true)]
+
+// General Information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+[assembly: AssemblyTitle("YACQRepl")]
+[assembly: AssemblyDescription("YACQ REPL")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("XSpect Project")]
+[assembly: AssemblyProduct("YACQ")]
+[assembly: AssemblyCopyright("Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>, All rights reserved.")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible(false)]
+
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+[assembly: Guid("55523653-47b3-4eec-9bcb-f372f7f66633")]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version
+//      Build Number
+//      Revision
+//
+[assembly: AssemblyVersion("1.11.0.0")]
+[assembly: AssemblyFileVersion("1.11.0.0")]
+// vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

@@ -27,7 +27,6 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -35,6 +34,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using XSpect.Yacq.Expressions;
 using XSpect.Yacq.Symbols;
 using XSpect.Yacq.SystemObjects;
 
@@ -42,198 +42,151 @@ namespace XSpect.Yacq.Runner
 {
     internal static class Program
     {
-        private static SymbolTable _symbols;
-
-        private static readonly Stopwatch _stopwatch = new Stopwatch();
-
-        private static Int32 Main(String[] args)
+        private enum Phase
         {
-            if (args.Length == 0)
+            Read = 250,
+            Parse = 251,
+            Evaluate = 252,
+            Emit = 253,
+        }
+
+        private static readonly CommandlineParser.CommandlineOption[] _options = new []
+        {
+            CommandlineParser.Option("compile", false, "Compile the code.", "c", "compile"),
+            CommandlineParser.Option("winexe", false, "Set output type to window executable.", "w", "winexe"),
+            CommandlineParser.Option("library", false, "Set output type to library.", "l", "library"),
+            CommandlineParser.Option("parse", false, "Only parse inputs.", "p", "parse"),
+            CommandlineParser.Option("dump-tree", false, "Dump parsed expression tree.", "t", "dump-tree"),
+            CommandlineParser.Option("expr", true, "Specify code to input", "e", "expr"),
+            CommandlineParser.Option("debug", false, "Attach the debugger.", "d", "debug"),
+            CommandlineParser.Option("help", false, "Show help message.", "h", "help"),
+            CommandlineParser.Option("version", false, "Show version information.", "", "version")
+        };
+
+        private static readonly ILookup<String, String> _args
+            = CommandlineParser.Parse(Environment.GetCommandLineArgs().Skip(1), _options);
+
+        private static Int32 Main()
+        {
+            if (_args.Contains("debug"))
             {
-                Repl();
+                Debugger.Launch();
+            }
+
+            if (_args.Contains("help"))
+            {
+                Console.WriteLine("Usage: {0} [switches] [--] [inputs]", Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs()[0]));
+                Console.WriteLine(
+                    String.Join(Environment.NewLine, _options
+                        .SelectMany(o => new []
+                        {
+                            "  " + String.Join(", ", o.ShortNames
+                                .Select(n => "-" + n)
+                                .Concat(o.LongNames.Select(n => "--" + n))
+                            ),
+                            "    " + o.Description,
+                        }
+                    ))
+                );
                 return 0;
             }
-            else if (args[0].StartsWith("-c"))
+
+            if (_args.Contains("version"))
             {
-                using (var reader = args[1] == "-"
-                    ? Console.In
-                    : new StreamReader(args[1])
-                )
-                {
-                    var head = reader.ReadLine();
-                    Compile(
-                        (head.StartsWith("#!") ? "" : head) + reader.ReadToEnd(),
-                        args[1] == "-"
-                            ? "a.out"
-                            : Path.GetFileNameWithoutExtension(args[1]),
-                        args[0] == "-cw"
-                            ? PEFileKinds.WindowApplication
-                            : args[0] == "-cl"
-                                  ? PEFileKinds.Dll
-                                  : PEFileKinds.ConsoleApplication
-                    );
-                    return 0;
-                }
+                Console.WriteLine(
+                    #region String
+@"YACQ <http://yacq.net/>
+  Yet Another Compilable Query Language, based on Expression Trees API
+  Language service is provided by Yacq.dll, the assembly name is:
+    {0}
+YACQ Runner (YACQRun) is part of YACQ
+  Runner and Compiler of YACQ
+
+Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+All rights reserved.
+YACQ and YACQ Runner are Free Software; licensed under the MIT License."
+                    #endregion
+                    , typeof(YacqServices).Assembly.FullName
+                );
+                return 0;
+            }
+
+            var input = Read();
+
+            if (_args.Contains("compile"))
+            {
+                Compile(
+                    input,
+                    _args["_param"]
+                        .FirstOrDefault(p => p != "-")
+                        .Null(p => Path.GetFileNameWithoutExtension(p))
+                            ?? "a.out",
+                    _args.Contains("winexe")
+                        ? PEFileKinds.WindowApplication
+                        : _args.Contains("library")
+                                ? PEFileKinds.Dll
+                                : PEFileKinds.ConsoleApplication
+                );
             }
             else
             {
-                using (var reader = args[0] == "-"
-                    ? Console.In
-                    : new StreamReader(args[0])
-                )
+                var ret = 0;
+                var expression = Parse(null, input);
+                if (!_args.Contains("parse"))
                 {
-                    var head = reader.ReadLine();
-                    var ret =  Run(
-                        (head.StartsWith("#!") ? "" : head) + reader.ReadToEnd(),
-                        Environment.GetCommandLineArgs().Contains("-v")
-                    );
-                    return ret is Int32 ? (Int32) ret : 0;
-                }
-            }
-        }
-
-        private static void Repl()
-        {
-            String heredoc = null;
-            var code = "";
-            Console.WriteLine(
-                #region String
-@"Yacq Runner (REPL Mode)
-Type (!help) [ENTER] to show help."
-                #endregion
-            );
-            while (true)
-            {
-                if (heredoc == null)
-                {
-                    Console.Write("yacq[{0}]> ", ReplSymbols.ReplHistory.Count);
-                }
-                Console.ForegroundColor = ConsoleColor.White;
-                var input = Console.ReadLine();
-                Console.ResetColor();
-                if (heredoc != null)
-                {
-                    if (input == heredoc)
+                    try
                     {
-                        Run(code, true);
-                        code = "";
-                        heredoc = null;
+                        Expression.Lambda(expression)
+                            .Evaluate()
+                            .If(o => o is Int32, o => ret = (Int32) o);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        code += input + Environment.NewLine;
+                        Fail(ex, Phase.Evaluate);
                     }
                 }
-                // EOF
-                else if (input == null)
+                if (_args.Contains("dump-tree"))
                 {
-                    return;
-                }
-                else if (input.StartsWith("<<"))
-                {
-                    heredoc = input.Substring(2);
-                }
-                else if (!String.IsNullOrWhiteSpace(input))
-                {
-                    Run(input, ReplSymbols.ReplVerbose);
-                    code = "";
-                }
-            }
-        }
-
-        private static Object Run(String code, Boolean showInfo)
-        {
-            try
-            {
-                Object ret = null;
-                _stopwatch.Restart();
-                var exprs = YacqServices.ParseAll(_symbols ?? (_symbols = new SymbolTable(typeof(ReplSymbols))), code).ToArray();
-                _stopwatch.Stop();
-                if (showInfo)
-                {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("Parsed Expressions (time: {0}):", _stopwatch.Elapsed);
-                    exprs.ForEach(e =>
-                    {
-                        Console.ForegroundColor = ConsoleColor.DarkCyan;
-                        Console.Write("  {0} => {1} = ", GetTypeName(e.GetType()), GetTypeName(e.Type));
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine(e);
-                    });
-                    Console.ResetColor();
-                }
-                foreach (var expr in exprs)
-                {
-                    ret = Expression.Lambda(expr).Compile().DynamicInvoke();
-                    if (showInfo)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        if (ret != null)
-                        {
-                            Console.Write("Returned: ");
-                            Console.ForegroundColor = ConsoleColor.DarkGreen;
-                            Console.Write("{0}", GetTypeName(ret.GetType()));
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            if (ret.GetType().GetMethod("ToString", Type.EmptyTypes).DeclaringType != typeof(Object))
-                            {
-                                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                Console.Write(" = ");
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                Console.Write("{0}", ret);
-                            }
-                            if (ret is IEnumerable && !(ret is String))
-                            {
-                                var data = ((IEnumerable) ret)
-                                    .Cast<Object>()
-                                    .Select(_ => (_ ?? "(null)").ToString())
-                                    .Take(ReplSymbols.ReplDumpLimit + 1)
-                                    .ToArray();
-                                if (data.Any(s => s.Length > 40))
-                                {
-                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                    Console.WriteLine(" = [");
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine(String.Join(
-                                        Environment.NewLine,
-                                        data.Take(ReplSymbols.ReplDumpLimit)
-                                            .Select(s => "    " + s)
-                                    ));
-                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                    Console.WriteLine(data.Length > ReplSymbols.ReplDumpLimit
-                                        ? "    (more...)\n  ]"
-                                        : "  ]"
-                                    );
-                                }
-                                else
-                                {
-                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                    Console.Write(" = [ \n    ");
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.Write(String.Join(" ", data.Take(ReplSymbols.ReplDumpLimit)));
-                                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                    Console.Write(data.Length > ReplSymbols.ReplDumpLimit
-                                        ? " (more...)\n  ]"
-                                        : "\n  ]"
-                                    );
-                                }
-                            }
-                            Console.WriteLine();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Returned: null");
-                        }
-                        Console.ResetColor();
-                    }
-                    ReplSymbols.ReplHistory.Add(Tuple.Create(code, expr, ret));
+                    Console.Error.WriteLine(YacqServices.SaveText(expression));
                 }
                 return ret;
             }
+            return 0;
+        }
+
+        private static String Read()
+        {
+            try
+            {
+                return String.Concat(_args["expr"]
+                    .Concat(_args["_param"].Select(p => p == "-"
+                        ? Console.In.ReadToEnd()
+                        : String.Join(Environment.NewLine, File.ReadAllLines(p)
+                            .If(ls => ls[0].StartsWith("#!"), ls => ls[0] = "")
+                            )
+                    ))
+                ).If(String.IsNullOrEmpty, s => Console.In.ReadToEnd());
+            }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine(ex);
-                Console.ResetColor();
+                Fail(ex, Phase.Read);
+                return "";
+            }
+        }
+
+        private static Expression Parse(SymbolTable symbols, String code)
+        {
+            try
+            {
+                return YacqServices.ParseAll(symbols, code)
+                    .Let(es => es.Length == 1
+                        ? es.Single()
+                        : Expression.Block(es)
+                    );
+            }
+            catch (Exception ex)
+            {
+                Fail(ex, Phase.Parse);
                 return null;
             }
         }
@@ -242,44 +195,45 @@ Type (!help) [ENTER] to show help."
         {
             var assembly = new YacqAssembly(name, fileKind);
             var type = assembly.DefineType(":Program");
-            var expressions = YacqServices.ParseAll(new SymbolTable()
+            try
             {
-                {"*assembly*", Expression.Constant(assembly)},
-            }, code);
-            var method = type.DefineMethod(
-                "Main",
-                MethodAttributes.Static,
-                typeof(void),
-                Type.EmptyTypes,
-                Expression.Lambda<Action>(expressions.Length == 1
-                    ? expressions.Single()
-                    : Expression.Block(expressions)
-                )
-            );
-            type.Create();
-            assembly.Save(method);
+                try
+                {
+                    var method = type.DefineMethod(
+                        "Main",
+                        MethodAttributes.Static,
+                        typeof(void),
+                        Type.EmptyTypes,
+                        Expression.Lambda<Action>(Parse(
+                            new SymbolTable()
+                            {
+                                {"*assembly*", Expression.Constant(assembly)},
+                            },
+                            code
+                        ))
+                    );
+                    type.Create();
+                    assembly.Save(method);
+                }
+                catch (Exception ex)
+                {
+                    Fail(ex, Phase.Emit);
+                }
+            }
+            catch (Exception ex)
+            {
+                Fail(ex, Phase.Parse);
+            }
         }
 
-        private static String GetTypeName(Type type)
+        private static void Fail(Exception ex, Phase phase)
         {
-            return type.IsArray
-                ? GetTypeName(type.GetElementType()) + "[]"
-                : (type.IsNested
-                      ? GetTypeName(type.DeclaringType) + "."
-                      : ""
-                  ) + (type.IsGenericType && !type.IsGenericTypeDefinition
-                      ? (type.Name.Contains("`")
-                            ? type.Name.Remove(type.Name.LastIndexOf('`'))
-                            : type.Name
-                        ) + "<" + String.Join(",", type.GetGenericArguments().Select(GetTypeName)) + ">"
-                      : type.Name
-                  );
-        }
-
-        public static void Reset()
-        {
-            _symbols = null;
-            ReplSymbols.ReplHistory.Clear();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine("Unhandled exception during '{0}' - {1}: {2}", phase, ex.GetType().Name, ex.Message);
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Error.WriteLine(ex.StackTrace);
+            Console.ResetColor();
+            Environment.Exit((Int32) phase);
         }
     }
 }
