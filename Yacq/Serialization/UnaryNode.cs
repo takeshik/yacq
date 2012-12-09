@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+using System;
 using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
@@ -52,6 +53,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(TypeAs))]
     [KnownType(typeof(UnaryPlus))]
     [KnownType(typeof(Unbox))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class UnaryNode
         : Node
     {

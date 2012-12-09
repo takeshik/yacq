@@ -36,6 +36,9 @@ using XSpect.Yacq.Symbols;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class Dispatch
         : YacqNode
     {

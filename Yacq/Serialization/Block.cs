@@ -34,6 +34,9 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class Block
         : Node
     {

@@ -36,6 +36,9 @@ namespace XSpect.Yacq.Serialization
     [DataContract()]
     [KnownType(typeof(NewArrayBounds))]
     [KnownType(typeof(NewArrayInit))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class NewArrayNode
         : Node
     {

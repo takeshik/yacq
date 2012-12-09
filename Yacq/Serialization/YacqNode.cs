@@ -47,6 +47,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(Quoted))]
     [KnownType(typeof(Text))]
     [KnownType(typeof(TypeCandidate))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class YacqNode
         : Node
     {

@@ -38,6 +38,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(LambdaList))]
     [KnownType(typeof(List))]
     [KnownType(typeof(Vector))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class YacqSequenceNode
         : YacqNode
     {

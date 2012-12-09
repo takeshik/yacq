@@ -35,6 +35,9 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract(Name = "Property")]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class PropertyRef
         : MemberRef
     {

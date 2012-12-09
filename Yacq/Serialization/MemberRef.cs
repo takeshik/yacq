@@ -38,6 +38,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(FieldRef))]
     [KnownType(typeof(MethodRef))]
     [KnownType(typeof(PropertyRef))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class MemberRef
     {
         public const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;

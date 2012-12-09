@@ -34,6 +34,9 @@ namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
     [KnownType(typeof(ClearDebugInfo))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class DebugInfo
         : Node
     {

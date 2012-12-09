@@ -34,6 +34,9 @@ namespace XSpect.Yacq.Serialization
     [DataContract()]
     [KnownType(typeof(TypeEqual))]
     [KnownType(typeof(TypeIs))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class TypeBinaryNode
         : Node
     {

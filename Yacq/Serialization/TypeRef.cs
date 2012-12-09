@@ -35,6 +35,9 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract(Name = "Type", IsReference = true)]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class TypeRef
     {
         private static readonly Assembly _mscorlib = typeof(Object).Assembly;
@@ -77,7 +80,7 @@ namespace XSpect.Yacq.Serialization
         {
             return _cache.TryGetValue(this)
                 ?? this.Assembly
-                       .Null(a => a.Deserialize() ?? _mscorlib)
+                       .Null(a => a.Deserialize(), _mscorlib)
                        .GetType(this.Name ?? "System.Object")
                        .Apply(t => _cache.Add(this, t));
         }

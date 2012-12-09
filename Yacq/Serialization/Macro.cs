@@ -35,6 +35,9 @@ using XSpect.Yacq.Expressions;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class Macro
         : YacqNode
     {

@@ -35,6 +35,10 @@ using E = System.Linq.Expressions;
 
 namespace XSpect.Yacq.Serialization
 {
+    [DataContract()]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class SwitchCase
     {
         [DataMember(Order = 0)]

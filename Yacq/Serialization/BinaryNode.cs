@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+using System;
 using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
@@ -71,6 +72,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(SubtractAssign))]
     [KnownType(typeof(SubtractAssignChecked))]
     [KnownType(typeof(SubtractChecked))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class BinaryNode
         : Node
     {

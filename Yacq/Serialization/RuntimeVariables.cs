@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -33,6 +34,9 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class RuntimeVariables
         : Node
     {

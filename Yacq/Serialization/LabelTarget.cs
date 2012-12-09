@@ -36,6 +36,9 @@ using E = System.Linq.Expressions;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class LabelTarget
     {
         [DataMember(Order = 0, EmitDefaultValue = false)]

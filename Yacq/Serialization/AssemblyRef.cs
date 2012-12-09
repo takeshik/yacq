@@ -35,6 +35,9 @@ using System.Runtime.Serialization;
 namespace XSpect.Yacq.Serialization
 {
     [DataContract(Name = "Assembly", IsReference = true)]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class AssemblyRef
     {
         private static readonly Dictionary<AssemblyRef, Assembly> _cache

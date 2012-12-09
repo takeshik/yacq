@@ -38,6 +38,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(MemberAssignment))]
     [KnownType(typeof(MemberMemberBinding))]
     [KnownType(typeof(MemberListBinding))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal abstract class MemberBinding
     {
         [DataMember(Order = 0)]

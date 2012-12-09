@@ -36,6 +36,9 @@ namespace XSpect.Yacq.Serialization
 {
     [DataContract()]
     [KnownType(typeof(Quasiquoted))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal class Quoted
         : YacqNode
     {

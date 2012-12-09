@@ -70,6 +70,9 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(LabelTarget))]
     [KnownType(typeof(MemberBinding))]
     [KnownType(typeof(SymbolDocumentInfo))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     public abstract partial class Node
     {
         /// <summary>
