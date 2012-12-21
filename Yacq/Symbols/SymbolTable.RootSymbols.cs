@@ -1331,7 +1331,7 @@ namespace XSpect.Yacq.Symbols
                                     )
                                         .StartWith(s_.Literals.Values
                                             .Choose(v => v as ParameterExpression ?? (v as ContextfulExpression).Null(ce => ce.Expression))
-                                            .Zip(_.Where(a => !(a is YacqExpression)), (l, r) => YacqExpression.Function(s_, "=", l, r))
+                                            .Zip(_.Where(a => !(a is YacqExpression)), (l, r) => YacqExpression.Function(s_, "=", l, r).Reduce(s))
                                             .ToArray()
                                         )
                                 ))
@@ -1388,7 +1388,7 @@ namespace XSpect.Yacq.Symbols
                                     )
                                         .StartWith(s_.Literals.Values
                                             .OfType<ParameterExpression>()
-                                            .Zip(_.Where(a => !(a is YacqExpression)), Expression.Assign)
+                                            .Zip(_.Where(a => !(a is YacqExpression)), (l, r) => YacqExpression.Function(s_, "=", l, r).Reduce(s))
                                             .ToArray()
                                         )
                                 ))
