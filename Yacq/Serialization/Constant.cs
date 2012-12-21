@@ -58,6 +58,15 @@ namespace XSpect.Yacq.Serialization
                        : Expression.Constant(this.Value)
                    ).Apply(c => _cache.Add(this, c));
         }
+
+        public override String ToString()
+        {
+            return this.Value != null
+                ? this.Value.GetType().GetMethod("ToString", System.Type.EmptyTypes).DeclaringType != typeof(Object)
+                      ? this.Value.ToString()
+                      : "value(" + this.Value.GetType() + ")"
+                : "null";
+        }
     }
 
     partial class Node

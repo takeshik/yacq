@@ -62,6 +62,11 @@ namespace XSpect.Yacq.Serialization
                 this.SourceText
             );
         }
+
+        public override String ToString()
+        {
+            return this.QuoteChar + this.SourceText + this.QuoteChar;
+        }
     }
 
     partial class Node

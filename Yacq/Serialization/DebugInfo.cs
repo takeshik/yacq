@@ -85,6 +85,14 @@ namespace XSpect.Yacq.Serialization
                 this.EndColumn
             );
         }
+
+        public override String ToString()
+        {
+            return "<DebugInfo(" + this.Document + ": "
+                + this.StartLine + ":" + this.StartColumn + " - "
+                + this.EndLine + ":" + this.EndColumn + " - "
+                + ")>";
+        }
     }
 
     partial class Node

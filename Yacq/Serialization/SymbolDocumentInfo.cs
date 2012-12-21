@@ -79,6 +79,11 @@ namespace XSpect.Yacq.Serialization
             };
         }
 
+        public override String ToString()
+        {
+            return this.FileName;
+        }
+
         public E.SymbolDocumentInfo Deserialize()
         {
             return E.Expression.SymbolDocument(

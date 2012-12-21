@@ -58,6 +58,11 @@ namespace XSpect.Yacq.Serialization
                        this.Name
                    ).Apply(p => _cache.Add(this, p));
         }
+
+        public override String ToString()
+        {
+            return this.Name ?? "<" + this.Type + ">";
+        }
     }
 
     partial class Node

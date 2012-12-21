@@ -65,7 +65,7 @@ namespace XSpect.Yacq.Serialization
         {
             return Expression.MakeIndex(
                 this.Object.Deserialize(),
-                this.Indexer.Deserialize(),
+                this.Indexer.Null(p => p.Deserialize()),
                 this.Arguments.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
             );
         }
@@ -78,7 +78,7 @@ namespace XSpect.Yacq.Serialization
             return new Index()
             {
                 Object = Serialize(expression.Object),
-                Indexer = PropertyRef.Serialize(expression.Indexer),
+                Indexer = expression.Indexer.Null(p => PropertyRef.Serialize(p)),
                 Arguments = expression.Arguments.Any()
                     ? expression.Arguments.Select(Serialize).ToArray()
                     : null,

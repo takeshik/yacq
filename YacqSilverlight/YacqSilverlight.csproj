@@ -655,6 +655,12 @@
     <Compile Include="..\Yacq\Serialization\TypeRef.cs">
       <Link>Serialization\TypeRef.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeRef.TypeDescriptor.cs">
+      <Link>Serialization\TypeRef.TypeDescriptor.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\TypeRef.TypeName.cs">
+      <Link>Serialization\TypeRef.TypeName.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\UnaryNode.cs">
       <Link>Serialization\UnaryNode.cs</Link>
     </Compile>

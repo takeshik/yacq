@@ -31,6 +31,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Parseq;
+using Parseq.Combinators;
 
 namespace XSpect.Yacq.Serialization
 {
@@ -45,6 +47,50 @@ namespace XSpect.Yacq.Serialization
 
         private static readonly Dictionary<Assembly, AssemblyRef> _reverseCache
             = new Dictionary<Assembly, AssemblyRef>();
+
+        private static readonly Lazy<Parser<Char, AssemblyName>> _parser
+            = new Lazy<Parser<Char, AssemblyName>>(() => Tuple.Create(
+                  ','.Satisfy().Pipe(' '.Satisfy().Many(), (l, r) => r.StartWith(l)),
+                  '='.Satisfy().Pipe(' '.Satisfy().Many(), (l, r) => r.StartWith(l))
+              ).Let((comma, equal) =>
+                  Combinator.Choice(
+                      Chars.OneOf('`', '[', ']', '+', ',').Let(ds => ds
+                          .Not()
+                          .Right('\\'.Satisfy().Right(ds))
+                          .Or(Chars.NoneOf('`', '[', ']', '+', ','))
+                          .Many()
+                      ),
+                      Combinator.Sequence(
+                          Chars.Sequence("Version"),
+                          equal,
+                          Chars.Digit()
+                              .Many()
+                              .SepBy(3, '.'.Satisfy())
+                              .Select(cs => cs.SelectMany(_ => _))
+                      ).Select(_ => _.SelectMany(cs => cs)),
+                      Combinator.Sequence(
+                          Chars.Sequence("Culture"),
+                          equal,
+                          Chars.Letter()
+                              .Many()
+                      ).Select(_ => _.SelectMany(cs => cs)),
+                      Combinator.Sequence(
+                          Chars.Sequence("PublicKeyToken"),
+                          equal,
+                          Chars.Hex()
+                              .Many(16)
+                              .Or(Chars.Sequence("null"))
+                      ).Select(_ => _.SelectMany(cs => cs))
+                  )
+                      .SepBy(comma)
+                      .Select(fs => new String(fs
+                          .SelectMany(cs => cs.EndWith(','))
+                          .ToArray()
+                      ).If(String.IsNullOrWhiteSpace,
+                          _ => new AssemblyName(),
+                          s => new AssemblyName(s)
+                      ))
+              ));
 
         private static readonly String[] _loadedAssemblies = new []
         {
@@ -63,6 +109,14 @@ namespace XSpect.Yacq.Serialization
             "System.Xml.Linq",
             "Yacq",
         };
+
+        internal static Parser<Char, AssemblyName> Parser
+        {
+            get
+            {
+                return _parser.Value;
+            }
+        }
 
         [DataMember(Order = 0, EmitDefaultValue = false)]
         public string Name
@@ -88,6 +142,16 @@ namespace XSpect.Yacq.Serialization
                                   : assembly.FullName,
                     })
                     .Apply(a => _reverseCache.Add(assembly, a));
+        }
+
+        public override String ToString()
+        {
+            AssemblyName assemblyRef;
+            return this.Name == null
+                ? "mscorlib"
+                : Parser(this.Name.AsStream())
+                      .TryGetValue(out assemblyRef)
+                      .If(_ => _, _ => assemblyRef.Name, _ => this.Name);
         }
 
         internal Assembly Deserialize()

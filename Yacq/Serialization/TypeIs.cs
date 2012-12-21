@@ -46,6 +46,11 @@ namespace XSpect.Yacq.Serialization
                 this.TypeOperand.Deserialize()
             );
         }
+
+        public override String ToString()
+        {
+            return "(" + this.Expression + " is " + this.TypeOperand + ")";
+        }
     }
 
     partial class Node

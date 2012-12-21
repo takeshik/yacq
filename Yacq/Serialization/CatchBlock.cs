@@ -82,6 +82,17 @@ namespace XSpect.Yacq.Serialization
             };
         }
 
+        public override String ToString()
+        {
+            return "catch (" + (this.Variable != null
+                ? this.Variable.ToString()
+                : this.Test.ToString()
+            ) + ") {" + (this.Body != null
+                ? " " + this.Body + " }"
+                : "}"
+            );
+        }
+
         internal E.CatchBlock Deserialize()
         {
             return this.Variable != null

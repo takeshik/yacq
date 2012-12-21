@@ -48,6 +48,11 @@ namespace XSpect.Yacq.Serialization
                 this.Conversion.Null(n => n.Deserialize<LambdaExpression>())
             );
         }
+
+        public override String ToString()
+        {
+            return "(" + this.Left + " ^= " + this.Right + ")";
+        }
     }
 
     partial class Node

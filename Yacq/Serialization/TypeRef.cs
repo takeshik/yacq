@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Parseq;
 
 namespace XSpect.Yacq.Serialization
 {
@@ -38,7 +39,7 @@ namespace XSpect.Yacq.Serialization
 #if !SILVERLIGHT
     [Serializable()]
 #endif
-    internal class TypeRef
+    internal partial class TypeRef
     {
         private static readonly Assembly _mscorlib = typeof(Object).Assembly;
 
@@ -74,6 +75,14 @@ namespace XSpect.Yacq.Serialization
                            ? type.FullName
                            : null,
                    }.Apply(t => _reverseCache.Add(type, t));
+        }
+
+        public override String ToString()
+        {
+            TypeDescriptor descriptor;
+            return TypeDescriptor.Parser(this.Name.AsStream())
+                .TryGetValue(out descriptor)
+                .If(_ => _, _ => descriptor.ToString(), _ => this.Name);
         }
 
         public Type Deserialize()

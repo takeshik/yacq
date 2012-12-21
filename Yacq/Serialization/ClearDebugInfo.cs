@@ -45,6 +45,11 @@ namespace XSpect.Yacq.Serialization
                 this.Document.Deserialize()
             );
         }
+
+        public override String ToString()
+        {
+            return "<DebugInfo(" + this.Document + ": clear)>";
+        }
     }
 
     partial class Node
