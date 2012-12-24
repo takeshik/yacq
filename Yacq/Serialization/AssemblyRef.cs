@@ -92,6 +92,8 @@ namespace XSpect.Yacq.Serialization
                       ))
               ));
 
+        private readonly Lazy<AssemblyName> _descriptor;
+
         private static readonly String[] _loadedAssemblies = new []
         {
             "Parseq",
@@ -125,6 +127,16 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
+        public AssemblyRef()
+        {
+            AssemblyName assemblyRef;
+            this._descriptor = new Lazy<AssemblyName>(() =>
+                Parser(this.Name.AsStream())
+                    .TryGetValue(out assemblyRef)
+                    .Let(_ => assemblyRef)
+            );
+        }
+
         internal static AssemblyRef Serialize(Assembly assembly)
         {
             return _reverseCache.TryGetValue(assembly) ??
@@ -146,12 +158,14 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            AssemblyName assemblyRef;
             return this.Name == null
                 ? "mscorlib"
-                : Parser(this.Name.AsStream())
-                      .TryGetValue(out assemblyRef)
-                      .If(_ => _, _ => assemblyRef.Name, _ => this.Name);
+                : this.Describe().Name;
+        }
+
+        public AssemblyName Describe()
+        {
+            return this._descriptor.Value;
         }
 
         internal Assembly Deserialize()

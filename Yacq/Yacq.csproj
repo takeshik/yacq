@@ -193,6 +193,7 @@
     <Compile Include="Serialization\Call.cs" />
     <Compile Include="Serialization\ClearDebugInfo.cs" />
     <Compile Include="Serialization\CatchBlock.cs" />
+    <Compile Include="Serialization\MethodRef.MethodDescriptor.cs" />
     <Compile Include="Serialization\TypeRef.TypeDescriptor.cs" />
     <Compile Include="Serialization\TypeRef.TypeName.cs" />
     <Compile Include="Serialization\YacqSequenceNode.cs" />

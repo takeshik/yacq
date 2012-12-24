@@ -493,6 +493,9 @@
     <Compile Include="..\Yacq\Serialization\MethodRef.cs">
       <Link>Serialization\MethodRef.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\MethodRef.MethodDescriptor.cs">
+      <Link>Serialization\MethodRef.MethodDescriptor.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\Modulo.cs">
       <Link>Serialization\Modulo.cs</Link>
     </Compile>

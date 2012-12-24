@@ -32,6 +32,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Parseq;
+using Parseq.Combinators;
 
 namespace XSpect.Yacq.Serialization
 {
@@ -49,6 +50,8 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<Type, TypeRef> _reverseCache
             = new Dictionary<Type, TypeRef>();
 
+        private readonly Lazy<TypeDescriptor> _descriptor;
+
         [DataMember(Order = 0, EmitDefaultValue = false)]
         public AssemblyRef Assembly
         {
@@ -61,6 +64,16 @@ namespace XSpect.Yacq.Serialization
         {
             get;
             set;
+        }
+
+        public TypeRef()
+        {
+            TypeDescriptor descriptor;
+            this._descriptor = new Lazy<TypeDescriptor>(() =>
+                TypeDescriptor.ParserAssemblyQualified(this.Name.AsStream())
+                    .TryGetValue(out descriptor)
+                    .Let(_ => descriptor)
+            );
         }
 
         public static TypeRef Serialize(Type type)
@@ -79,10 +92,14 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            TypeDescriptor descriptor;
-            return TypeDescriptor.Parser(this.Name.AsStream())
-                .TryGetValue(out descriptor)
-                .If(_ => _, _ => descriptor.ToString(), _ => this.Name);
+            return this.Describe()
+                .Null(d => d.ToString())
+                ?? this.Name;
+        }
+
+        public TypeDescriptor Describe()
+        {
+            return this._descriptor.Value;
         }
 
         public Type Deserialize()

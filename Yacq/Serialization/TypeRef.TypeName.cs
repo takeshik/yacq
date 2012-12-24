@@ -39,42 +39,39 @@ namespace XSpect.Yacq.Serialization
         {
             private static readonly Lazy<Parser<Char, TypeName>> _parser
                 = new Lazy<Parser<Char, TypeName>>(() =>
-                      ','.Satisfy()
-                          .Pipe(' '.Satisfy().Many(), (l, r) => r.StartWith(l))
-                          .Let(comma => Chars.OneOf('`', '[', ']', '+', '.', ',', '*', '&')
-                              .Let(ds => ds
-                                  .Not()
-                                  .Right('\\'.Satisfy().Right(ds))
-                                  .Or(Chars.NoneOf('`', '[', ']', '+', '.', ',', '*', '&'))
-                                  .Many()
-                              )
-                              .Let(name =>
-                                  Combinator.Sequence(
-                                      name,
-                                      Chars.Sequence(".")
-                                  )
-                                      .Select(_ => new String(_.SelectMany(cs => cs).SkipLast(1).ToArray()))
-                                      .Many()
-                                      .Pipe(
-                                          name
-                                              .Select(cs => new String(cs.ToArray())),
-                                          Combinator.Sequence(
-                                              Chars.Sequence("+"),
-                                              name
-                                          )
-                                              .Select(_ => new String(_.SelectMany(cs => cs).Skip(1).ToArray()))
-                                              .Many(),
-                                          (nss, n, ins) => new TypeName()
-                                          {
-                                              Namespace = String.Join(".", nss),
-                                              HierarchicalNames = ins
-                                                  .StartWith(n)
-                                                  .ToArray(),
-                                          }
-                                      )
-                              )
+                      Chars.OneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')')
+                          .Let(ds => ds
+                              .Not()
+                              .Right('\\'.Satisfy().Right(ds))
+                              .Or(Chars.NoneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')'))
+                              .Many()
                           )
-                  );
+                          .Let(name =>
+                              Combinator.Sequence(
+                                  name,
+                                  Chars.Sequence(".")
+                              )
+                                  .Select(_ => new String(_.SelectMany(cs => cs).SkipLast(1).ToArray()))
+                                  .Many()
+                                  .Pipe(
+                                      name
+                                          .Select(cs => new String(cs.ToArray())),
+                                      Combinator.Sequence(
+                                          Chars.Sequence("+"),
+                                          name
+                                      )
+                                          .Select(_ => new String(_.SelectMany(cs => cs).Skip(1).ToArray()))
+                                          .Many(),
+                                      (nss, n, ins) => new TypeName()
+                                      {
+                                          Namespace = String.Join(".", nss),
+                                          HierarchicalNames = ins
+                                              .StartWith(n)
+                                              .ToArray(),
+                                      }
+                                  )
+                          )
+                      );
 
             internal static Parser<Char, TypeName> Parser
             {
@@ -94,6 +91,12 @@ namespace XSpect.Yacq.Serialization
             {
                 get;
                 set;
+            }
+
+            public TypeName()
+            {
+                this.Namespace = "";
+                this.HierarchicalNames = new String[0];
             }
 
             public override String ToString()

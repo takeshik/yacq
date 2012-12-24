@@ -41,55 +41,60 @@ namespace XSpect.Yacq.Serialization
         {
             private static readonly Lazy<Parser<Char, TypeDescriptor>> _parser
                 = new Lazy<Parser<Char, TypeDescriptor>>(() => stream =>
-                      ','.Satisfy()
-                          .Pipe(' '.Satisfy().Many(), (l, r) => r.StartWith(l))
-                          .Let(comma =>
-                              TypeName.Parser.Pipe(
-                                  '`'.Satisfy()
-                                      .Pipe(
-                                          Chars.Digit()
-                                              .Many(),
-                                          (_, ds) => Int32.Parse(new String(ds.ToArray()))
-                                      )
-                                      .Maybe()
-                                      .Select(_ => _.Otherwise(() => 0)),
-                                  Parser
-                                      .Between('['.Satisfy(), ']'.Satisfy())
-                                      .SepBy(comma)
-                                      .Between('['.Satisfy(), ']'.Satisfy())
-                                      .Maybe()
-                                      .Select(_ => _.Otherwise(() => new TypeDescriptor[0])),
-                                  Combinator.Choice(
-                                      Chars.Sequence("*"),
-                                      Chars.Sequence("&"),
-                                      Chars.Sequence("*")
-                                          .Or(Chars.Sequence(","))
-                                          .Many()
-                                          .Between('['.Satisfy(), ']'.Satisfy())
-                                          .Select(_ => _
-                                              .SelectMany(cs => cs)
-                                              .StartWith('[')
-                                              .EndWith(']')
-                                          )
-                                  )
+                      TypeName.Parser.Pipe(
+                          '`'.Satisfy()
+                              .Pipe(
+                                  Chars.Digit()
                                       .Many()
-                                      .Maybe(),
-                                  comma.Pipe(AssemblyRef.Parser, (_, an) => an)
-                                      .Maybe(),
-                                  (tn, n, tas, ss, an) => new TypeDescriptor()
-                                  {
-                                      TypeName = tn,
-                                      TypeArguments = tas.ToArray(),
-                                      Suffixes = ss
-                                          .Select(_ => _
-                                              .Select(cs => new String(cs.ToArray()))
-                                              .ToArray()
-                                          )
-                                          .Otherwise(() => new String[0]),
-                                      Assembly = an.Otherwise(() => null),
-                                  }
+                                      .Select(ds => Int32.Parse(new String(ds.ToArray()))),
+                                  ParserAssemblyQualified
+                                      .Between('['.Satisfy(), ']'.Satisfy())
+                                      .Or(Parser)
+                                      .SepBy(','.Satisfy())
+                                      .Between('['.Satisfy(), ']'.Satisfy()),
+                                  (_, n, tas) => tas.ToArray()
                               )
-                          )(stream)
+                              .Maybe()
+                              .Select(_ => _.Otherwise(() => new TypeDescriptor[0])),
+                          Combinator.Choice(
+                              Chars.Sequence("*"),
+                              Chars.Sequence("&"),
+                              Chars.Sequence("*")
+                                  .Or(Chars.Sequence(","))
+                                  .Many()
+                                  .Between('['.Satisfy(), ']'.Satisfy())
+                                  .Select(_ => _
+                                      .SelectMany(cs => cs)
+                                      .StartWith('[')
+                                      .EndWith(']')
+                                  )
+                          )
+                              .Many()
+                              .Maybe(),
+                          (tn, tas, ss) => new TypeDescriptor()
+                          {
+                              TypeName = tn,
+                              TypeArguments = tas.ToArray(),
+                              Suffixes = ss
+                                  .Select(_ => _
+                                      .Select(cs => new String(cs.ToArray()))
+                                      .ToArray()
+                                  )
+                                  .Otherwise(() => new String[0]),
+                          }
+                      )(stream)
+                  );
+
+            private static readonly Lazy<Parser<Char, TypeDescriptor>> _parserAssemblyQualified
+                = new Lazy<Parser<Char, TypeDescriptor>>(() => Parser
+                      .Pipe(
+                          ','.Satisfy().Pipe(
+                              ' '.Satisfy().Many(),
+                              AssemblyRef.Parser,
+                              (c, s, an) => an
+                          ).Maybe(),
+                          (t, an) => t.If(_ => an.Exists(), _ => _.Assembly = an.Perform())
+                      )
                   );
 
             public static Parser<Char, TypeDescriptor> Parser
@@ -97,6 +102,14 @@ namespace XSpect.Yacq.Serialization
                 get
                 {
                     return _parser.Value;
+                }
+            }
+
+            public static Parser<Char, TypeDescriptor> ParserAssemblyQualified
+            {
+                get
+                {
+                    return _parserAssemblyQualified.Value;
                 }
             }
 
@@ -122,6 +135,14 @@ namespace XSpect.Yacq.Serialization
             {
                 get;
                 set;
+            }
+
+            public TypeDescriptor()
+            {
+                this.TypeName = new TypeName();
+                this.TypeArguments = new TypeDescriptor[0];
+                this.Suffixes = new String[0];
+                this.Assembly = new AssemblyName();
             }
 
             public override String ToString()

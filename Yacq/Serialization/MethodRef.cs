@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Parseq;
 
 namespace XSpect.Yacq.Serialization
 {
@@ -38,7 +39,7 @@ namespace XSpect.Yacq.Serialization
 #if !SILVERLIGHT
     [Serializable()]
 #endif
-    internal class MethodRef
+    internal partial class MethodRef
         : MemberRef
     {
         private static readonly Dictionary<MethodRef, MethodBase> _cache
@@ -47,11 +48,23 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<MethodBase, MethodRef> _reverseCache
             = new Dictionary<MethodBase, MethodRef>();
 
+        private readonly Lazy<MethodDescriptor> _descriptor;
+
         [DataMember(Order = 0, EmitDefaultValue = false)]
         public TypeRef[] TypeArgs
         {
             get;
             set;
+        }
+
+        public MethodRef()
+        {
+            MethodDescriptor descriptor;
+            this._descriptor = new Lazy<MethodDescriptor>(() =>
+                MethodDescriptor.Parser(this.Signature.AsStream())
+                    .TryGetValue(out descriptor)
+                    .Let(_ => descriptor)
+            );
         }
 
         public static MethodRef Serialize(MethodBase method)
@@ -89,6 +102,18 @@ namespace XSpect.Yacq.Serialization
                              .GetConstructors(Binding)
                              .First(c => this.Signature == c.ToString())
                    ).Apply(m => _cache.Add(this, m));
+        }
+
+        public override String ToString()
+        {
+            return this.Describe()
+                .Null(d => d.ToString())
+                ?? this.Signature;
+        }
+
+        public MethodDescriptor Describe()
+        {
+            return this._descriptor.Value;
         }
 
         public MethodInfo DeserializeAsMethod()
