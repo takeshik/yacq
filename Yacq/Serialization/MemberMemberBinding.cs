@@ -57,6 +57,11 @@ namespace XSpect.Yacq.Serialization
             };
         }
 
+        public override String ToString()
+        {
+            return this.Member + " = { " + String.Join(", ", this.Bindings.SelectAll(i => i.ToString())) + " }";
+        }
+
         public new E.MemberMemberBinding Deserialize()
         {
             return E.Expression.MemberBind(

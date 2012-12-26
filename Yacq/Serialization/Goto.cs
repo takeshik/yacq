@@ -57,9 +57,16 @@ namespace XSpect.Yacq.Serialization
         {
             return Expression.Goto(
                 this.Target.Deserialize(),
-                this.Value.Deserialize(),
+                this.Value.Null(n => n.Deserialize()),
                 this.Type.Null(t => t.Deserialize()) ?? typeof(void)
             );
+        }
+
+        public override String ToString()
+        {
+            return "goto "
+                + this.Target
+                + this.Value.Null(v => " (" + v + ")", "");
         }
     }
 
@@ -73,7 +80,7 @@ namespace XSpect.Yacq.Serialization
                     ? TypeRef.Serialize(expression.Type)
                     : null,
                 Target = LabelTarget.Serialize(expression.Target),
-                Value = Serialize(expression.Value),
+                Value = expression.Value.Null(e => Serialize(e)),
             };
         }
     }

@@ -70,6 +70,17 @@ namespace XSpect.Yacq.Serialization
                 this.Members.Null(_ => _.SelectAll(m => m.Deserialize()))
             );
         }
+
+        public override String ToString()
+        {
+            return "new " + this.Type
+                + "(" + String.Join(", ", this.Arguments.Zip(
+                      this.Members ?? new MemberRef[this.Arguments.Length],
+                      (n, m) => m != null
+                          ? m + " = " + n
+                          : n.ToString()
+                  ));
+        }
     }
 
     partial class Node

@@ -62,6 +62,14 @@ namespace XSpect.Yacq.Serialization
                 this.Parameters.Null(_ => _.Select(p => p.Deserialize<AmbiguousParameterExpression>()))
             );
         }
+
+        public override String ToString()
+        {
+            return "macro(" + (this.Parameters ?? new AmbiguousParameter[0]).Let(ps => ps.Length != 1
+                ? "(" + String.Join(", ", ps.SelectAll(p => p.ToString())) + ")"
+                : ps[0].ToString()
+            ) + " => " + this.Body + ")";
+        }
     }
 
     partial class Node

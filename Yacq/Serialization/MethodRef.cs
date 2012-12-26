@@ -111,9 +111,14 @@ namespace XSpect.Yacq.Serialization
                 ?? this.Signature;
         }
 
-        public MethodDescriptor Describe()
+        protected override MemberDescriptor GetDescriptor()
         {
             return this._descriptor.Value;
+        }
+
+        public new MethodDescriptor Describe()
+        {
+            return (MethodDescriptor) this.GetDescriptor();
         }
 
         public MethodInfo DeserializeAsMethod()

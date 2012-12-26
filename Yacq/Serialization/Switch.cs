@@ -78,6 +78,20 @@ namespace XSpect.Yacq.Serialization
                 this.Cases.Select(c => c.Deserialize())
             );
         }
+
+        public override String ToString()
+        {
+            return "switch ("
+                + this.SwitchValue
+                + ") { "
+                + String.Join("; ", this.Cases
+                      .SelectAll(c => c.ToString())
+                      .EndWith(this.DefaultBody.Null(n => new[]
+                      {
+                          " default: " + n,
+                      }, new String[0]))
+                  );
+        }
     }
 
     partial class Node

@@ -66,6 +66,11 @@ namespace XSpect.Yacq.Serialization
             };
         }
 
+        public override String ToString()
+        {
+            return this.Name;
+        }
+
         internal E.LabelTarget Deserialize()
         {
             return E.Expression.Label(

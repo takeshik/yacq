@@ -30,6 +30,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Parseq;
 
 namespace XSpect.Yacq.Serialization
 {
@@ -41,9 +42,11 @@ namespace XSpect.Yacq.Serialization
 #if !SILVERLIGHT
     [Serializable()]
 #endif
-    internal abstract class MemberRef
+    internal abstract partial class MemberRef
     {
         public const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private readonly Lazy<MemberDescriptor> _descriptor;
 
         [DataMember(Order = 0, EmitDefaultValue = false)]
         public TypeRef Type
@@ -66,6 +69,16 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
+        protected MemberRef()
+        {
+            MemberDescriptor descriptor;
+            this._descriptor = new Lazy<MemberDescriptor>(() =>
+                MemberDescriptor.Parser(this.Signature.AsStream())
+                    .TryGetValue(out descriptor)
+                    .Let(_ => descriptor)
+            );
+        }
+
         public static MemberRef Serialize(MemberInfo member)
         {
             switch (member.MemberType)
@@ -82,6 +95,23 @@ namespace XSpect.Yacq.Serialization
                 default:
                     throw new ArgumentOutOfRangeException("member.MemberType");
             }
+        }
+
+        public override String ToString()
+        {
+            return this.Describe()
+                .Null(d => d.ToString())
+                ?? this.Name;
+        }
+
+        protected virtual MemberDescriptor GetDescriptor()
+        {
+            return this._descriptor.Value;
+        }
+
+        public MemberDescriptor Describe()
+        {
+            return this.GetDescriptor();
         }
 
         public MemberInfo Deserialize()

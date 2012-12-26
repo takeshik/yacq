@@ -131,10 +131,15 @@ namespace XSpect.Yacq.Serialization
         {
             AssemblyName assemblyRef;
             this._descriptor = new Lazy<AssemblyName>(() =>
-                Parser(this.Name.AsStream())
+                Parser(this.GetName().AsStream())
                     .TryGetValue(out assemblyRef)
                     .Let(_ => assemblyRef)
             );
+        }
+
+        public String GetName()
+        {
+            return this.Name ?? "mscorlib";
         }
 
         internal static AssemblyRef Serialize(Assembly assembly)
@@ -158,9 +163,7 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return this.Name == null
-                ? "mscorlib"
-                : this.Describe().Name;
+            return this.Describe().Name;
         }
 
         public AssemblyName Describe()
@@ -171,11 +174,8 @@ namespace XSpect.Yacq.Serialization
         internal Assembly Deserialize()
         {
             return _cache.TryGetValue(this)
-                ?? Assembly.Load(
-                       String.IsNullOrWhiteSpace(this.Name)
-                           ? "mscorlib"
-                           : this.Name
-                   ).Apply(a => _cache.Add(this, a));
+                ?? Assembly.Load(this.GetName())
+                       .Apply(a => _cache.Add(this, a));
         }
     }
 }

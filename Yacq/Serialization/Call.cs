@@ -72,7 +72,9 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return (this.Object.Null(n => n.ToString()) ?? this.Method.Type.Describe().TypeName.ToString())
+            return (this.Object.Null(n => n.ToString())
+                ?? this.Method.Type.Describe().TypeName.ToString()
+            )
                 + "." + this.Method.Name
                 + this.Method.TypeArgs.If(
                       _ => _ != null && _.Any(),

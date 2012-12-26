@@ -64,7 +64,7 @@ namespace XSpect.Yacq.Serialization
             return this.Value != null
                 ? this.Value.GetType().GetMethod("ToString", System.Type.EmptyTypes).DeclaringType != typeof(Object)
                       ? this.Value.ToString()
-                      : "value(" + this.Value.GetType() + ")"
+                      : "value(" + TypeRef.Serialize(this.Value.GetType()) + ")"
                 : "null";
         }
     }

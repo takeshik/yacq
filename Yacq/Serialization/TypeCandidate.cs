@@ -54,6 +54,13 @@ namespace XSpect.Yacq.Serialization
                 this.Candidates.Null(_ => _.Select(t => t.Deserialize()))
             );
         }
+
+        public override String ToString()
+        {
+            return this.Candidates.Length == 1
+                ? this.Candidates[0].ToString()
+                : "(" + this.Candidates[0] + " | +" + (this.Candidates.Length - 1) + ")";
+        }
     }
 
     partial class Node

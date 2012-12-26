@@ -45,6 +45,11 @@ namespace XSpect.Yacq.Serialization
         {
             return YacqExpression.Ignore();
         }
+
+        public override String ToString()
+        {
+            return "(ignored)";
+        }
     }
 
     partial class Node

@@ -78,6 +78,20 @@ namespace XSpect.Yacq.Serialization
                 this.Handlers.Null(hs => hs.Select(c => c.Deserialize()))
             );
         }
+
+        public override String ToString()
+        {
+            return "try { " + this.Body + "} "
+                + String.Join(" ", this.Handlers
+                      .SelectAll(h => h.ToString())
+                      .EndWith(new []
+                      {
+                          this.Fault.Null(n => "fault { " + n + " }"),
+                          this.Finally.Null(n => "finally { " + n + " }"),
+                      }.WhereAll(s => s != null))
+                  );
+
+        }
     }
 
     partial class Node

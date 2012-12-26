@@ -61,6 +61,12 @@ namespace XSpect.Yacq.Serialization
                 this.Arguments.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
             );
         }
+
+        public override String ToString()
+        {
+            return "(" + this.Expression + ")"
+                + "(" + String.Join(", ", this.Arguments.SelectAll(n => n.ToString())) + ")";
+        }
     }
 
     partial class Node

@@ -60,6 +60,11 @@ namespace XSpect.Yacq.Serialization
                 this.DefaultValue.Null(n => n.Deserialize())
             );
         }
+
+        public override String ToString()
+        {
+            return this.Target + ":";
+        }
     }
 
     partial class Node

@@ -64,6 +64,16 @@ namespace XSpect.Yacq.Serialization
             };
         }
 
+        public override String ToString()
+        {
+            return "case "
+                + (this.TestValues.Length == 1
+                      ? this.TestValues[0].ToString()
+                      : "(" + String.Join(", ", this.TestValues.SelectAll(n => n.ToString())) + ")"
+                  )
+                + ": " + this.Body;
+        }
+
         internal E.SwitchCase Deserialize()
         {
             return E.Expression.SwitchCase(

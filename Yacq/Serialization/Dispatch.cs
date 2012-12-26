@@ -87,6 +87,26 @@ namespace XSpect.Yacq.Serialization
                 this.Arguments.Null(_ => _.Select(n => n.Deserialize()))
             );
         }
+
+        public override String ToString()
+        {
+            switch (this.DispatchType & DispatchTypes.TargetMask)
+            {
+                case DispatchTypes.Member:
+                    return this.Arguments.Any()
+                        ? this.Left + "[" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + "]"
+                        : (this.Left != null ? this.Left + "." : "") + this.Name;
+                case DispatchTypes.Method:
+                    return (this.Left != null ? this.Left + "." : "")
+                        + this.Name
+                        + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">" : "")
+                        + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                case DispatchTypes.Constructor:
+                    return this.Left + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                default:
+                    return "Dispatch(?)";
+            }
+         }
     }
 
     partial class Node

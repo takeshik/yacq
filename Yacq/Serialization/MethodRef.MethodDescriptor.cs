@@ -36,6 +36,7 @@ namespace XSpect.Yacq.Serialization
     partial class MethodRef
     {
         internal class MethodDescriptor
+            : MemberDescriptor
         {
             private static readonly Lazy<Parser<Char, MethodDescriptor>> _parser
                 = new Lazy<Parser<Char, MethodDescriptor>>(() =>
@@ -71,7 +72,10 @@ namespace XSpect.Yacq.Serialization
                                                   {
                                                       TypeName = new TypeRef.TypeName()
                                                       {
-                                                          HierarchicalNames = new [] { tn, },
+                                                          HierarchicalNames = new []
+                                                          {
+                                                              tn,
+                                                          },
                                                       },
                                                   })
                                                   .ToArray()
@@ -84,18 +88,12 @@ namespace XSpect.Yacq.Serialization
                           )
                   );
 
-            public static Parser<Char, MethodDescriptor> Parser
+            public static new Parser<Char, MethodDescriptor> Parser
             {
                 get
                 {
                     return _parser.Value;
                 }
-            }
-
-            public String Name
-            {
-                get;
-                set;
             }
 
             public TypeRef.TypeDescriptor[] TypeArguments
@@ -110,18 +108,10 @@ namespace XSpect.Yacq.Serialization
                 set;
             }
 
-            public TypeRef.TypeDescriptor ReturnType
-            {
-                get;
-                set;
-            }
-
             public MethodDescriptor()
             {
-                this.Name = "";
                 this.TypeArguments = new TypeRef.TypeDescriptor[0];
                 this.ParameterTypes = new TypeRef.TypeDescriptor[0];
-                this.ReturnType = new TypeRef.TypeDescriptor();
             }
 
             public override String ToString()

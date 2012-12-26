@@ -490,6 +490,9 @@
     <Compile Include="..\Yacq\Serialization\MemberRef.cs">
       <Link>Serialization\MemberRef.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\MemberRef.MemberDescriptor.cs">
+      <Link>Serialization\MemberRef.MemberDescriptor.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\MethodRef.cs">
       <Link>Serialization\MethodRef.cs</Link>
     </Compile>

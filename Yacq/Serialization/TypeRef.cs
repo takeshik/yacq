@@ -70,7 +70,7 @@ namespace XSpect.Yacq.Serialization
         {
             TypeDescriptor descriptor;
             this._descriptor = new Lazy<TypeDescriptor>(() =>
-                TypeDescriptor.ParserAssemblyQualified(this.Name.AsStream())
+                TypeDescriptor.ParserAssemblyQualified(this.GetName().AsStream())
                     .TryGetValue(out descriptor)
                     .Let(_ => descriptor)
             );
@@ -80,21 +80,26 @@ namespace XSpect.Yacq.Serialization
         {
             return _reverseCache.TryGetValue(type)
                 ?? new TypeRef()
-                   {
-                       Assembly = type.Assembly != _mscorlib
-                           ? AssemblyRef.Serialize(type.Assembly)
-                           : null,
-                       Name = type != typeof(Object)
-                           ? type.FullName
-                           : null,
-                   }.Apply(t => _reverseCache.Add(type, t));
+                {
+                    Assembly = type.Assembly != _mscorlib
+                        ? AssemblyRef.Serialize(type.Assembly)
+                        : null,
+                    Name = type != typeof(Object)
+                        ? type.FullName
+                        : null,
+                }.Apply(t => _reverseCache.Add(type, t));
         }
 
         public override String ToString()
         {
             return this.Describe()
                 .Null(d => d.ToString())
-                ?? this.Name;
+                ?? this.GetName();
+        }
+
+        public String GetName()
+        {
+            return this.Name ?? "System.Object";
         }
 
         public TypeDescriptor Describe()
@@ -107,7 +112,7 @@ namespace XSpect.Yacq.Serialization
             return _cache.TryGetValue(this)
                 ?? this.Assembly
                        .Null(a => a.Deserialize(), _mscorlib)
-                       .GetType(this.Name ?? "System.Object")
+                       .GetType(this.GetName())
                        .Apply(t => _cache.Add(this, t));
         }
     }

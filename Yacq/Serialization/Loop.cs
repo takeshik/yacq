@@ -68,6 +68,11 @@ namespace XSpect.Yacq.Serialization
                 this.ContinueLabel.Null(l => l.Deserialize())
             );
         }
+
+        public override String ToString()
+        {
+            return "loop { " + this.Body + " }";
+        }
     }
 
     partial class Node

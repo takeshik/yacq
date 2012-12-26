@@ -53,6 +53,11 @@ namespace XSpect.Yacq.Serialization
                 this.Variables.Select(v => v.Deserialize<ParameterExpression>())
             );
         }
+
+        public override String ToString()
+        {
+            return "(" + String.Join(", ", this.Variables.SelectAll(p => p.ToString())) + ")";
+        }
     }
 
     partial class Node
