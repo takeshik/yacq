@@ -1,8 +1,8 @@
 ﻿// -*- mode: csharp; encoding: utf-8; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-// $Id: f11cdf26be2df17b9601745f738ca022ac231687 $
+// $Id$
 /* YACQ REPL
  *   REPL and remote code evaluating system provider of YACQ
- * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+ * Copyright © 2011-2013 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
  * All rights reserved.
  * 
  * This file is part of YACQ REPL.

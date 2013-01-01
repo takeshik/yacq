@@ -2,7 +2,7 @@
 // $Id$
 /* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
- * Copyright © 2011-2012 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
+ * Copyright © 2011-2013 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
