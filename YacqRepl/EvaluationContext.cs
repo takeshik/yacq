@@ -111,8 +111,8 @@ namespace XSpect.Yacq.Repl
             {
                 expressions = YacqServices.ParseAll(this._symbols, this._code);
                 expressions
-                    .Select(Node.Serialize)
-                    .ForEach(NotifyParsed);
+                    .Select(e => Tuple.Create(Node.Serialize(e), TypeRef.Serialize(e.Type)))
+                    .ForEach(_ => this.NotifyParsed(_.Item1, _.Item2));
                 this._parsedExpressions.OnCompleted();
                 this.Log(LogEntry.Info, "Parsing completed.");
             }
@@ -150,9 +150,9 @@ namespace XSpect.Yacq.Repl
             this._returnValues.OnNext(new ReturnedValue(this._stopwatch.Elapsed, value));
         }
 
-        private void NotifyParsed(Node node)
+        private void NotifyParsed(Node node, TypeRef type)
         {
-            this._parsedExpressions.OnNext(new ParsedExpression(this._stopwatch.Elapsed, node));
+            this._parsedExpressions.OnNext(new ParsedExpression(this._stopwatch.Elapsed, node, type));
         }
     }
 }

@@ -153,6 +153,11 @@ namespace XSpect.Yacq.Repl
             ).Unwrap();
         }
 
+        public override Object InitializeLifetimeService()
+        {
+            return null;
+        }
+
         public EvaluationContext Evaluate(IEnumerable<Char> code)
         {
             return new EvaluationContext(this.Symbols, new String(code.ToArray())

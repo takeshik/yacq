@@ -35,7 +35,10 @@ namespace XSpect.Yacq.Serialization
 {
     partial class MethodRef
     {
-        internal class MethodDescriptor
+        /// <summary>
+        /// Provides information of <see cref="MethodRef"/> object.
+        /// </summary>
+        public class MethodDescriptor
             : MemberDescriptor
         {
             private static readonly Lazy<Parser<Char, MethodDescriptor>> _parser
@@ -63,31 +66,30 @@ namespace XSpect.Yacq.Serialization
                                           .Or(Chars.Sequence("()")
                                               .Select(_ => new TypeRef.TypeDescriptor[0])
                                           ),
-                                      (r, n, tas, pts) => new MethodDescriptor()
-                                      {
-                                          Name = n,
-                                          TypeArguments = tas
+                                      (r, n, tas, pts) => new MethodDescriptor(
+                                          n,
+                                          r,
+                                          tas
                                               .Select(ns => ns
-                                                  .Select(tn => new TypeRef.TypeDescriptor()
-                                                  {
-                                                      TypeName = new TypeRef.TypeName()
+                                                  .Select(tn => new TypeRef.TypeDescriptor(
+                                                      new TypeRef.TypeName(new []
                                                       {
-                                                          HierarchicalNames = new []
-                                                          {
-                                                              tn,
-                                                          },
-                                                      },
-                                                  })
+                                                          tn,
+                                                      })
+                                                  ))
                                                   .ToArray()
                                               )
                                               .Otherwise(() => new TypeRef.TypeDescriptor[0]),
-                                          ParameterTypes = pts,
-                                          ReturnType = r,
-                                      }
+                                          pts
+                                      )
                               )
                           )
                   );
 
+            /// <summary>
+            /// Gets the parser to generate an <see cref="MethodDescriptor"/> object from <see cref="MemberRef.Signature"/>.
+            /// </summary>
+            /// <value>the parser to generate an <see cref="MethodDescriptor"/> object from <see cref="MemberRef.Signature"/>.</value>
             public static new Parser<Char, MethodDescriptor> Parser
             {
                 get
@@ -96,24 +98,59 @@ namespace XSpect.Yacq.Serialization
                 }
             }
 
+            /// <summary>
+            /// Gets or sets the generic type arguments of the method.
+            /// </summary>
+            /// <value>The generic type arguments of the method.</value>
             public TypeRef.TypeDescriptor[] TypeArguments
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Gets or sets the parameter types in the method.
+            /// </summary>
+            /// <value>The parameter types in the method.</value>
             public TypeRef.TypeDescriptor[] ParameterTypes
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MethodDescriptor"/> class.
+            /// </summary>
             public MethodDescriptor()
+                : this(null)
             {
-                this.TypeArguments = new TypeRef.TypeDescriptor[0];
-                this.ParameterTypes = new TypeRef.TypeDescriptor[0];
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MethodDescriptor"/> class.
+            /// </summary>
+            /// <param name="name">The name of the member.</param>
+            /// <param name="returnType">The return type of the member.</param>
+            /// <param name="typeArguments">The generic type arguments of the method.</param>
+            /// <param name="parameterTypes">The parameter types in the method.</param>
+            public MethodDescriptor(
+                String name,
+                TypeRef.TypeDescriptor returnType = null,
+                TypeRef.TypeDescriptor[] typeArguments = null,
+                TypeRef.TypeDescriptor[] parameterTypes = null
+            )
+                : base(name, returnType)
+            {
+                this.TypeArguments = typeArguments ?? new TypeRef.TypeDescriptor[0];
+                this.ParameterTypes = parameterTypes ?? new TypeRef.TypeDescriptor[0];
+            }
+
+            /// <summary>
+            /// Returns a <see cref="String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="String"/> that represents this instance.
+            /// </returns>
             public override String ToString()
             {
                 return this.Name + (this.TypeArguments.Any()

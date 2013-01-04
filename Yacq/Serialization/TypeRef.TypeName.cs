@@ -35,7 +35,10 @@ namespace XSpect.Yacq.Serialization
 {
     partial class TypeRef
     {
-        internal class TypeName
+        /// <summary>
+        /// Provides information of name of <see cref="TypeDescriptor"/> object.
+        /// </summary>
+        public class TypeName
         {
             private static readonly Lazy<Parser<Char, TypeName>> _parser
                 = new Lazy<Parser<Char, TypeName>>(() =>
@@ -62,18 +65,21 @@ namespace XSpect.Yacq.Serialization
                                       )
                                           .Select(_ => new String(_.SelectMany(cs => cs).Skip(1).ToArray()))
                                           .Many(),
-                                      (nss, n, ins) => new TypeName()
-                                      {
-                                          Namespace = String.Join(".", nss),
-                                          HierarchicalNames = ins
+                                      (nss, n, ins) => new TypeName(
+                                          String.Join(".", nss),
+                                          ins
                                               .StartWith(n)
-                                              .ToArray(),
-                                      }
+                                              .ToArray()
+                                      )
                                   )
                           )
                       );
 
-            internal static Parser<Char, TypeName> Parser
+            /// <summary>
+            /// Gets the parser to generate an <see cref="TypeName"/> object from the name part of <see cref="TypeRef.Name"/>.
+            /// </summary>
+            /// <value>the parser to generate an <see cref="TypeName"/> object from name part of <see cref="TypeRef.Name"/>.</value>
+            public static Parser<Char, TypeName> Parser
             {
                 get
                 {
@@ -81,24 +87,60 @@ namespace XSpect.Yacq.Serialization
                 }
             }
 
+            /// <summary>
+            /// Gets or sets the namespace of the type.
+            /// </summary>
+            /// <value>The namespace of the type.</value>
             public String Namespace
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Gets or sets the array of type names of nesting hierarchy and the type itself.
+            /// </summary>
+            /// <value>The array of type names of nesting hierarchy and the type itself.</value>
             public String[] HierarchicalNames
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeDescriptor"/> class.
+            /// </summary>
             public TypeName()
+                : this(null)
             {
-                this.Namespace = "";
-                this.HierarchicalNames = new String[0];
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeDescriptor"/> class.
+            /// </summary>
+            /// <param name="hierarchicalNames">The array of type names of nesting hierarchy and the type itself.</param>
+            public TypeName(String[] hierarchicalNames)
+                : this(null, hierarchicalNames)
+            {
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeDescriptor"/> class.
+            /// </summary>
+            /// <param name="namespace">The namespace of the type.</param>
+            /// <param name="hierarchicalNames">The array of type names of nesting hierarchy and the type itself.</param>
+            public TypeName(String @namespace, String[] hierarchicalNames)
+            {
+                this.Namespace = @namespace ?? "";
+                this.HierarchicalNames = hierarchicalNames ?? new String[0];
+            }
+
+            /// <summary>
+            /// Returns a <see cref="String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="String"/> that represents this instance.
+            /// </returns>
             public override String ToString()
             {
                 return String.Join("+", this.HierarchicalNames);

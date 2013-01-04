@@ -50,11 +50,18 @@ namespace XSpect.Yacq.Repl
             private set;
         }
 
-        public ParsedExpression(TimeSpan timestamp, Node node)
+        public TypeRef Type
+        {
+            get;
+            private set;
+        }
+
+        public ParsedExpression(TimeSpan timestamp, Node node, TypeRef type)
             : this()
         {
             this.Timestamp = timestamp;
             this.Node = node;
+            this.Type = type;
         }
     }
 }

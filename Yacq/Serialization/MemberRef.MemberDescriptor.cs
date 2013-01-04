@@ -35,7 +35,10 @@ namespace XSpect.Yacq.Serialization
 {
     partial class MemberRef
     {
-        internal class MemberDescriptor
+        /// <summary>
+        /// Provides information of <see cref="MemberRef"/> (and its derived classes, excepts <see cref="MethodRef"/>) object.
+        /// </summary>
+        public class MemberDescriptor
         {
             private static readonly Lazy<Parser<Char, MemberDescriptor>> _parser
                 = new Lazy<Parser<Char, MemberDescriptor>>(() =>
@@ -47,14 +50,14 @@ namespace XSpect.Yacq.Serialization
                                   .Or(Chars.NoneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')'))
                                   .Many()
                               ).Select(cs => new String(cs.ToArray())),
-                              (t, n) => new MemberDescriptor()
-                              {
-                                  Name = n,
-                                  ReturnType = t,
-                              }
+                              (t, n) => new MemberDescriptor(n, t)
                           )
                   );
 
+            /// <summary>
+            /// Gets the parser to generate an <see cref="MemberDescriptor"/> object from <see cref="AssemblyRef.Name"/>.
+            /// </summary>
+            /// <value>the parser to generate an <see cref="MemberDescriptor"/> object from <see cref="AssemblyRef.Name"/>.</value>
             public static Parser<Char, MemberDescriptor> Parser
             {
                 get
@@ -63,24 +66,51 @@ namespace XSpect.Yacq.Serialization
                 }
             }
 
+            /// <summary>
+            /// Gets or sets the name of the member.
+            /// </summary>
+            /// <value>The name of the member.</value>
             public String Name
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Gets or sets the return type of the member.
+            /// </summary>
+            /// <value>The return type of the member.</value>
             public TypeRef.TypeDescriptor ReturnType
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MemberDescriptor"/> class.
+            /// </summary>
             public MemberDescriptor()
+                : this(null)
             {
-                this.Name = "";
-                this.ReturnType = new TypeRef.TypeDescriptor();
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MemberDescriptor"/> class.
+            /// </summary>
+            /// <param name="name">The name of the member.</param>
+            /// <param name="returnType">The return type of the member.</param>
+            public MemberDescriptor(String name, TypeRef.TypeDescriptor returnType = null)
+            {
+                this.Name = name ?? "";
+                this.ReturnType = returnType ?? new TypeRef.TypeDescriptor();
+            }
+
+            /// <summary>
+            /// Returns a <see cref="String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="String"/> that represents this instance.
+            /// </returns>
             public override String ToString()
             {
                 return this.Name;

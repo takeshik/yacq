@@ -34,11 +34,11 @@ using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
 {
+    /// <summary>
+    /// Indicades an reference of <see cref="PropertyInfo"/> for serialization.
+    /// </summary>
     [DataContract(Name = "Property")]
-#if !SILVERLIGHT
-    [Serializable()]
-#endif
-    internal class PropertyRef
+    internal partial class PropertyRef
         : MemberRef
     {
         private static readonly Dictionary<PropertyRef, PropertyInfo> _cache
@@ -47,6 +47,28 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<PropertyInfo, PropertyRef> _reverseCache
             = new Dictionary<PropertyInfo, PropertyRef>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyRef"/> class.
+        /// </summary>
+        public PropertyRef()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyRef"/> class.
+        /// </summary>
+        /// <param name="type">The declaring type of this property reference, or <c>null</c> if the type is <see cref="Object"/>.</param>
+        /// <param name="name">The name of referring property.</param>
+        public PropertyRef(TypeRef type, String name)
+            : base(type, name)
+        {
+        }
+
+        /// <summary>
+        /// Returns the property reference which refers specified property.
+        /// </summary>
+        /// <param name="property">The property to refer.</param>
+        /// <returns>The property reference which refers specified property.</returns>
         public static PropertyRef Serialize(PropertyInfo property)
         {
             return _reverseCache.TryGetValue(property)
@@ -57,6 +79,10 @@ namespace XSpect.Yacq.Serialization
                    }.Apply(p => _reverseCache.Add(property, p));
         }
 
+        /// <summary>
+        /// Dereferences this property reference.
+        /// </summary>
+        /// <returns>The <see cref="PropertyInfo"/> which is referred by this property reference.</returns>
         public new PropertyInfo Deserialize()
         {
             return _cache.TryGetValue(this)
@@ -65,5 +91,21 @@ namespace XSpect.Yacq.Serialization
                        .Apply(p => _cache.Add(this, p));
         }
     }
+
+#if !SILVERLIGHT
+    [Serializable()]
+    partial class PropertyRef
+    {
+        /// <summary>
+        /// Initializes a new instance of a <see cref="PropertyRef"/> class that has the given serialization information and context.
+        /// </summary>
+        /// <param name="info">The data needed to serialize or deserialize an object. </param>
+        /// <param name="context">The source and destination of a given serialized stream. </param>
+        protected PropertyRef(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
+#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

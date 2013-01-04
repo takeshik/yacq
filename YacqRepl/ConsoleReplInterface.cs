@@ -28,6 +28,7 @@
 
 using System;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -54,21 +55,29 @@ namespace XSpect.Yacq.Repl
 
         public void Run()
         {
-            EnumerableEx.Repeat(_sandbox)
-                .Select(s =>
-                    this._sandbox.Evaluate(String.Join(Environment.NewLine,
-                        EnumerableEx.Generate(0, _ => true, l => l + 1, _ => _)
-                            .Do(l => Console.Write("yacq[{0}:{1}]> ", s.History.Count, l))
-                            .Select(l => (Console.ForegroundColor = ConsoleColor.White)
-                                .Let(_ => Console.ReadLine())
-                                .Apply(_ => Console.ResetColor())
+            EnumerableEx.Repeat(this._sandbox)
+                .Do(s => Console.Write("yacq[{0}]> ", s.History.Count))
+                .Select(s => (Console.ForegroundColor = ConsoleColor.White)
+                    .Let(_ => Console.ReadLine())
+                    .Apply(_ => Console.ResetColor())
+                    .If(
+                        l => l.StartsWith(":<<"),
+                        h => EnumerableEx.Repeat(Unit.Default)
+                            .Do(_ => Console.Write("yacq[{0}]| ", _sandbox.History.Count))
+                            .Select(_ => (Console.ForegroundColor = ConsoleColor.White)
+                                .Let(__ => Console.ReadLine())
+                                .Apply(l => Console.ResetColor())
                             )
-                            .TakeWhile(l => l != null)
-                    ))
-                    .Apply(u => u.Tag = (s.History.Count - 1).ToString())
+                            .TakeWhile(l => l != h.Substring(3)),
+                        EnumerableEx.Return
+                    )
                 )
+                .Select(ls => String.Join(Environment.NewLine, ls))
+                .Where(s => !String.IsNullOrWhiteSpace(s))
+                .Select(s => this._sandbox.Evaluate(s))
                 .Do(u =>
                 {
+                    u.Tag = (this._sandbox.History.Count - 1).ToString();
                     u.Logs.Subscribe(e =>
                     {
                         WriteHeader(u.Tag, e.Timestamp);
@@ -79,8 +88,8 @@ namespace XSpect.Yacq.Repl
                         {
                             WriteHeader(u.Tag, e.Timestamp);
                             Write(ConsoleColor.Gray, "parsed: ");
-                            Write(ConsoleColor.DarkCyan, "{0} => ? = ", e.Node.GetType().Name);
-                            WriteLine(ConsoleColor.Cyan, "...");
+                            Write(ConsoleColor.DarkCyan, "{0} => {1} = ", e.Node.GetType().Name, e.Type);
+                            WriteLine(ConsoleColor.Cyan, e.Node.ToString());
                         });
                     u.ReturnedValues
                         .Catch(Observable.Never<ReturnedValue>())

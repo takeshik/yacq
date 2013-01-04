@@ -50,7 +50,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="Visit"/> method.
+        /// Gets or sets the implementation of <see cref="Visit"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="Visit"/> method.</value>
         public Func<YacqExpressionVisitor, Expression, Expression> Expression
@@ -60,7 +60,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitBinary"/> method.
+        /// Gets or sets the implementation of <see cref="VisitBinary"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitBinary"/> method.</value>
         public Func<YacqExpressionVisitor, BinaryExpression, Expression> Binary
@@ -70,7 +70,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitBlock"/> method.
+        /// Gets or sets the implementation of <see cref="VisitBlock"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitBlock"/> method.</value>
         public Func<YacqExpressionVisitor, BlockExpression, Expression> Block
@@ -80,7 +80,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitConditional"/> method.
+        /// Gets or sets the implementation of <see cref="VisitConditional"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitConditional"/> method.</value>
         public Func<YacqExpressionVisitor, ConditionalExpression, Expression> Conditional
@@ -90,7 +90,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitConstant"/> method.
+        /// Gets or sets the implementation of <see cref="VisitConstant"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitConstant"/> method.</value>
         public Func<YacqExpressionVisitor, ConstantExpression, Expression> Constant
@@ -100,7 +100,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitDebugInfo"/> method.
+        /// Gets or sets the implementation of <see cref="VisitDebugInfo"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitDebugInfo"/> method.</value>
         public Func<YacqExpressionVisitor, DebugInfoExpression, Expression> DebugInfo
@@ -110,7 +110,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitDynamic"/> method.
+        /// Gets or sets the implementation of <see cref="VisitDynamic"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitDynamic"/> method.</value>
         public Func<YacqExpressionVisitor, DynamicExpression, Expression> Dynamic
@@ -120,7 +120,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitDefault"/> method.
+        /// Gets or sets the implementation of <see cref="VisitDefault"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitDefault"/> method.</value>
         public Func<YacqExpressionVisitor, DefaultExpression, Expression> Default
@@ -130,7 +130,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitExtension"/> method.
+        /// Gets or sets the implementation of <see cref="VisitExtension"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitExtension"/> method.</value>
         public Func<YacqExpressionVisitor, Expression, Expression> Extension
@@ -140,7 +140,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitGoto"/> method.
+        /// Gets or sets the implementation of <see cref="VisitGoto"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitGoto"/> method.</value>
         public Func<YacqExpressionVisitor, GotoExpression, Expression> Goto
@@ -150,7 +150,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitInvocation"/> method.
+        /// Gets or sets the implementation of <see cref="VisitInvocation"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitInvocation"/> method.</value>
         public Func<YacqExpressionVisitor, InvocationExpression, Expression> Invocation
@@ -160,7 +160,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitLabelTarget"/> method.
+        /// Gets or sets the implementation of <see cref="VisitLabelTarget"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitLabelTarget"/> method.</value>
         public Func<YacqExpressionVisitor, LabelTarget, LabelTarget> LabelTarget
@@ -170,7 +170,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitLabel"/> method.
+        /// Gets or sets the implementation of <see cref="VisitLabel"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitLabel"/> method.</value>
         public Func<YacqExpressionVisitor, LabelExpression, Expression> Label
@@ -180,7 +180,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitLambda{T}"/> method.
+        /// Gets or sets the implementation of <see cref="VisitLambda{T}"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitLambda{T}"/> method.</value>
         public Func<YacqExpressionVisitor, LambdaExpression, Expression> Lambda
@@ -190,7 +190,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitLoop"/> method.
+        /// Gets or sets the implementation of <see cref="VisitLoop"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitLoop"/> method.</value>
         public Func<YacqExpressionVisitor, LoopExpression, Expression> Loop
@@ -200,7 +200,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMember"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMember"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMember"/> method.</value>
         public Func<YacqExpressionVisitor, MemberExpression, Expression> Member
@@ -210,7 +210,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitIndex"/> method.
+        /// Gets or sets the implementation of <see cref="VisitIndex"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitIndex"/> method.</value>
         public Func<YacqExpressionVisitor, IndexExpression, Expression> Index
@@ -220,7 +220,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMethodCall"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMethodCall"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMethodCall"/> method.</value>
         public Func<YacqExpressionVisitor, MethodCallExpression, Expression> MethodCall
@@ -230,7 +230,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitNewArray"/> method.
+        /// Gets or sets the implementation of <see cref="VisitNewArray"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitNewArray"/> method.</value>
         public Func<YacqExpressionVisitor, NewArrayExpression, Expression> NewArray
@@ -240,7 +240,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitNew"/> method.
+        /// Gets or sets the implementation of <see cref="VisitNew"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitNew"/> method.</value>
         public Func<YacqExpressionVisitor, NewExpression, Expression> New
@@ -250,7 +250,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitParameter"/> method.
+        /// Gets or sets the implementation of <see cref="VisitParameter"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitParameter"/> method.</value>
         public Func<YacqExpressionVisitor, ParameterExpression, Expression> Parameter
@@ -260,7 +260,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitRuntimeVariables"/> method.
+        /// Gets or sets the implementation of <see cref="VisitRuntimeVariables"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitRuntimeVariables"/> method.</value>
         public Func<YacqExpressionVisitor, RuntimeVariablesExpression, Expression> RuntimeVariables
@@ -270,7 +270,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitSwitchCase"/> method.
+        /// Gets or sets the implementation of <see cref="VisitSwitchCase"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitSwitchCase"/> method.</value>
         public Func<YacqExpressionVisitor, SwitchCase, SwitchCase> SwitchCase
@@ -280,7 +280,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitSwitch"/> method.
+        /// Gets or sets the implementation of <see cref="VisitSwitch"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitSwitch"/> method.</value>
         public Func<YacqExpressionVisitor, SwitchExpression, Expression> Switch
@@ -290,7 +290,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitCatchBlock"/> method.
+        /// Gets or sets the implementation of <see cref="VisitCatchBlock"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitCatchBlock"/> method.</value>
         public Func<YacqExpressionVisitor, CatchBlock, CatchBlock> CatchBlock
@@ -300,7 +300,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitTry"/> method.
+        /// Gets or sets the implementation of <see cref="VisitTry"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitTry"/> method.</value>
         public Func<YacqExpressionVisitor, TryExpression, Expression> Try
@@ -310,7 +310,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitTypeBinary"/> method.
+        /// Gets or sets the implementation of <see cref="VisitTypeBinary"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitTypeBinary"/> method.</value>
         public Func<YacqExpressionVisitor, TypeBinaryExpression, Expression> TypeBinary
@@ -320,7 +320,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitUnary"/> method.
+        /// Gets or sets the implementation of <see cref="VisitUnary"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitUnary"/> method.</value>
         public Func<YacqExpressionVisitor, UnaryExpression, Expression> Unary
@@ -330,7 +330,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMemberInit"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMemberInit"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMemberInit"/> method.</value>
         public Func<YacqExpressionVisitor, MemberInitExpression, Expression> MemberInit
@@ -340,7 +340,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitListInit"/> method.
+        /// Gets or sets the implementation of <see cref="VisitListInit"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitListInit"/> method.</value>
         public Func<YacqExpressionVisitor, ListInitExpression, Expression> ListInit
@@ -350,7 +350,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitElementInit"/> method.
+        /// Gets or sets the implementation of <see cref="VisitElementInit"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitElementInit"/> method.</value>
         public Func<YacqExpressionVisitor, ElementInit, ElementInit> ElementInit
@@ -360,7 +360,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMemberBinding"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMemberBinding"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMemberBinding"/> method.</value>
         public Func<YacqExpressionVisitor, MemberBinding, MemberBinding> MemberBinding
@@ -370,7 +370,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMemberAssignment"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMemberAssignment"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMemberAssignment"/> method.</value>
         public Func<YacqExpressionVisitor, MemberAssignment, MemberAssignment> MemberAssignment
@@ -380,7 +380,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMemberMemberBinding"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMemberMemberBinding"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMemberMemberBinding"/> method.</value>
         public Func<YacqExpressionVisitor, MemberMemberBinding, MemberMemberBinding> MemberMemberBinding
@@ -390,7 +390,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMemberListBinding"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMemberListBinding"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMemberListBinding"/> method.</value>
         public Func<YacqExpressionVisitor, MemberListBinding, MemberListBinding> MemberListBinding
@@ -400,7 +400,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitYacq"/> method.
+        /// Gets or sets the implementation of <see cref="VisitYacq"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitYacq"/> method.</value>
         public Func<YacqExpressionVisitor, YacqExpression, Expression> Yacq
@@ -410,7 +410,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitYacqSequence"/> method.
+        /// Gets or sets the implementation of <see cref="VisitYacqSequence"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitYacqSequence"/> method.</value>
         public Func<YacqExpressionVisitor, YacqSequenceExpression, Expression> YacqSequence
@@ -420,7 +420,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitAmbiguousLambda"/> method.
+        /// Gets or sets the implementation of <see cref="VisitAmbiguousLambda"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitAmbiguousLambda"/> method.</value>
         public Func<YacqExpressionVisitor, AmbiguousLambdaExpression, Expression> AmbiguousLambda
@@ -430,7 +430,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitAmbiguousParameter"/> method.
+        /// Gets or sets the implementation of <see cref="VisitAmbiguousParameter"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitAmbiguousParameter"/> method.</value>
         public Func<YacqExpressionVisitor, AmbiguousParameterExpression, Expression> AmbiguousParameter
@@ -440,7 +440,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitContextful"/> method.
+        /// Gets or sets the implementation of <see cref="VisitContextful"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitContextful"/> method.</value>
         public Func<YacqExpressionVisitor, ContextfulExpression, Expression> Contextful
@@ -450,7 +450,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitDispatch"/> method.
+        /// Gets or sets the implementation of <see cref="VisitDispatch"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitDispatch"/> method.</value>
         public Func<YacqExpressionVisitor, DispatchExpression, Expression> Dispatch
@@ -460,7 +460,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitIdentifier"/> method.
+        /// Gets or sets the implementation of <see cref="VisitIdentifier"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitIdentifier"/> method.</value>
         public Func<YacqExpressionVisitor, IdentifierExpression, Expression> Identifier
@@ -470,7 +470,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitIgnored"/> method.
+        /// Gets or sets the implementation of <see cref="VisitIgnored"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitIgnored"/> method.</value>
         public Func<YacqExpressionVisitor, IgnoredExpression, Expression> Ignored
@@ -480,7 +480,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitLambdaList"/> method.
+        /// Gets or sets the implementation of <see cref="VisitLambdaList"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitLambdaList"/> method.</value>
         public Func<YacqExpressionVisitor, LambdaListExpression, Expression> LambdaList
@@ -490,7 +490,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitList"/> method.
+        /// Gets or sets the implementation of <see cref="VisitList"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitList"/> method.</value>
         public Func<YacqExpressionVisitor, ListExpression, Expression> List
@@ -500,7 +500,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitMacro"/> method.
+        /// Gets or sets the implementation of <see cref="VisitMacro"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitMacro"/> method.</value>
         public Func<YacqExpressionVisitor, MacroExpression, Expression> Macro
@@ -510,7 +510,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitNumber"/> method.
+        /// Gets or sets the implementation of <see cref="VisitNumber"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitNumber"/> method.</value>
         public Func<YacqExpressionVisitor, NumberExpression, Expression> Number
@@ -520,7 +520,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitQuoted"/> method.
+        /// Gets or sets the implementation of <see cref="VisitQuoted"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitQuoted"/> method.</value>
         public Func<YacqExpressionVisitor, QuotedExpression, Expression> Quoted
@@ -530,7 +530,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitSerialized"/> method.
+        /// Gets or sets the implementation of <see cref="VisitSerialized"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitSerialized"/> method.</value>
         public Func<YacqExpressionVisitor, SerializedExpression, Expression> Serialized
@@ -540,7 +540,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitSymbolTable"/> method.
+        /// Gets or sets the implementation of <see cref="VisitSymbolTable"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitSymbolTable"/> method.</value>
         public Func<YacqExpressionVisitor, SymbolTableExpression, Expression> SymbolTable
@@ -550,7 +550,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitText"/> method.
+        /// Gets or sets the implementation of <see cref="VisitText"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitText"/> method.</value>
         public Func<YacqExpressionVisitor, TextExpression, Expression> Text
@@ -560,7 +560,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitTypeCandidate"/> method.
+        /// Gets or sets the implementation of <see cref="VisitTypeCandidate"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitTypeCandidate"/> method.</value>
         public Func<YacqExpressionVisitor, TypeCandidateExpression, Expression> TypeCandidate
@@ -570,7 +570,7 @@ namespace XSpect.Yacq.Expressions
         }
 
         /// <summary>
-        /// Gets and sets the implementation of <see cref="VisitVector"/> method.
+        /// Gets or sets the implementation of <see cref="VisitVector"/> method.
         /// </summary>
         /// <value>The implementation of <see cref="VisitVector"/> method.</value>
         public Func<YacqExpressionVisitor, VectorExpression, Expression> Vector

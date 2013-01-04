@@ -37,7 +37,10 @@ namespace XSpect.Yacq.Serialization
 {
     partial class TypeRef
     {
-        internal class TypeDescriptor
+        /// <summary>
+        /// Provides information of <see cref="TypeRef"/> object.
+        /// </summary>
+        public class TypeDescriptor
         {
             private static readonly Lazy<Parser<Char, TypeDescriptor>> _parser
                 = new Lazy<Parser<Char, TypeDescriptor>>(() => stream =>
@@ -71,17 +74,16 @@ namespace XSpect.Yacq.Serialization
                           )
                               .Many()
                               .Maybe(),
-                          (tn, tas, ss) => new TypeDescriptor()
-                          {
-                              TypeName = tn,
-                              TypeArguments = tas.ToArray(),
-                              Suffixes = ss
+                          (tn, tas, ss) => new TypeDescriptor(
+                              tn,
+                              tas.ToArray(),
+                              ss
                                   .Select(_ => _
                                       .Select(cs => new String(cs.ToArray()))
                                       .ToArray()
                                   )
-                                  .Otherwise(() => new String[0]),
-                          }
+                                  .Otherwise(() => new String[0])
+                          )
                       )(stream)
                   );
 
@@ -97,6 +99,10 @@ namespace XSpect.Yacq.Serialization
                       )
                   );
 
+            /// <summary>
+            /// Gets the parser to generate an <see cref="TypeDescriptor"/> object from <see cref="TypeRef.Name"/>.
+            /// </summary>
+            /// <value>the parser to generate an <see cref="TypeDescriptor"/> object from <see cref="TypeRef.Name"/>.</value>
             public static Parser<Char, TypeDescriptor> Parser
             {
                 get
@@ -105,6 +111,10 @@ namespace XSpect.Yacq.Serialization
                 }
             }
 
+            /// <summary>
+            /// Gets the parser to generate an <see cref="TypeDescriptor"/> object from <see cref="TypeRef.Name"/> which is qualified with assembly name.
+            /// </summary>
+            /// <value>the parser to generate an <see cref="TypeDescriptor"/> object from <see cref="TypeRef.Name"/> which is qualified with assembly name.</value>
             public static Parser<Char, TypeDescriptor> ParserAssemblyQualified
             {
                 get
@@ -113,41 +123,83 @@ namespace XSpect.Yacq.Serialization
                 }
             }
 
-            public TypeName TypeName
+            /// <summary>
+            /// Gets or sets the name of the type.
+            /// </summary>
+            /// <value>The name of the type.</value>
+            public TypeName Name
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Gets or sets the generic type arguments of the type.
+            /// </summary>
+            /// <value>The generic type arguments of the type.</value>
             public TypeDescriptor[] TypeArguments
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Gets or sets the array of type suffixes (array, reference, pointer).
+            /// </summary>
+            /// <value>The array of type suffixes (array, reference, pointer).</value>
             public String[] Suffixes
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Gets or sets the assembly which the type belongs.
+            /// </summary>
+            /// <value>The assembly which the type belongs.</value>
             public AssemblyName Assembly
             {
                 get;
                 set;
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeDescriptor"/> class.
+            /// </summary>
             public TypeDescriptor()
+                : this(null)
             {
-                this.TypeName = new TypeName();
-                this.TypeArguments = new TypeDescriptor[0];
-                this.Suffixes = new String[0];
-                this.Assembly = new AssemblyName();
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeDescriptor"/> class.
+            /// </summary>
+            /// <param name="name">The name of the type.</param>
+            /// <param name="typeArguments">The generic type arguments of the type.</param>
+            /// <param name="suffixes">The array of type suffixes (array, reference, pointer).</param>
+            /// <param name="assembly">The assembly which the type belongs.</param>
+            public TypeDescriptor(
+                TypeName name,
+                TypeDescriptor[] typeArguments = null,
+                String[] suffixes = null,
+                AssemblyName assembly = null
+            )
+            {
+                this.Name = name ?? new TypeName();
+                this.TypeArguments = typeArguments ?? new TypeDescriptor[0];
+                this.Suffixes = suffixes ?? new String[0];
+                this.Assembly = assembly ?? new AssemblyName();
+            }
+
+            /// <summary>
+            /// Returns a <see cref="String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="String"/> that represents this instance.
+            /// </returns>
             public override String ToString()
             {
-                return this.TypeName + (this.TypeArguments.Any()
+                return this.Name + (this.TypeArguments.Any()
                     ? "<" + String.Join(", ", this.TypeArguments.SelectAll(t => t.ToString())) + ">"
                     : ""
                 ) + String.Concat(this.Suffixes);

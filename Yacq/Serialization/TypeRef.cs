@@ -36,11 +36,11 @@ using Parseq.Combinators;
 
 namespace XSpect.Yacq.Serialization
 {
+    /// <summary>
+    /// Indicades an reference of <see cref="Type"/> for serialization.
+    /// </summary>
     [DataContract(Name = "Type", IsReference = true)]
-#if !SILVERLIGHT
-    [Serializable()]
-#endif
-    internal partial class TypeRef
+    public partial class TypeRef
     {
         private static readonly Assembly _mscorlib = typeof(Object).Assembly;
 
@@ -52,6 +52,10 @@ namespace XSpect.Yacq.Serialization
 
         private readonly Lazy<TypeDescriptor> _descriptor;
 
+        /// <summary>
+        /// Gets or sets the belonging assembly of this type reference.
+        /// </summary>
+        /// <value>The belonging assembly of this type reference, or <c>null</c> if it is mscorlib.</value>
         [DataMember(Order = 0, EmitDefaultValue = false)]
         public AssemblyRef Assembly
         {
@@ -59,6 +63,10 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the value of <see cref="Type.FullName"/>.
+        /// </summary>
+        /// <value>The value of <see cref="Type.FullName"/>, or <c>null</c> if referring type is <see cref="Object"/>.</value>
         [DataMember(Order = 1, EmitDefaultValue = false)]
         public String Name
         {
@@ -66,6 +74,9 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeRef"/> class.
+        /// </summary>
         public TypeRef()
         {
             TypeDescriptor descriptor;
@@ -76,6 +87,23 @@ namespace XSpect.Yacq.Serialization
             );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeRef"/> class.
+        /// </summary>
+        /// <param name="assembly">The belonging assembly of this type reference, or <c>null</c> if it is mscorlib.</param>
+        /// <param name="name">The value of <see cref="Type.FullName"/>, or <c>null</c> if referring type is <see cref="Object"/>.</param>
+        public TypeRef(AssemblyRef assembly, String name)
+            : this()
+        {
+            this.Assembly = assembly;
+            this.Name = name;
+        }
+
+        /// <summary>
+        /// Returns the type reference which refers specified type.
+        /// </summary>
+        /// <param name="type">The type to refer.</param>
+        /// <returns>The type reference which refers specified type.</returns>
         public static TypeRef Serialize(Type type)
         {
             return _reverseCache.TryGetValue(type)
@@ -90,6 +118,12 @@ namespace XSpect.Yacq.Serialization
                 }.Apply(t => _reverseCache.Add(type, t));
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this instance.
+        /// </returns>
         public override String ToString()
         {
             return this.Describe()
@@ -97,16 +131,28 @@ namespace XSpect.Yacq.Serialization
                 ?? this.GetName();
         }
 
+        /// <summary>
+        /// Returns the string value of this assembly reference.
+        /// </summary>
+        /// <returns>The value of <see cref="Type.FullName"/>.</returns>
         public String GetName()
         {
             return this.Name ?? "System.Object";
         }
 
+        /// <summary>
+        /// Returns an object to describe this type reference.
+        /// </summary>
+        /// <returns>An object to describe this type reference.</returns>
         public TypeDescriptor Describe()
         {
             return this._descriptor.Value;
         }
 
+        /// <summary>
+        /// Dereferences this type reference.
+        /// </summary>
+        /// <returns>The <see cref="Type"/> which is referred by this type reference.</returns>
         public Type Deserialize()
         {
             return _cache.TryGetValue(this)
@@ -116,5 +162,36 @@ namespace XSpect.Yacq.Serialization
                        .Apply(t => _cache.Add(this, t));
         }
     }
+
+#if !SILVERLIGHT
+    [Serializable()]
+    partial class TypeRef
+        : ISerializable
+    {
+        /// <summary>
+        /// Initializes a new instance of a <see cref="TypeRef"/> class that has the given serialization information and context.
+        /// </summary>
+        /// <param name="info">The data needed to serialize or deserialize an object. </param>
+        /// <param name="context">The source and destination of a given serialized stream. </param>
+        protected TypeRef(SerializationInfo info, StreamingContext context)
+            : this(
+                  (AssemblyRef) info.GetValue("Assembly", typeof(AssemblyRef)),
+                  info.GetString("Name")
+              )
+        {
+        }
+
+        /// <summary>
+        /// Populates a serialization information object with the data needed to serialize the <see cref="TypeRef"/>.
+        /// </summary>
+        /// <param name="info">A <see cref="SerializationInfo"/> that holds the serialized data associated with the <see cref="TypeRef"/>.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Assembly", this.Assembly, typeof(AssemblyRef));
+            info.AddValue("Name", this.Name);
+        }
+    }
+#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

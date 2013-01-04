@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Parseq;
@@ -36,11 +37,11 @@ using Parseq.Combinators;
 
 namespace XSpect.Yacq.Serialization
 {
+    /// <summary>
+    /// Indicades an reference of <see cref="Assembly"/> for serialization.
+    /// </summary>
     [DataContract(Name = "Assembly", IsReference = true)]
-#if !SILVERLIGHT
-    [Serializable()]
-#endif
-    internal class AssemblyRef
+    public partial class AssemblyRef
     {
         private static readonly Dictionary<AssemblyRef, Assembly> _cache
             = new Dictionary<AssemblyRef, Assembly>();
@@ -112,7 +113,11 @@ namespace XSpect.Yacq.Serialization
             "Yacq",
         };
 
-        internal static Parser<Char, AssemblyName> Parser
+        /// <summary>
+        /// Gets the parser to generate an <see cref="AssemblyName"/> object.
+        /// </summary>
+        /// <value>The parser to generate an <see cref="AssemblyName"/> object.</value>
+        public static Parser<Char, AssemblyName> Parser
         {
             get
             {
@@ -120,13 +125,20 @@ namespace XSpect.Yacq.Serialization
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value of <see cref="Assembly.FullName"/>.
+        /// </summary>
+        /// <value>The value of <see cref="Assembly.FullName"/>, or <c>null</c> if referring assembly is mscorlib.</value>
         [DataMember(Order = 0, EmitDefaultValue = false)]
-        public string Name
+        public String Name
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssemblyRef"/> class.
+        /// </summary>
         public AssemblyRef()
         {
             AssemblyName assemblyRef;
@@ -137,12 +149,31 @@ namespace XSpect.Yacq.Serialization
             );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssemblyRef"/> class.
+        /// </summary>
+        /// <param name="name">The value of <see cref="Assembly.FullName"/>, or simple name if referring assembly is wellknown, or <c>null</c> for mscorlib.</param>
+        public AssemblyRef(String name)
+            : this()
+        {
+            this.Name = name;
+        }
+
+        /// <summary>
+        /// Returns the string value of this assembly reference.
+        /// </summary>
+        /// <returns>The value of <see cref="Assembly.FullName"/>, or simple name if referring assembly is wellknown.</returns>
         public String GetName()
         {
             return this.Name ?? "mscorlib";
         }
 
-        internal static AssemblyRef Serialize(Assembly assembly)
+        /// <summary>
+        /// Returns the assembly reference which refers specified assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly to refer.</param>
+        /// <returns>The assembly reference which refers specified assembly.</returns>
+        public static AssemblyRef Serialize(Assembly assembly)
         {
             return _reverseCache.TryGetValue(assembly) ??
 #if SILVERLIGHT
@@ -161,22 +192,63 @@ namespace XSpect.Yacq.Serialization
                     .Apply(a => _reverseCache.Add(assembly, a));
         }
 
+        /// <summary>
+        /// Returns a <see cref="String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="String"/> that represents this instance.
+        /// </returns>
         public override String ToString()
         {
             return this.Describe().Name;
         }
 
+        /// <summary>
+        /// Returns an object to describe this assembly reference.
+        /// </summary>
+        /// <returns>An object to describe this assembly reference.</returns>
         public AssemblyName Describe()
         {
             return this._descriptor.Value;
         }
 
-        internal Assembly Deserialize()
+        /// <summary>
+        /// Dereferences this assembly reference.
+        /// </summary>
+        /// <returns>The assembly which is referred by this assembly reference.</returns>
+        public Assembly Deserialize()
         {
             return _cache.TryGetValue(this)
                 ?? Assembly.Load(this.GetName())
                        .Apply(a => _cache.Add(this, a));
         }
     }
+
+#if !SILVERLIGHT
+    [Serializable()]
+    partial class AssemblyRef
+        : ISerializable
+    {
+        /// <summary>
+        /// Initializes a new instance of a <see cref="AssemblyRef"/> class that has the given serialization information and context.
+        /// </summary>
+        /// <param name="info">The data needed to serialize or deserialize an object. </param>
+        /// <param name="context">The source and destination of a given serialized stream. </param>
+        protected AssemblyRef(SerializationInfo info, StreamingContext context)
+            : this(info.GetString("Name"))
+        {
+        }
+
+        /// <summary>
+        /// Populates a serialization information object with the data needed to serialize the <see cref="AssemblyRef"/>.
+        /// </summary>
+        /// <param name="info">A <see cref="SerializationInfo"/> that holds the serialized data associated with the <see cref="AssemblyRef"/>.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Name", this.Name);
+        }
+    }
+#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

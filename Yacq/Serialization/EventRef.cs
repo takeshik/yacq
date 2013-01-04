@@ -34,11 +34,11 @@ using System.Runtime.Serialization;
 
 namespace XSpect.Yacq.Serialization
 {
+    /// <summary>
+    /// Indicades an reference of <see cref="EventInfo"/> for serialization.
+    /// </summary>
     [DataContract(Name = "Event")]
-#if !SILVERLIGHT
-    [Serializable()]
-#endif
-    internal class EventRef
+    public partial class EventRef
         : MemberRef
     {
         private static readonly Dictionary<EventRef, EventInfo> _cache
@@ -47,6 +47,28 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<EventInfo, EventRef> _reverseCache
             = new Dictionary<EventInfo, EventRef>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventRef"/> class.
+        /// </summary>
+        public EventRef()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventRef"/> class.
+        /// </summary>
+        /// <param name="type">The declaring type of this event reference, or <c>null</c> if the type is <see cref="Object"/>.</param>
+        /// <param name="name">The name of referring event.</param>
+        public EventRef(TypeRef type, String name)
+            : base(type, name)
+        {
+        }
+
+        /// <summary>
+        /// Returns the event reference which refers specified event.
+        /// </summary>
+        /// <param name="event">The event to refer.</param>
+        /// <returns>The event reference which refers specified event.</returns>
         public static EventRef Serialize(EventInfo @event)
         {
             return _reverseCache.TryGetValue(@event)
@@ -57,6 +79,10 @@ namespace XSpect.Yacq.Serialization
                    }.Apply(e => _reverseCache.Add(@event, e));
         }
 
+        /// <summary>
+        /// Dereferences this event reference.
+        /// </summary>
+        /// <returns>The <see cref="EventInfo"/> which is referred by this event reference.</returns>
         public new EventInfo Deserialize()
         {
             return _cache.TryGetValue(this)
@@ -65,5 +91,21 @@ namespace XSpect.Yacq.Serialization
                        .Apply(e => _cache.Add(this, e));
         }
     }
+
+#if !SILVERLIGHT
+    [Serializable()]
+    partial class EventRef
+    {
+        /// <summary>
+        /// Initializes a new instance of a <see cref="EventRef"/> class that has the given serialization information and context.
+        /// </summary>
+        /// <param name="info">The data needed to serialize or deserialize an object. </param>
+        /// <param name="context">The source and destination of a given serialized stream. </param>
+        protected EventRef(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
+#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

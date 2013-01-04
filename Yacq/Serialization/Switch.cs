@@ -86,7 +86,7 @@ namespace XSpect.Yacq.Serialization
                 + ") { "
                 + String.Join("; ", this.Cases
                       .SelectAll(c => c.ToString())
-                      .EndWith(this.DefaultBody.Null(n => new[]
+                      .EndWith(this.DefaultBody.Null(n => new []
                       {
                           " default: " + n,
                       }, new String[0]))
