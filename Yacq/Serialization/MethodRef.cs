@@ -39,6 +39,9 @@ namespace XSpect.Yacq.Serialization
     /// Indicades an reference of <see cref="MethodBase"/> for serialization.
     /// </summary>
     [DataContract(Name = "Method")]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     internal partial class MethodRef
         : MemberRef
     {
@@ -48,7 +51,7 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<MethodBase, MethodRef> _reverseCache
             = new Dictionary<MethodBase, MethodRef>();
 
-        private readonly Lazy<MethodDescriptor> _descriptor;
+        private MethodDescriptor _descriptor;
 
         /// <summary>
         /// Gets or sets the generic type arguments of this type reference.
@@ -66,12 +69,6 @@ namespace XSpect.Yacq.Serialization
         /// </summary>
         public MethodRef()
         {
-            MethodDescriptor descriptor;
-            this._descriptor = new Lazy<MethodDescriptor>(() =>
-                MethodDescriptor.Parser(this.Signature.AsStream())
-                    .TryGetValue(out descriptor)
-                    .Let(_ => descriptor)
-            );
         }
 
         /// <summary>
@@ -82,7 +79,6 @@ namespace XSpect.Yacq.Serialization
         /// <param name="signature">The signature (<see cref="Object.ToString()"/>) of referring method.</param>
         /// <param name="typeArgs">The generic type arguments of this type reference.</param>
         public MethodRef(TypeRef type, String name, String signature, TypeRef[] typeArgs)
-            : this()
         {
             this.Type = type;
             this.Name = name;
@@ -98,17 +94,16 @@ namespace XSpect.Yacq.Serialization
         public static MethodRef Serialize(MethodBase method)
         {
             return _reverseCache.TryGetValue(method)
-                ?? new MethodRef()
-                    {
-                        Type = TypeRef.Serialize(method.ReflectedType),
-                        Name = method.Name != ".ctor"
+                ?? new MethodRef(
+                        TypeRef.Serialize(method.ReflectedType),
+                        method.Name != ".ctor"
                             ? method.Name
                             : null,
-                        Signature = method.ToString(),
-                        TypeArgs = method.IsGenericMethod && !method.IsGenericMethodDefinition
+                        method.ToString(),
+                        method.IsGenericMethod && !method.IsGenericMethodDefinition
                             ? method.GetGenericArguments().SelectAll(TypeRef.Serialize)
-                            : null,
-                    }.Apply(m => _reverseCache.Add(method, m));
+                            : null
+                    ).Apply(m => _reverseCache.Add(method, m));
         }
 
         /// <summary>
@@ -130,7 +125,11 @@ namespace XSpect.Yacq.Serialization
         /// <returns>An object to describe this method reference.</returns>
         protected override MemberDescriptor GetDescriptor()
         {
-            return this._descriptor.Value;
+            return this._descriptor ?? (
+                this._descriptor = MethodDescriptor.Parser(this.Signature.AsStream())
+                    .TryGetValue(out this._descriptor)
+                    .Let(_ => this._descriptor)
+            );
         }
 
         /// <summary>
@@ -185,38 +184,5 @@ namespace XSpect.Yacq.Serialization
             return (ConstructorInfo) this.Deserialize();
         }
     }
-
-#if !SILVERLIGHT
-    [Serializable()]
-    partial class MethodRef
-    {
-        /// <summary>
-        /// Initializes a new instance of a <see cref="MethodRef"/> class that has the given serialization information and context.
-        /// </summary>
-        /// <param name="info">The data needed to serialize or deserialize an object. </param>
-        /// <param name="context">The source and destination of a given serialized stream. </param>
-        protected MethodRef(SerializationInfo info, StreamingContext context)
-            : this(
-                  (TypeRef) info.GetValue("Type", typeof(TypeRef)),
-                  info.GetString("Name"),
-                  info.GetString("Signature"),
-                  (TypeRef[]) info.GetValue("TypeArgs", typeof(TypeRef[]))
-              )
-        {
-        }
-
-        /// <summary>
-        /// Populates a serialization information object with the data needed to serialize the <see cref="MethodRef"/>.
-        /// </summary>
-        /// <param name="info">A <see cref="SerializationInfo"/> that holds the serialized data associated with the <see cref="MethodRef"/>.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue("Signature", this.Signature);
-            info.AddValue("TypeArgs", this.TypeArgs, typeof(TypeRef[]));
-        }
-    }
-#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

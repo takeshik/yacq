@@ -38,7 +38,10 @@ namespace XSpect.Yacq.Serialization
     /// Indicades an reference of <see cref="FieldRef"/> for serialization.
     /// </summary>
     [DataContract(Name = "Field")]
-    internal partial class FieldRef
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
+    public class FieldRef
         : MemberRef
     {
         private static readonly Dictionary<FieldRef, FieldInfo> _cache
@@ -72,11 +75,10 @@ namespace XSpect.Yacq.Serialization
         public static FieldRef Serialize(FieldInfo field)
         {
             return _reverseCache.TryGetValue(field)
-                ?? new FieldRef()
-                   {
-                       Type = TypeRef.Serialize(field.ReflectedType),
-                       Name = field.Name,
-                   }.Apply(f => _reverseCache.Add(field, f));
+                ?? new FieldRef(
+                       TypeRef.Serialize(field.ReflectedType),
+                       field.Name
+                   ).Apply(f => _reverseCache.Add(field, f));
         }
 
         /// <summary>
@@ -91,21 +93,5 @@ namespace XSpect.Yacq.Serialization
                        .Apply(f => _cache.Add(this, f));
         }
     }
-
-#if !SILVERLIGHT
-    [Serializable()]
-    partial class FieldRef
-    {
-        /// <summary>
-        /// Initializes a new instance of a <see cref="FieldRef"/> class that has the given serialization information and context.
-        /// </summary>
-        /// <param name="info">The data needed to serialize or deserialize an object. </param>
-        /// <param name="context">The source and destination of a given serialized stream. </param>
-        protected FieldRef(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-    }
-#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

@@ -40,6 +40,9 @@ namespace XSpect.Yacq.Serialization
     /// Indicades an reference of <see cref="Type"/> for serialization.
     /// </summary>
     [DataContract(Name = "Type", IsReference = true)]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     public partial class TypeRef
     {
         private static readonly Assembly _mscorlib = typeof(Object).Assembly;
@@ -50,7 +53,7 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<Type, TypeRef> _reverseCache
             = new Dictionary<Type, TypeRef>();
 
-        private readonly Lazy<TypeDescriptor> _descriptor;
+        private TypeDescriptor _descriptor;
 
         /// <summary>
         /// Gets or sets the belonging assembly of this type reference.
@@ -79,12 +82,6 @@ namespace XSpect.Yacq.Serialization
         /// </summary>
         public TypeRef()
         {
-            TypeDescriptor descriptor;
-            this._descriptor = new Lazy<TypeDescriptor>(() =>
-                TypeDescriptor.ParserAssemblyQualified(this.GetName().AsStream())
-                    .TryGetValue(out descriptor)
-                    .Let(_ => descriptor)
-            );
         }
 
         /// <summary>
@@ -107,15 +104,14 @@ namespace XSpect.Yacq.Serialization
         public static TypeRef Serialize(Type type)
         {
             return _reverseCache.TryGetValue(type)
-                ?? new TypeRef()
-                {
-                    Assembly = type.Assembly != _mscorlib
+                ?? new TypeRef(
+                    type.Assembly != _mscorlib
                         ? AssemblyRef.Serialize(type.Assembly)
                         : null,
-                    Name = type != typeof(Object)
+                    type != typeof(Object)
                         ? type.FullName
-                        : null,
-                }.Apply(t => _reverseCache.Add(type, t));
+                        : null
+                ).Apply(t => _reverseCache.Add(type, t));
         }
 
         /// <summary>
@@ -146,7 +142,11 @@ namespace XSpect.Yacq.Serialization
         /// <returns>An object to describe this type reference.</returns>
         public TypeDescriptor Describe()
         {
-            return this._descriptor.Value;
+            return this._descriptor ?? (
+                this._descriptor = TypeDescriptor.ParserAssemblyQualified(this.GetName().AsStream())
+                    .TryGetValue(out this._descriptor)
+                    .Let(_ => this._descriptor)
+            );
         }
 
         /// <summary>
@@ -162,36 +162,5 @@ namespace XSpect.Yacq.Serialization
                        .Apply(t => _cache.Add(this, t));
         }
     }
-
-#if !SILVERLIGHT
-    [Serializable()]
-    partial class TypeRef
-        : ISerializable
-    {
-        /// <summary>
-        /// Initializes a new instance of a <see cref="TypeRef"/> class that has the given serialization information and context.
-        /// </summary>
-        /// <param name="info">The data needed to serialize or deserialize an object. </param>
-        /// <param name="context">The source and destination of a given serialized stream. </param>
-        protected TypeRef(SerializationInfo info, StreamingContext context)
-            : this(
-                  (AssemblyRef) info.GetValue("Assembly", typeof(AssemblyRef)),
-                  info.GetString("Name")
-              )
-        {
-        }
-
-        /// <summary>
-        /// Populates a serialization information object with the data needed to serialize the <see cref="TypeRef"/>.
-        /// </summary>
-        /// <param name="info">A <see cref="SerializationInfo"/> that holds the serialized data associated with the <see cref="TypeRef"/>.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Assembly", this.Assembly, typeof(AssemblyRef));
-            info.AddValue("Name", this.Name);
-        }
-    }
-#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

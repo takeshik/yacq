@@ -38,7 +38,10 @@ namespace XSpect.Yacq.Serialization
     /// Indicades an reference of <see cref="PropertyInfo"/> for serialization.
     /// </summary>
     [DataContract(Name = "Property")]
-    internal partial class PropertyRef
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
+    internal class PropertyRef
         : MemberRef
     {
         private static readonly Dictionary<PropertyRef, PropertyInfo> _cache
@@ -72,11 +75,10 @@ namespace XSpect.Yacq.Serialization
         public static PropertyRef Serialize(PropertyInfo property)
         {
             return _reverseCache.TryGetValue(property)
-                ?? new PropertyRef()
-                   {
-                       Type = TypeRef.Serialize(property.ReflectedType),
-                       Name = property.Name,
-                   }.Apply(p => _reverseCache.Add(property, p));
+                ?? new PropertyRef(
+                       TypeRef.Serialize(property.ReflectedType),
+                       property.Name
+                   ).Apply(p => _reverseCache.Add(property, p));
         }
 
         /// <summary>
@@ -91,21 +93,5 @@ namespace XSpect.Yacq.Serialization
                        .Apply(p => _cache.Add(this, p));
         }
     }
-
-#if !SILVERLIGHT
-    [Serializable()]
-    partial class PropertyRef
-    {
-        /// <summary>
-        /// Initializes a new instance of a <see cref="PropertyRef"/> class that has the given serialization information and context.
-        /// </summary>
-        /// <param name="info">The data needed to serialize or deserialize an object. </param>
-        /// <param name="context">The source and destination of a given serialized stream. </param>
-        protected PropertyRef(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-    }
-#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

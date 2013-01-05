@@ -42,11 +42,14 @@ namespace XSpect.Yacq.Serialization
     [KnownType(typeof(FieldRef))]
     [KnownType(typeof(MethodRef))]
     [KnownType(typeof(PropertyRef))]
+#if !SILVERLIGHT
+    [Serializable()]
+#endif
     public abstract partial class MemberRef
     {
         internal const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private readonly Lazy<MemberDescriptor> _descriptor;
+        private MemberDescriptor _descriptor;
 
         /// <summary>
         /// Gets or sets the declaring type of this member reference.
@@ -86,12 +89,6 @@ namespace XSpect.Yacq.Serialization
         /// </summary>
         protected MemberRef()
         {
-            MemberDescriptor descriptor;
-            this._descriptor = new Lazy<MemberDescriptor>(() =>
-                MemberDescriptor.Parser(this.Signature.AsStream())
-                    .TryGetValue(out descriptor)
-                    .Let(_ => descriptor)
-            );
         }
 
         /// <summary>
@@ -101,7 +98,6 @@ namespace XSpect.Yacq.Serialization
         /// <param name="name">The name of referring member.</param>
         /// <param name="signature">The signature of referring member, or <c>null</c> if the member has no detailed signature.</param>
         protected MemberRef(TypeRef type, String name, String signature = null)
-            : this()
         {
             this.Type = type ?? new TypeRef();
             this.Name = name ?? "";
@@ -150,7 +146,11 @@ namespace XSpect.Yacq.Serialization
         /// <returns>An object to describe this member reference.</returns>
         protected virtual MemberDescriptor GetDescriptor()
         {
-            return this._descriptor.Value;
+            return this._descriptor ?? (
+                this._descriptor = MemberDescriptor.Parser(this.Signature.AsStream())
+                    .TryGetValue(out this._descriptor)
+                    .Let(_ => this._descriptor)
+            );
         }
 
         /// <summary>
@@ -190,36 +190,5 @@ namespace XSpect.Yacq.Serialization
             }
         }
     }
-
-#if !SILVERLIGHT
-    [Serializable()]
-    partial class MemberRef
-        : ISerializable
-    {
-        /// <summary>
-        /// Initializes a new instance of a <see cref="AssemblyRef"/> class that has the given serialization information and context.
-        /// </summary>
-        /// <param name="info">The data needed to serialize or deserialize an object. </param>
-        /// <param name="context">The source and destination of a given serialized stream. </param>
-        protected MemberRef(SerializationInfo info, StreamingContext context)
-            : this(
-                  (TypeRef) info.GetValue("Type", typeof(TypeRef)),
-                  info.GetString("Name")
-              )
-        {
-        }
-
-        /// <summary>
-        /// Populates a serialization information object with the data needed to serialize the <see cref="MemberRef"/>.
-        /// </summary>
-        /// <param name="info">A <see cref="SerializationInfo"/> that holds the serialized data associated with the <see cref="MemberRef"/>.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Type", this.Type, typeof(TypeRef));
-            info.AddValue("Name", this.Name);
-        }
-    }
-#endif
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
