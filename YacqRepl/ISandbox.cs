@@ -62,6 +62,8 @@ namespace XSpect.Yacq.Repl
         }
 
         EvaluationContext Evaluate(IEnumerable<Char> code);
+
+        Object EvaluateWithoutContext(IEnumerable<Char> code, params Object[] args);
     }
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

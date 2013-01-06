@@ -48,9 +48,20 @@ namespace XSpect.Yacq.Repl
 
         private readonly Dictionary<String, IReplInterface> _replInterfaces;
 
+        public ISandbox DefaultSandbox
+        {
+            get
+            {
+                return this._sandboxes[Guid.Empty];
+            }
+        }
+
         public SandboxManager()
         {
-            this._sandboxes = new Dictionary<Guid, ISandbox>();
+            this._sandboxes = new Dictionary<Guid, ISandbox>()
+            {
+                {Guid.Empty, new DefaultSandbox()},
+            };
             this._replInterfaces = new Dictionary<String, IReplInterface>();
         }
 
@@ -112,6 +123,10 @@ namespace XSpect.Yacq.Repl
 
         public void Unload(ISandbox sandbox)
         {
+            if (sandbox is DefaultSandbox)
+            {
+                return;
+            }
             sandbox.Id.Apply(
                 i => AppDomain.Unload(sandbox.Domain),
                 i => this._sandboxes.Remove(i)

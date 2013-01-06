@@ -126,8 +126,10 @@ namespace XSpect.Yacq.Repl
             {
                 expressions
                     .Select(e => e.Evaluate(this._symbols)
-                        .If(o => o is IEnumerable && !(o is IEnumerable<Object>), o => ((IEnumerable) o).Cast<Object>())
-                        .If(o => o is IEnumerable<Object> && !o.GetType().IsMarshalByRef, o => ((IEnumerable<Object>) o).Remotable())
+                        .If(
+                            o => o is IEnumerable && !o.GetType().Let(t => t.IsMarshalByRef || t.IsSerializable),
+                            o => ((IEnumerable) o).Cast<Object>().Remotable()
+                        )
                     )
                     .ForEach(this.NotifyReturned);
                 this._returnValues.OnCompleted();

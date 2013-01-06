@@ -46,14 +46,16 @@ using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.Repl
 {
-    public class Sandbox
+    internal class DefaultSandbox
         : MarshalByRefObject,
           ISandbox
     {
         public Guid Id
         {
-            get;
-            private set;
+            get
+            {
+                return Guid.Empty;
+            }
         }
 
         public AppDomain Domain
@@ -64,8 +66,10 @@ namespace XSpect.Yacq.Repl
 
         public IPAddress RemoteAddress
         {
-            get;
-            private set;
+            get
+            {
+                return IPAddress.None;
+            }
         }
 
         public SymbolTable Symbols
@@ -80,77 +84,13 @@ namespace XSpect.Yacq.Repl
             private set;
         }
 
-        private Sandbox(
-            Guid id,
-            IPAddress remoteAddress
-        )
+        internal DefaultSandbox()
         {
-            if (AppDomain.CurrentDomain.IsDefaultAppDomain())
-            {
-                throw new InvalidOperationException("Current AppDomain is default; activate on sandbox AppDomain.");
-            }
-            this.Id = id;
             this.Domain = AppDomain.CurrentDomain;
-            this.RemoteAddress = remoteAddress;
             this.Symbols = new SymbolTable(typeof(ReplSymbols))
                 .Apply(s => s["*context*"] = Expression.Default(typeof(EvaluationContext)));
             this.History = new SortedList<DateTime, String>();
             RuntimeHelpers.RunClassConstructor(typeof(Reader.Defaults).TypeHandle);
-        }
-
-        public static Sandbox Create(
-            Guid id,
-            Evidence evidence,
-            IPAddress remoteAddress,
-            CultureInfo culture
-        )
-        {
-            return (Sandbox) Activator.CreateInstance(
-                AppDomain.CreateDomain(
-                    "Sandbox." + id.ToString("d"),
-                    evidence,
-                    new AppDomainSetup()
-                    {
-                        ApplicationBase = Environment.CurrentDirectory,
-                        ApplicationName = "YacqRepl.Sandbox." + id.ToString("d"),
-                        LoaderOptimization = LoaderOptimization.MultiDomain,
-                    },
-                    SecurityManager.GetStandardSandbox(evidence).Apply(
-                        ps => ps.AddPermission(new FileIOPermission(
-                            FileIOPermissionAccess.PathDiscovery | FileIOPermissionAccess.Read,
-                            AccessControlActions.View,
-                            new []
-                            {
-                                Environment.CurrentDirectory,
-                                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                                Path.Combine(
-                                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                                    "Reference Assemblies"
-                                )
-                            }
-                        )),
-                        ps => ps.AddPermission(new ReflectionPermission(PermissionState.Unrestricted)),
-                        ps => ps.AddPermission(new SecurityPermission(SecurityPermissionFlag.AllFlags))
-                    ),
-                    Directory.GetFiles(Environment.CurrentDirectory, "*.dll")
-                        .Select(Assembly.LoadFrom)
-                        .EndWith(Assembly.GetExecutingAssembly())
-                        .Choose(a => a.Evidence.GetHostEvidence<StrongName>())
-                        .ToArray()
-                ),
-                typeof(Sandbox).Assembly.FullName,
-                typeof(Sandbox).FullName,
-                false,
-                BindingFlags.NonPublic | BindingFlags.Instance,
-                null,
-                new Object[]
-                {
-                    id,
-                    remoteAddress,
-                },
-                culture,
-                null
-            ).Unwrap();
         }
 
         public override Object InitializeLifetimeService()

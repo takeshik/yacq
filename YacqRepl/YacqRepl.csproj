@@ -89,6 +89,7 @@
     </Compile>
     <Compile Include="BitArray.cs" />
     <Compile Include="ConsoleReplInterface.cs" />
+    <Compile Include="DefaultSandbox.cs" />
     <Compile Include="ParsedExpression.cs" />
     <Compile Include="EvaluationContext.cs" />
     <Compile Include="IReplInterface.cs" />

@@ -27,12 +27,16 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.Repl
 {
@@ -43,6 +47,13 @@ namespace XSpect.Yacq.Repl
 
         private ISandbox _sandbox;
 
+        private Int32 _dumpLimit;
+
+        public ConsoleReplInterface()
+        {
+            this._dumpLimit = 100;
+        }
+
         public void Dispose()
         {
         }
@@ -50,7 +61,7 @@ namespace XSpect.Yacq.Repl
         public void Initialize(SandboxManager manager)
         {
             this._manager = manager;
-            this._sandbox = this._manager.CreateSandbox();
+            this._sandbox = this._manager.DefaultSandbox;
         }
 
         public void Run()
@@ -60,6 +71,32 @@ namespace XSpect.Yacq.Repl
                 .Select(s => (Console.ForegroundColor = ConsoleColor.White)
                     .Let(_ => Console.ReadLine())
                     .Apply(_ => Console.ResetColor())
+                    .If(l => l == null, l => ":exit")
+                    .If(
+                        l => l.FirstOrDefault() == ':' && !l.StartsWith(":<<"),
+                        l => l.Substring(1).Split(' ').Let(_ =>
+                        {
+                            switch (_[0])
+                            {
+                                case "sandbox":
+                                    this._manager.Unload(this._sandbox);
+                                    this._sandbox = this._manager.CreateSandbox();
+                                    return "(type 'System.AppDomain').CurrentDomain.FriendlyName";
+                                case "privileged":
+                                    this._manager.Unload(this._sandbox);
+                                    this._sandbox = this._manager.DefaultSandbox;
+                                    return "(type 'System.AppDomain').CurrentDomain.FriendlyName";
+                                case "limit":
+                                    if (_.Length > 1)
+                                    {
+                                        this._dumpLimit = Int32.Parse(_[1]);
+                                    }
+                                    return this._dumpLimit.ToString();
+                                default:
+                                    return "";
+                            }
+                        })
+                    )
                     .If(
                         l => l.StartsWith(":<<"),
                         h => EnumerableEx.Repeat(Unit.Default)
@@ -100,7 +137,23 @@ namespace XSpect.Yacq.Repl
                             if (v.Value != null)
                             {
                                 Write(ConsoleColor.DarkGreen, "{0} = ", v.Value.GetType().Name);
-                                WriteLine(ConsoleColor.Green, JToken.FromObject(v.Value).ToString());
+                                WriteLine(
+                                    ConsoleColor.Green,
+                                    (String) this._sandbox.EvaluateWithoutContext(
+                                        @"(\ [o:Object] (type 'Newtonsoft.Json.JsonConvert').(SerializeObject o !serializerSettings))",
+                                        v.Value.If(
+                                            o => o is IEnumerable && !(o is String) && o.GetType().Let(t =>
+                                                t.GetInterface("ICollection") == null &&
+                                                t.GetInterface("ICollection`1") == null
+                                            ),
+                                            o => ((IEnumerable) o)
+                                                .Cast<Object>()
+                                                // TODO: Use !dumpLimit (causes SecurityException in sandbox)
+                                                .Take(this._dumpLimit)
+                                                .Remotable()
+                                        )
+                                    )
+                                );
                             }
                             else
                             {

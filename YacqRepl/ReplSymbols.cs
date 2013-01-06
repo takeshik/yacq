@@ -29,9 +29,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.Symbols;
 
@@ -39,6 +45,44 @@ namespace XSpect.Yacq.Repl
 {
     internal static class ReplSymbols
     {
+        [YacqSymbol(DispatchTypes.Member, "!serializerSettings")]
+        public static Expression SerializerSettings = Expression.Constant(new JsonSerializerSettings()
+        {
+            Converters = new List<JsonConverter>()
+            {
+                new BinaryConverter(),
+                new ExpandoObjectConverter(),
+                new IsoDateTimeConverter(),
+                new KeyValuePairConverter(),
+                new RegexConverter(),
+                new StringEnumConverter(),
+                new VersionConverter(),
+                new XmlNodeConverter(),
+            },
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            Formatting = Formatting.Indented,
+            MaxDepth = 10,
+            TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+            TypeNameHandling = TypeNameHandling.Auto,
+        });
+
+        private static Int32 _dumpLimit
+        {
+            get;
+            set;
+        }
+
+        static ReplSymbols()
+        {
+            _dumpLimit = 100;
+        }
+
+        [YacqSymbol(DispatchTypes.Member, "!dumpLimit")]
+        public static Expression DumpLimit = Expression.Property(
+            null,
+            typeof(ReplSymbols).GetProperty("_dumpLimit", BindingFlags.NonPublic | BindingFlags.Static)
+        );
+
         [YacqSymbol(DispatchTypes.Method, "!exit")]
         public static Expression ExitRepl(DispatchExpression e, SymbolTable s, Type t)
         {
