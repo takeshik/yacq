@@ -41,11 +41,25 @@ namespace XSpect.Yacq.Serialization
     internal class MemberListBinding
         : MemberBinding
     {
-        [DataMember(Order = 0)]
-        public ElementInit[] Initializers
+        [DataMember(Order = 0, Name = "Initializers", EmitDefaultValue = false)]
+        private ElementInit[] _Initializers
         {
             get;
             set;
+        }
+
+        public ElementInit[] Initializers
+        {
+            get
+            {
+                return this._Initializers ?? new ElementInit[0];
+            }
+            set
+            {
+                this._Initializers = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public static MemberListBinding Serialize(E.MemberListBinding binding)
@@ -66,7 +80,7 @@ namespace XSpect.Yacq.Serialization
         {
             return E.Expression.ListBind(
                 this.Member.Deserialize(),
-                this.Initializers.Select(i => i.Deserialize())
+                this.Initializers.SelectAll(i => i.Deserialize())
             );
         }
     }

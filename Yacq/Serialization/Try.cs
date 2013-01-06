@@ -47,11 +47,25 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public CatchBlock[] Handlers
+        [DataMember(Order = 1, Name = "Handlers", EmitDefaultValue = false)]
+        private CatchBlock[] _Handlers
         {
             get;
             set;
+        }
+
+        public CatchBlock[] Handlers
+        {
+            get
+            {
+                return this._Handlers ?? new CatchBlock[0];
+            }
+            set
+            {
+                this._Handlers = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         [DataMember(Order = 2, EmitDefaultValue = false)]
@@ -75,13 +89,13 @@ namespace XSpect.Yacq.Serialization
                 this.Body.Deserialize(),
                 this.Finally.Null(n => n.Deserialize()),
                 this.Fault.Null(n => n.Deserialize()),
-                this.Handlers.Null(hs => hs.Select(c => c.Deserialize()))
+                this.Handlers.SelectAll(c => c.Deserialize())
             );
         }
 
         public override String ToString()
         {
-            return "try { " + this.Body + "} "
+            return "try { " + this.Body + " } "
                 + String.Join(" ", this.Handlers
                       .SelectAll(h => h.ToString())
                       .EndWith(new []

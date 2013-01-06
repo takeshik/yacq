@@ -48,11 +48,25 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Arguments
+        [DataMember(Order = 1, Name = "Arguments", EmitDefaultValue = false)]
+        private Node[] _Arguments
         {
             get;
             set;
+        }
+
+        public Node[] Arguments
+        {
+            get
+            {
+                return this._Arguments ?? new Node[0];
+            }
+            set
+            {
+                this._Arguments = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         [DataMember(Order = 2, EmitDefaultValue = false)]
@@ -66,20 +80,25 @@ namespace XSpect.Yacq.Serialization
         {
             return Expression.New(
                 this.Constructor.DeserializeAsConstructor(),
-                this.Arguments.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0]),
+                this.Arguments.SelectAll(n => n.Deserialize()),
                 this.Members.Null(_ => _.SelectAll(m => m.Deserialize()))
             );
         }
 
         public override String ToString()
         {
-            return "new " + this.Type
-                + "(" + String.Join(", ", this.Arguments.Zip(
-                      this.Members ?? new MemberRef[this.Arguments.Length],
-                      (n, m) => m != null
-                          ? m + " = " + n
-                          : n.ToString()
-                  ));
+            return "new " + this.Constructor.Type
+                + "("
+                + String.Join(", ", this.Members != null
+                      ? this.Arguments.Zip(
+                            this.Members,
+                            (n, m) => m != null
+                                ? m + " = " + n
+                                : n.ToString()
+                        )
+                      : this.Arguments.SelectAll(n => n.ToString())
+                  )
+                + ")";
         }
     }
 
@@ -90,12 +109,12 @@ namespace XSpect.Yacq.Serialization
             return new New()
             {
                 Constructor = MethodRef.Serialize(expression.Constructor),
-                Arguments = expression.Arguments.Any()
-                    ? expression.Arguments.Select(Serialize).ToArray()
-                    : null,
-                Members = expression.Members.Any()
-                    ? expression.Members.Select(MemberRef.Serialize).ToArray()
-                    : null,
+                Arguments = expression.Arguments.Select(Serialize).ToArray(),
+                Members = expression.Members.If(
+                    ms => ms != null && ms.Any(),
+                    ms => ms.Select(MemberRef.Serialize).ToArray(),
+                    _ => null
+                ),
             };
         }
     }

@@ -96,6 +96,9 @@ namespace XSpect.Yacq.Serialization
                       ))
               ));
 
+#if !SILVERLIGHT
+        [NonSerialized()]
+#endif
         private AssemblyName _descriptor;
 
         private static readonly String[] _loadedAssemblies = new []

@@ -60,9 +60,7 @@ namespace XSpect.Yacq.Serialization
         {
             return new LambdaList()
             {
-                Elements = expression.Elements.Any()
-                    ? expression.Elements.Select(Serialize).ToArray()
-                    : null,
+                Elements = expression.Elements.Select(Serialize).ToArray(),
             };
         }
     }

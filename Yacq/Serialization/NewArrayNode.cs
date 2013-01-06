@@ -42,11 +42,25 @@ namespace XSpect.Yacq.Serialization
     internal abstract class NewArrayNode
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Node[] Expressions
+        [DataMember(Order = 0, Name = "Expressions", EmitDefaultValue = false)]
+        private Node[] _Expressions
         {
             get;
             set;
+        }
+
+        public Node[] Expressions
+        {
+            get
+            {
+                return this._Expressions ?? new Node[0];
+            }
+            set
+            {
+                this._Expressions = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
     }
 }

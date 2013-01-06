@@ -54,11 +54,25 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 2, EmitDefaultValue = false)]
-        public Node[] Arguments
+        [DataMember(Order = 2, Name = "Arguments", EmitDefaultValue = false)]
+        private Node[] _Arguments
         {
             get;
             set;
+        }
+
+        public Node[] Arguments
+        {
+            get
+            {
+                return this._Arguments ?? new Node[0];
+            }
+            set
+            {
+                this._Arguments = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()
@@ -66,7 +80,7 @@ namespace XSpect.Yacq.Serialization
             return Expression.Call(
                 this.Object.Null(n => n.Deserialize()),
                 this.Method.DeserializeAsMethod(),
-                this.Arguments.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
+                this.Arguments.SelectAll(n => n.Deserialize())
             );
         }
 
@@ -76,12 +90,11 @@ namespace XSpect.Yacq.Serialization
                 ?? this.Method.Type.Describe().Name.ToString()
             )
                 + "." + this.Method.Name
-                + this.Method.TypeArgs.If(
-                      _ => _ != null && _.Any(),
-                      _ => "<" + String.Join(", ", _.SelectAll(t => t.Describe().ToString())) + ">",
-                      _ => ""
+                + this.Method.TypeArgs.Let(ts => ts != null && ts.Any()
+                      ? "<" + String.Join(", ", ts.SelectAll(t => t.Describe().ToString())) + ">"
+                      : ""
                   )
-                + "(" + String.Join(", ", (this.Arguments ?? new Node[0]).SelectAll(n => n.ToString())) + ")";
+                + "(" + String.Join(", ", this.Arguments.SelectAll(n => n.ToString())) + ")";
         }
     }
 
@@ -93,9 +106,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Method = MethodRef.Serialize(expression.Method),
                 Object = expression.Object.Null(e => Serialize(e)),
-                Arguments = expression.Arguments.Any()
-                    ? expression.Arguments.Select(Serialize).ToArray()
-                    : null,
+                Arguments = expression.Arguments.Select(Serialize).ToArray(),
             };
         }
     }

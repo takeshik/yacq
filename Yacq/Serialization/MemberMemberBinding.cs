@@ -41,11 +41,25 @@ namespace XSpect.Yacq.Serialization
     internal class MemberMemberBinding
         : MemberBinding
     {
-        [DataMember(Order = 0)]
-        public MemberBinding[] Bindings
+        [DataMember(Order = 0, Name = "Bindings", EmitDefaultValue = false)]
+        private MemberBinding[] _Bindings
         {
             get;
             set;
+        }
+
+        public MemberBinding[] Bindings
+        {
+            get
+            {
+                return this._Bindings ?? new MemberBinding[0];
+            }
+            set
+            {
+                this._Bindings = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public static MemberMemberBinding Serialize(E.MemberMemberBinding binding)
@@ -66,7 +80,7 @@ namespace XSpect.Yacq.Serialization
         {
             return E.Expression.MemberBind(
                 this.Member.Deserialize(),
-                this.Bindings.Select(i => i.Deserialize())
+                this.Bindings.SelectAll(i => i.Deserialize())
             );
         }
     }

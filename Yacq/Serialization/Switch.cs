@@ -75,7 +75,7 @@ namespace XSpect.Yacq.Serialization
                 this.SwitchValue.Deserialize(),
                 this.DefaultBody.Null(n => n.Deserialize()),
                 this.Comparison.Null(m => m.DeserializeAsMethod()),
-                this.Cases.Select(c => c.Deserialize())
+                this.Cases.SelectAll(c => c.Deserialize())
             );
         }
 

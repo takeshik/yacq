@@ -53,6 +53,9 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<Type, TypeRef> _reverseCache
             = new Dictionary<Type, TypeRef>();
 
+#if !SILVERLIGHT
+        [NonSerialized()]
+#endif
         private TypeDescriptor _descriptor;
 
         /// <summary>

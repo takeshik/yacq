@@ -41,11 +41,25 @@ namespace XSpect.Yacq.Serialization
     internal class Macro
         : YacqNode
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public AmbiguousParameter[] Parameters
+        [DataMember(Order = 0, Name = "Parameters", EmitDefaultValue = false)]
+        private AmbiguousParameter[] _Parameters
         {
             get;
             set;
+        }
+
+        public AmbiguousParameter[] Parameters
+        {
+            get
+            {
+                return this._Parameters ?? new AmbiguousParameter[0];
+            }
+            set
+            {
+                this._Parameters = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         [DataMember(Order = 1)]
@@ -59,15 +73,15 @@ namespace XSpect.Yacq.Serialization
         {
             return YacqExpression.Macro(
                 this.Body.Deserialize(),
-                this.Parameters.Null(_ => _.Select(p => p.Deserialize<AmbiguousParameterExpression>()))
+                this.Parameters.SelectAll(p => p.Deserialize<AmbiguousParameterExpression>())
             );
         }
 
         public override String ToString()
         {
-            return "macro(" + (this.Parameters ?? new AmbiguousParameter[0]).Let(ps => ps.Length != 1
-                ? "(" + String.Join(", ", ps.SelectAll(p => p.ToString())) + ")"
-                : ps[0].ToString()
+            return "macro(" + (this.Parameters.Length != 1
+                ? "(" + String.Join(", ", this.Parameters.SelectAll(p => p.ToString())) + ")"
+                : this.Parameters[0].ToString()
             ) + " => " + this.Body + ")";
         }
     }
@@ -78,9 +92,7 @@ namespace XSpect.Yacq.Serialization
         {
             return new Macro()
             {
-                Parameters = expression.Parameters.Any()
-                    ? expression.Parameters.Select(AmbiguousParameter).ToArray()
-                    : null,
+                Parameters = expression.Parameters.Select(AmbiguousParameter).ToArray(),
                 Body = Serialize(expression.Body),
             };
         }

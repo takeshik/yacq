@@ -48,37 +48,65 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public AmbiguousParameter[] Parameters
+        [DataMember(Order = 1, Name = "Parameters", EmitDefaultValue = false)]
+        private AmbiguousParameter[] _Parameters
         {
             get;
             set;
         }
 
-        [DataMember(Order = 2, EmitDefaultValue = false)]
-        public Node[] Bodies
+        public AmbiguousParameter[] Parameters
+        {
+            get
+            {
+                return this._Parameters ?? new AmbiguousParameter[0];
+            }
+            set
+            {
+                this._Parameters = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
+        }
+
+        [DataMember(Order = 2, Name = "Bodies", EmitDefaultValue = false)]
+        private Node[] _Bodies
         {
             get;
             set;
+        }
+
+        public Node[] Bodies
+        {
+            get
+            {
+                return this._Bodies ?? new Node[0];
+            }
+            set
+            {
+                this._Bodies = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()
         {
             return YacqExpression.AmbiguousLambda(
                 this.ReturnType.Null(t => t.Deserialize()),
-                this.Bodies.Null(_ => _.Select(n => n.Deserialize())),
-                this.Parameters.Null(_ => _.Select(p => p.Deserialize<AmbiguousParameterExpression>()))
+                this.Bodies.Select(n => n.Deserialize()),
+                this.Parameters.SelectAll(p => p.Deserialize<AmbiguousParameterExpression>())
             );
         }
 
         public override String ToString()
         {
-            return (this.Parameters ?? new AmbiguousParameter[0]).Let(ps => ps.Length != 1
-                ? "(" + String.Join(", ", ps.SelectAll(p => p.ToString())) + ")"
-                : ps[0].ToString()
-            ) + " => " + (this.Bodies ?? new Node[0]).Let(bs => bs.Length != 1
-                ? "{ " + String.Join("; ", bs.SelectAll(n => n.ToString())) + " }"
-                : bs[0].ToString()
+            return (this.Parameters.Length != 1
+                ? "(" + String.Join(", ", this.Parameters.SelectAll(p => p.ToString())) + ")"
+                : this.Parameters[0].ToString()
+            ) + " => " + (this.Bodies.Length != 1
+                ? "{ " + String.Join("; ", this.Bodies.SelectAll(n => n.ToString())) + " }"
+                : this.Bodies[0].ToString()
             );
         }
     }
@@ -90,12 +118,8 @@ namespace XSpect.Yacq.Serialization
             return new AmbiguousLambda()
             {
                 ReturnType = expression.ReturnType.Null(t => TypeRef.Serialize(t)),
-                Parameters = expression.Parameters.Any()
-                    ? expression.Parameters.Select(AmbiguousParameter).ToArray()
-                    : null,
-                Bodies = expression.Bodies.Any()
-                    ? expression.Bodies.Select(Serialize).ToArray()
-                    : null,
+                Parameters = expression.Parameters.Select(AmbiguousParameter).ToArray(),
+                Bodies = expression.Bodies.Select(Serialize).ToArray(),
             };
         }
     }

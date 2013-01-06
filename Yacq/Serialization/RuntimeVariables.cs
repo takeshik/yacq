@@ -40,17 +40,31 @@ namespace XSpect.Yacq.Serialization
     internal class RuntimeVariables
         : Node
     {
-        [DataMember(Order = 0)]
-        public Parameter[] Variables
+        [DataMember(Order = 0, Name = "Variables", EmitDefaultValue = false)]
+        private Parameter[] _Variables
         {
             get;
             set;
         }
 
+        public Parameter[] Variables
+        {
+            get
+            {
+                return this._Variables ?? new Parameter[0];
+            }
+            set
+            {
+                this._Variables = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
+        }
+
         public override Expression Deserialize()
         {
             return Expression.RuntimeVariables(
-                this.Variables.Select(v => v.Deserialize<ParameterExpression>())
+                this.Variables.SelectAll(v => v.Deserialize<ParameterExpression>())
             );
         }
 

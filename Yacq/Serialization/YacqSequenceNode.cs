@@ -44,11 +44,25 @@ namespace XSpect.Yacq.Serialization
     internal abstract class YacqSequenceNode
         : YacqNode
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Node[] Elements
+        [DataMember(Order = 0, Name = "Elements", EmitDefaultValue = false)]
+        private Node[] _Elements
         {
             get;
             set;
+        }
+
+        public Node[] Elements
+        {
+            get
+            {
+                return this._Elements ?? new Node[0];
+            }
+            set
+            {
+                this._Elements = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
     }
 }

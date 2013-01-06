@@ -40,11 +40,25 @@ namespace XSpect.Yacq.Serialization
     internal class Lambda
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Parameters
+        [DataMember(Order = 0, Name = "Parameters", EmitDefaultValue = false)]
+        private Parameter[] _Parameters
         {
             get;
             set;
+        }
+
+        public Parameter[] Parameters
+        {
+            get
+            {
+                return this._Parameters ?? new Parameter[0];
+            }
+            set
+            {
+                this._Parameters = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         [DataMember(Order = 1)]
@@ -75,15 +89,15 @@ namespace XSpect.Yacq.Serialization
                 this.Body.Deserialize(),
                 this.Name,
                 this.TailCall,
-                this.Parameters.Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
+                this.Parameters.SelectAll(n => n.Deserialize<ParameterExpression>())
             );
         }
 
         public override String ToString()
         {
-            return (this.Parameters ?? new Parameter[0]).Let(ps => ps.Length != 1
-                ? "(" + String.Join(", ", ps.SelectAll(p => p.ToString())) + ")"
-                : ps[0].ToString()
+            return (this.Parameters.Length != 1
+                ? "(" + String.Join(", ", this.Parameters.SelectAll(p => p.ToString())) + ")"
+                : this.Parameters.ToString()
             ) + " => " + this.Body;
         }
     }
@@ -98,9 +112,7 @@ namespace XSpect.Yacq.Serialization
                 Body = Serialize(expression.Body),
                 Name = expression.Name,
                 TailCall = expression.TailCall,
-                Parameters = expression.Parameters.Any()
-                    ? expression.Parameters.Select(Parameter).ToArray()
-                    : null,
+                Parameters = expression.Parameters.Select(Parameter).ToArray(),
             };
         }
     }

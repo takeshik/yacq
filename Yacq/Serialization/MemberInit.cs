@@ -47,18 +47,32 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 1)]
-        public MemberBinding[] Bindings
+        [DataMember(Order = 1, Name = "Bindings", EmitDefaultValue = false)]
+        private MemberBinding[] _Bindings
         {
             get;
             set;
+        }
+
+        public MemberBinding[] Bindings
+        {
+            get
+            {
+                return this._Bindings ?? new MemberBinding[0];
+            }
+            set
+            {
+                this._Bindings = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()
         {
             return Expression.MemberInit(
                 this.NewExpression.Deserialize<NewExpression>(),
-                this.Bindings.Select(b => b.Deserialize())
+                this.Bindings.SelectAll(b => b.Deserialize())
             );
         }
 

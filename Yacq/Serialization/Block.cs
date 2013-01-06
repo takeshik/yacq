@@ -40,26 +40,52 @@ namespace XSpect.Yacq.Serialization
     internal class Block
         : Node
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public Parameter[] Variables
+        [DataMember(Order = 0, Name = "Variables", EmitDefaultValue = false)]
+        private Parameter[] _Variables
         {
             get;
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Expressions
+        public Parameter[] Variables
+        {
+            get
+            {
+                return this._Variables ?? new Parameter[0];
+            }
+            set
+            {
+                this._Variables = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
+        }
+
+        [DataMember(Order = 1, Name = "Expressions", EmitDefaultValue = false)]
+        private Node[] _Expressions
         {
             get;
             set;
+        }
+
+        public Node[] Expressions
+        {
+            get
+            {
+                return this._Expressions ?? new Node[0];
+            }
+            set
+            {
+                this._Expressions = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()
         {
-            return this.Variables
-                .Null(_ => _.SelectAll(n => n.Deserialize<ParameterExpression>()), () => new ParameterExpression[0])
-                .Let(vs => this.Expressions
-                    .Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
+            return this.Variables.SelectAll(n => n.Deserialize<ParameterExpression>())
+                .Let(vs => this.Expressions.SelectAll(n => n.Deserialize())
                     .Let(es => this.Type != null
                         ? Expression.Block(this.Type.Deserialize(), vs, es)
                         : Expression.Block(vs, es)
@@ -69,11 +95,11 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return (this.Variables ?? new Parameter[0]).Let(vs => vs.Any()
-                ? "{|" + String.Join(", ", vs.SelectAll(p => p.ToString())) + "|"
+            return (this.Variables.Any()
+                ? "{|" + String.Join(", ", this.Variables.SelectAll(p => p.ToString())) + "|"
                 : "{"
-            ) + (this.Expressions ?? new Node[0]).Let(es => es.Any()
-                ? " " + String.Join("; ", es.SelectAll(n => n.ToString())) + " }"
+            ) + (this.Expressions.Any()
+                ? " " + String.Join("; ", this.Expressions.SelectAll(n => n.ToString())) + " }"
                 : "}"
             );
         }
@@ -88,12 +114,8 @@ namespace XSpect.Yacq.Serialization
                 Type = expression.Type != expression.Expressions.Last().Type
                     ? TypeRef.Serialize(expression.Type)
                     : null,
-                Variables = expression.Variables.Any()
-                    ? expression.Variables.Select(Parameter).ToArray()
-                    : null,
-                Expressions = expression.Expressions.Any()
-                    ? expression.Expressions.Select(Serialize).ToArray()
-                    : null,
+                Variables = expression.Variables.Select(Parameter).ToArray(),
+                Expressions = expression.Expressions.Select(Serialize).ToArray(),
             };
         }
     }

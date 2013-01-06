@@ -47,11 +47,25 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 1)]
-        public ElementInit[] Initializers
+        [DataMember(Order = 1, Name = "Initializers", EmitDefaultValue = false)]
+        private ElementInit[] _Initializers
         {
             get;
             set;
+        }
+
+        public ElementInit[] Initializers
+        {
+            get
+            {
+                return this._Initializers ?? new ElementInit[0];
+            }
+            set
+            {
+                this._Initializers = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()

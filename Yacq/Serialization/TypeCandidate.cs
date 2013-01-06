@@ -41,17 +41,31 @@ namespace XSpect.Yacq.Serialization
     internal class TypeCandidate
         : YacqNode
     {
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        public TypeRef[] Candidates
+        [DataMember(Order = 0, Name = "Candidates", EmitDefaultValue = false)]
+        private TypeRef[] _Candidates
         {
             get;
             set;
         }
 
+        public TypeRef[] Candidates
+        {
+            get
+            {
+                return this._Candidates ?? new TypeRef[0];
+            }
+            set
+            {
+                this._Candidates = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
+        }
+
         public override Expression Deserialize()
         {
             return YacqExpression.TypeCandidate(
-                this.Candidates.Null(_ => _.Select(t => t.Deserialize()))
+                this.Candidates.Select(t => t.Deserialize())
             );
         }
 
@@ -69,9 +83,7 @@ namespace XSpect.Yacq.Serialization
         {
             return new TypeCandidate()
             {
-                Candidates = expression.Candidates.Any()
-                    ? expression.Candidates.Select(TypeRef.Serialize).ToArray()
-                    : null,
+                Candidates = expression.Candidates.Select(TypeRef.Serialize).ToArray(),
             };
         }
     }

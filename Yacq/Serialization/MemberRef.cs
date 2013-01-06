@@ -49,6 +49,9 @@ namespace XSpect.Yacq.Serialization
     {
         internal const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
+#if !SILVERLIGHT
+        [NonSerialized()]
+#endif
         private MemberDescriptor _descriptor;
 
         /// <summary>
@@ -147,9 +150,11 @@ namespace XSpect.Yacq.Serialization
         protected virtual MemberDescriptor GetDescriptor()
         {
             return this._descriptor ?? (
-                this._descriptor = MemberDescriptor.Parser(this.Signature.AsStream())
-                    .TryGetValue(out this._descriptor)
-                    .Let(_ => this._descriptor)
+                this._descriptor = this.Name.Contains(" ")
+                    ? MemberDescriptor.Parser(this.Signature.AsStream())
+                          .TryGetValue(out this._descriptor)
+                          .Let(_ => this._descriptor)
+                    : new MemberDescriptor(this.Name)
             );
         }
 

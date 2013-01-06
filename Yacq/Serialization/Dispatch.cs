@@ -63,18 +63,46 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 3, EmitDefaultValue = false)]
-        public TypeRef[] TypeArguments
+        [DataMember(Order = 3, Name = "TypeArguments", EmitDefaultValue = false)]
+        private TypeRef[] _TypeArguments
         {
             get;
             set;
         }
 
-        [DataMember(Order = 4, EmitDefaultValue = false)]
-        public Node[] Arguments
+        public TypeRef[] TypeArguments
+        {
+            get
+            {
+                return this._TypeArguments ?? new TypeRef[0];
+            }
+            set
+            {
+                this._TypeArguments = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
+        }
+
+        [DataMember(Order = 4, Name = "Arguments", EmitDefaultValue = false)]
+        private Node[] _Arguments
         {
             get;
             set;
+        }
+
+        public Node[] Arguments
+        {
+            get
+            {
+                return this._Arguments ?? new Node[0];
+            }
+            set
+            {
+                this._Arguments = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()
@@ -83,8 +111,8 @@ namespace XSpect.Yacq.Serialization
                 this.DispatchType,
                 this.Left.Null(n => Deserialize()),
                 this.Name,
-                this.TypeArguments.Null(_ => _.Select(t => t.Deserialize())),
-                this.Arguments.Null(_ => _.Select(n => n.Deserialize()))
+                this.TypeArguments.SelectAll(t => t.Deserialize()),
+                this.Arguments.SelectAll(n => n.Deserialize())
             );
         }
 
@@ -94,15 +122,15 @@ namespace XSpect.Yacq.Serialization
             {
                 case DispatchTypes.Member:
                     return this.Arguments.Any()
-                        ? this.Left + "[" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + "]"
+                        ? this.Left + "[" + String.Join(", ", this.Arguments.SelectAll(e => e.ToString())) + "]"
                         : (this.Left != null ? this.Left + "." : "") + this.Name;
                 case DispatchTypes.Method:
                     return (this.Left != null ? this.Left + "." : "")
                         + this.Name
-                        + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">" : "")
+                        + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.SelectAll(t => t.Name)) + ">" : "")
                         + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
                 case DispatchTypes.Constructor:
-                    return this.Left + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                    return this.Left + "(" + String.Join(", ", this.Arguments.SelectAll(e => e.ToString())) + ")";
                 default:
                     return "Dispatch(?)";
             }
@@ -118,12 +146,8 @@ namespace XSpect.Yacq.Serialization
                 DispatchType = expression.DispatchType,
                 Left = expression.Left.Null(e => Serialize(e)),
                 Name = expression.Name,
-                TypeArguments = expression.TypeArguments.Any()
-                    ? expression.TypeArguments.Select(TypeRef.Serialize).ToArray()
-                    : null,
-                Arguments = expression.Arguments.Any()
-                    ? expression.Arguments.Select(Serialize).ToArray()
-                    : null,
+                TypeArguments = expression.TypeArguments.Select(TypeRef.Serialize).ToArray(),
+                Arguments = expression.Arguments.Select(Serialize).ToArray(),
             };
         }
     }

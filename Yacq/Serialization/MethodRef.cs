@@ -51,6 +51,9 @@ namespace XSpect.Yacq.Serialization
         private static readonly Dictionary<MethodBase, MethodRef> _reverseCache
             = new Dictionary<MethodBase, MethodRef>();
 
+#if !SILVERLIGHT
+        [NonSerialized()]
+#endif
         private MethodDescriptor _descriptor;
 
         /// <summary>

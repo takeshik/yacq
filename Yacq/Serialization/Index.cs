@@ -54,7 +54,7 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 2, EmitDefaultValue = false)]
+        [DataMember(Order = 2)]
         public Node[] Arguments
         {
             get;
@@ -66,7 +66,7 @@ namespace XSpect.Yacq.Serialization
             return Expression.MakeIndex(
                 this.Object.Deserialize(),
                 this.Indexer.Null(p => p.Deserialize()),
-                this.Arguments.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
+                this.Arguments.SelectAll(n => n.Deserialize())
             );
         }
 
@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Serialization
         {
             return (this.Object.Null(n => n.ToString())
                 ?? this.Object.Type.Describe().ToString()
-                )
+            )
                 + this.Indexer.Null(p => "." + p, "")
                 + "[" + String.Join(", ", this.Arguments.SelectAll(n => n.ToString())) + "]";
         }
@@ -88,9 +88,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Object = Serialize(expression.Object),
                 Indexer = expression.Indexer.Null(p => PropertyRef.Serialize(p)),
-                Arguments = expression.Arguments.Any()
-                    ? expression.Arguments.Select(Serialize).ToArray()
-                    : null,
+                Arguments = expression.Arguments.Select(Serialize).ToArray(),
             };
         }
     }

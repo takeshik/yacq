@@ -49,7 +49,7 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return "Decrement(" + this.Operand + ")";
+            return "Increment(" + this.Operand + ")";
         }
     }
 

@@ -47,18 +47,32 @@ namespace XSpect.Yacq.Serialization
             set;
         }
 
-        [DataMember(Order = 1, EmitDefaultValue = false)]
-        public Node[] Arguments
+        [DataMember(Order = 1, Name = "Arguments", EmitDefaultValue = false)]
+        private Node[] _Arguments
         {
             get;
             set;
+        }
+
+        public Node[] Arguments
+        {
+            get
+            {
+                return this._Arguments ?? new Node[0];
+            }
+            set
+            {
+                this._Arguments = value == null || value.IsEmpty()
+                    ? null
+                    : value;
+            }
         }
 
         public override Expression Deserialize()
         {
             return System.Linq.Expressions.Expression.Invoke(
                 this.Expression.Deserialize(),
-                this.Arguments.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
+                this.Arguments.SelectAll(n => n.Deserialize())
             );
         }
 
@@ -76,9 +90,7 @@ namespace XSpect.Yacq.Serialization
             return new Invoke()
             {
                 Expression = Serialize(expression.Expression),
-                Arguments = expression.Arguments.Any()
-                    ? expression.Arguments.Select(Serialize).ToArray()
-                    : null,
+                Arguments = expression.Arguments.Select(Serialize).ToArray(),
             };
         }
     }
