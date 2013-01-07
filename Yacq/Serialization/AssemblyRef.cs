@@ -92,7 +92,7 @@ namespace XSpect.Yacq.Serialization
                           .ToArray()
                       ).If(String.IsNullOrWhiteSpace,
                           _ => new AssemblyName(),
-                          s => new AssemblyName(s)
+                          s => new AssemblyName(s.Last() == ',' ? s.Remove(s.Length - 1) : s)
                       ))
               ));
 

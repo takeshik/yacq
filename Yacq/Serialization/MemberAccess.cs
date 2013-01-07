@@ -65,7 +65,7 @@ namespace XSpect.Yacq.Serialization
         public override String ToString()
         {
             return (this.Expression.Null(n => n.ToString())
-                ?? this.Expression.Type.Describe().ToString()
+                ?? this.Member.Type.Describe().ToString()
             )
                 + "." + this.Member.Name;
         }
