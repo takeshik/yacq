@@ -41,7 +41,7 @@ namespace XSpect.Yacq.Serialization
 #if !SILVERLIGHT
     [Serializable()]
 #endif
-    internal class PropertyRef
+    public class PropertyRef
         : MemberRef
     {
         private static readonly Dictionary<PropertyRef, PropertyInfo> _cache

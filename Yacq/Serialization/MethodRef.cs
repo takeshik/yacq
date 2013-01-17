@@ -42,7 +42,7 @@ namespace XSpect.Yacq.Serialization
 #if !SILVERLIGHT
     [Serializable()]
 #endif
-    internal partial class MethodRef
+    public partial class MethodRef
         : MemberRef
     {
         private static readonly Dictionary<MethodRef, MethodBase> _cache
