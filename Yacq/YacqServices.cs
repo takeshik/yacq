@@ -1214,7 +1214,7 @@ namespace XSpect.Yacq
         {
             return (symbols ?? new SymbolTable())
                 .If(s => !s.ExistsKey("$global"),
-                    s => s.Add("$global", Expression.Constant(symbols))
+                    s => s.Add("$global", Expression.Constant(s))
                 )
                 .If(s => !s.ExistsKey("*reader*"),
                     s => s.Add("*reader*", Expression.Constant(new Reader()))
