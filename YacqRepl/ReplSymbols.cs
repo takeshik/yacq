@@ -60,7 +60,6 @@ namespace XSpect.Yacq.Repl
                 new XmlNodeConverter(),
             },
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            Formatting = Formatting.Indented,
             MaxDepth = 10,
             TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
             TypeNameHandling = TypeNameHandling.Auto,
@@ -103,6 +102,28 @@ namespace XSpect.Yacq.Repl
         public static Expression CollectGarbage(DispatchExpression e, SymbolTable s, Type t)
         {
             return YacqExpression.TypeCandidate(typeof(GC)).Method(s, "Collect");
+        }
+
+        [YacqSymbol(DispatchTypes.Method, typeof(Object), "dump")]
+        public static Expression DumpObjectIndented(DispatchExpression e, SymbolTable s, Type t)
+        {
+            return YacqExpression.TypeCandidate(typeof(JsonConvert))
+                .Method(s, "SerializeObject",
+                    e.Left,
+                    Expression.Constant(Formatting.Indented),
+                    SerializerSettings
+                );
+        }
+
+        [YacqSymbol(DispatchTypes.Method, typeof(Object), "dumpn")]
+        public static Expression DumpObject(DispatchExpression e, SymbolTable s, Type t)
+        {
+            return YacqExpression.TypeCandidate(typeof(JsonConvert))
+                .Method(s, "SerializeObject",
+                    e.Left,
+                    Expression.Constant(Formatting.None),
+                    SerializerSettings
+                );
         }
     }
 }

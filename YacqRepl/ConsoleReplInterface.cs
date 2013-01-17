@@ -31,12 +31,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using XSpect.Yacq.Expressions;
+using XSpect.Yacq.Serialization;
 
 namespace XSpect.Yacq.Repl
 {
@@ -136,24 +138,46 @@ namespace XSpect.Yacq.Repl
                             Write(ConsoleColor.Gray, "returned: ");
                             if (v.Value != null)
                             {
-                                Write(ConsoleColor.DarkGreen, "{0} = ", v.Value.GetType().Name);
-                                WriteLine(
-                                    ConsoleColor.Green,
-                                    (String) this._sandbox.EvaluateWithoutContext(
-                                        @"(\ [o:Object] (type 'Newtonsoft.Json.JsonConvert').(SerializeObject o !serializerSettings))",
-                                        v.Value.If(
-                                            o => o is IEnumerable && !(o is String) && o.GetType().Let(t =>
-                                                t.GetInterface("ICollection") == null &&
-                                                t.GetInterface("ICollection`1") == null
-                                            ),
-                                            o => ((IEnumerable) o)
-                                                .Cast<Object>()
-                                                // TODO: Use !dumpLimit (causes SecurityException in sandbox)
-                                                .Take(this._dumpLimit)
-                                                .Remotable()
-                                        )
-                                    )
-                                );
+                                Write(ConsoleColor.DarkGreen, TypeRef.Serialize(v.Value.GetType()).ToString());
+                                var stringified = v.Value.GetType().GetMethod("ToString", Type.EmptyTypes).DeclaringType != typeof(Object);
+                                if (stringified)
+                                {
+                                    Write(ConsoleColor.DarkGreen, " = ");
+                                    if (v.Value is Expression)
+                                    {
+                                        WriteLine(ConsoleColor.Green, Node.Serialize((Expression) v.Value).ToString());
+                                    }
+                                    else
+                                    {
+                                        WriteLine(ConsoleColor.Green, v.Value.ToString());
+                                    }
+                                }
+
+                                if (!(v.Value is String) && v.Value.GetType().GetInterface("IEnumerable") != null)
+                                {
+                                    Write(ConsoleColor.DarkGreen, (stringified ? " [" : " = [") + Environment.NewLine + "    ");
+                                    ((IEnumerable) v.Value)
+                                        .Cast<Object>()
+                                        .Take(this._dumpLimit)
+                                        .ForEach(e =>
+                                        {
+                                            var line = Console.CursorTop;
+                                            if (Console.CursorLeft == 0)
+                                            {
+                                                Console.Write("    ");
+                                            }
+                                            Write(
+                                                ConsoleColor.Green,
+                                                e != null ? e.ToString() : "(null)"
+                                            );
+                                            Write(ConsoleColor.DarkGreen, ", ");
+                                            if (Console.CursorTop != line || Console.CursorLeft > Console.BufferWidth * 0.8)
+                                            {
+                                                Console.WriteLine();
+                                            }
+                                        });
+                                    WriteLine(ConsoleColor.DarkGreen, Environment.NewLine + "  ]");
+                                }
                             }
                             else
                             {
