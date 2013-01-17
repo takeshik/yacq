@@ -80,6 +80,9 @@ namespace XSpect.Yacq.Repl
                         {
                             switch (_[0])
                             {
+                                case "exit":
+                                    Environment.Exit(0);
+                                    return "";
                                 case "sandbox":
                                     this._manager.Unload(this._sandbox);
                                     this._sandbox = this._manager.CreateSandbox();
