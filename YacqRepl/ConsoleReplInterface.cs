@@ -148,11 +148,11 @@ namespace XSpect.Yacq.Repl
                                     Write(ConsoleColor.DarkGreen, " = ");
                                     if (v.Value is Expression)
                                     {
-                                        WriteLine(ConsoleColor.Green, Node.Serialize((Expression) v.Value).ToString());
+                                        Write(ConsoleColor.Green, Node.Serialize((Expression) v.Value).ToString());
                                     }
                                     else
                                     {
-                                        WriteLine(ConsoleColor.Green, v.Value.ToString());
+                                        Write(ConsoleColor.Green, v.Value.ToString());
                                     }
                                 }
 
@@ -179,13 +179,14 @@ namespace XSpect.Yacq.Repl
                                                 Console.WriteLine();
                                             }
                                         });
-                                    WriteLine(ConsoleColor.DarkGreen, Environment.NewLine + "  ]");
+                                    Write(ConsoleColor.DarkGreen, Environment.NewLine + "  ]");
                                 }
                             }
                             else
                             {
-                                WriteLine(ConsoleColor.DarkGreen, "null");
+                                Write(ConsoleColor.DarkGreen, "null");
                             }
+                            Console.WriteLine();
                         });
                 })
                 .ForEach(u => u.Start());

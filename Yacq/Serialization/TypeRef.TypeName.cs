@@ -42,11 +42,11 @@ namespace XSpect.Yacq.Serialization
         {
             private static readonly Lazy<Parser<Char, TypeName>> _parser
                 = new Lazy<Parser<Char, TypeName>>(() =>
-                      Chars.OneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')')
+                      Chars.OneOf(' ', '&', '(', ')', '*', '+', ',', '.', '[', ']', '`')
                           .Let(ds => ds
                               .Not()
                               .Right('\\'.Satisfy().Right(ds))
-                              .Or(Chars.NoneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')'))
+                              .Or(Chars.NoneOf(' ', '&', '(', ')', '*', '+', ',', '.', '[', ']', '`'))
                               .Many()
                           )
                           .Let(name =>
