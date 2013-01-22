@@ -162,7 +162,7 @@ namespace XSpect.Yacq.Expressions
                         ? this.MethodBase.GetParameters()
                         : this.Property != null
                               ? this.Property.GetIndexParameters()
-                              : new ParameterInfo[0];
+                              : Arrays.Empty<ParameterInfo>();
                 }
             }
 
@@ -236,7 +236,7 @@ namespace XSpect.Yacq.Expressions
                                     .ToDictionary()
                                     .Let(d => this.Parameters.Select(p => Tuple.Create(
                                         p.ParameterType,
-                                        d.TryGetValue(p.Name)
+                                        d.GetValue(p.Name)
                                             ?? Constant(p.DefaultValue, p.ParameterType)
                                    )))
                               : null
@@ -270,7 +270,7 @@ namespace XSpect.Yacq.Expressions
             )
                 : this(instance, member, argumentNames, arguments)
             {
-                this.TypeArguments = typeArguments ?? new Type[0];
+                this.TypeArguments = typeArguments ?? Type.EmptyTypes;
             }
 
             public override String ToString()

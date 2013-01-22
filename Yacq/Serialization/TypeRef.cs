@@ -106,7 +106,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The type reference which refers specified type.</returns>
         public static TypeRef Serialize(Type type)
         {
-            return _reverseCache.TryGetValue(type)
+            return _reverseCache.GetValue(type)
                 ?? new TypeRef(
                     type.Assembly != _mscorlib
                         ? AssemblyRef.Serialize(type.Assembly)
@@ -158,7 +158,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The <see cref="Type"/> which is referred by this type reference.</returns>
         public Type Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? this.Assembly
                        .Null(a => a.Deserialize(), _mscorlib)
                        .GetType(this.GetName())

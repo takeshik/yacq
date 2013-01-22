@@ -58,7 +58,7 @@ namespace XSpect.Yacq.Serialization
                                   (_, n, tas) => tas.ToArray()
                               )
                               .Maybe()
-                              .Select(_ => _.Otherwise(() => new TypeDescriptor[0])),
+                              .Select(_ => _.Otherwise(Arrays.Empty<TypeDescriptor>)),
                           Combinator.Choice(
                               Chars.Sequence("*"),
                               Chars.Sequence("&"),
@@ -82,7 +82,7 @@ namespace XSpect.Yacq.Serialization
                                       .Select(cs => new String(cs.ToArray()))
                                       .ToArray()
                                   )
-                                  .Otherwise(() => new String[0])
+                                  .Otherwise(Arrays.Empty<String>)
                           )
                       )(stream)
                   );
@@ -186,8 +186,8 @@ namespace XSpect.Yacq.Serialization
             )
             {
                 this.Name = name ?? new TypeName();
-                this.TypeArguments = typeArguments ?? new TypeDescriptor[0];
-                this.Suffixes = suffixes ?? new String[0];
+                this.TypeArguments = typeArguments ?? Arrays.Empty<TypeDescriptor>();
+                this.Suffixes = suffixes ?? Arrays.Empty<String>();
                 this.Assembly = assembly ?? new AssemblyName();
             }
 

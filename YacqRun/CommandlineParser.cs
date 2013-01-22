@@ -81,10 +81,10 @@ namespace XSpect
                 this.Description = description;
                 this.ShortNames = shortNames != null
                     ? shortNames.ToArray()
-                    : new Char[0];
+                    : Arrays.Empty<Char>();
                 this.LongNames = longNames != null
                     ? longNames.ToArray()
-                    : new String[0];
+                    : Arrays.Empty<String>();
             }
 
             public override String ToString()
@@ -159,7 +159,7 @@ namespace XSpect
             Func<CommandlineOption, String> valueGenerator
         )
         {
-            return map.TryGetValue(key, _invalid).Let(o => MakeTuple(o, o != _invalid ? valueGenerator(o) : key));
+            return map.GetValue(key, _invalid).Let(o => MakeTuple(o, o != _invalid ? valueGenerator(o) : key));
         }
     }
 }

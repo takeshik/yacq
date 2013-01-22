@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The event reference which refers specified event.</returns>
         public static EventRef Serialize(EventInfo @event)
         {
-            return _reverseCache.TryGetValue(@event)
+            return _reverseCache.GetValue(@event)
                 ?? new EventRef(
                        TypeRef.Serialize(@event.ReflectedType),
                        @event.Name
@@ -87,7 +87,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The <see cref="EventInfo"/> which is referred by this event reference.</returns>
         public new EventInfo Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? this.Type.Deserialize()
                        .GetEvent(this.Name, Binding)
                        .Apply(e => _cache.Add(this, e));

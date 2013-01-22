@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Repl
                     false,
                     BindingFlags.Public | BindingFlags.Instance,
                     null,
-                    new Object[0],
+                    Arrays.Empty<Object>(),
                     CultureInfo.InvariantCulture,
                     null
                 ))

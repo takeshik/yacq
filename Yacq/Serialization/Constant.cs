@@ -52,7 +52,7 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? (this.Type != null
                        ? Expression.Constant(this.Value, this.Type.Deserialize())
                        : Expression.Constant(this.Value)
@@ -76,7 +76,7 @@ namespace XSpect.Yacq.Serialization
 
         internal static Constant Constant(ConstantExpression expression)
         {
-            return _constantReverseCache.TryGetValue(expression)
+            return _constantReverseCache.GetValue(expression)
                 ?? new Constant()
                    {
                        Type = expression.Value != null && expression.Value.GetType() == expression.Type

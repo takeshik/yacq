@@ -44,7 +44,7 @@ namespace XSpect.Yacq.Serialization
         {
             return Expression.NewArrayBounds(
                 this.Type.Deserialize(),
-                this.Expressions.Null(_ => _.SelectAll(n => n.Deserialize()), () => new Expression[0])
+                this.Expressions.Null(_ => _.SelectAll(n => n.Deserialize()), Arrays.Empty<Expression>)
             );
         }
 

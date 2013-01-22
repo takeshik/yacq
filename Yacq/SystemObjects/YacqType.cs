@@ -81,7 +81,7 @@ namespace XSpect.Yacq.SystemObjects
         {
             if (baseTypes == null)
             {
-                baseTypes = new Type[0];
+                baseTypes = Type.EmptyTypes;
             }
             this._type = module.DefineType(
                 name,
@@ -95,7 +95,7 @@ namespace XSpect.Yacq.SystemObjects
             this._implType = this._type.DefineNestedType(":Impl", TypeAttributes.NestedPrivate)
                 .Apply(t => t.SetCustomAttribute(new CustomAttributeBuilder(
                     typeof(CompilerGeneratedAttribute).GetConstructor(Type.EmptyTypes),
-                    new Object[0]
+                    Arrays.Empty<Object>()
                 )));
             this._prologue = this._implType.DefineMethod(
                 ":Prologue",
@@ -496,7 +496,7 @@ namespace XSpect.Yacq.SystemObjects
                           )
                           .Apply(f => f.SetCustomAttribute(new CustomAttributeBuilder(
                               typeof(CompilerGeneratedAttribute).GetConstructor(Type.EmptyTypes),
-                              new Object[0]
+                              Arrays.Empty<Object>()
                           )))
                     )
                     .Apply(
@@ -748,7 +748,7 @@ namespace XSpect.Yacq.SystemObjects
             this._initializers.Enqueue(Tuple.Create(
                 method,
                 expression,
-                Expression.GetDelegateType((parameterTypes ?? new Type[0])
+                Expression.GetDelegateType((parameterTypes ?? Type.EmptyTypes)
                     .EndWith(returnType)
                     .ToArray()
                 )

@@ -293,7 +293,7 @@ namespace XSpect.Yacq
                 ? ((MethodBase) member).GetParameters()
                 : member is PropertyInfo
                       ? ((PropertyInfo) member).GetIndexParameters()
-                      : new ParameterInfo[0];
+                      : Arrays.Empty<ParameterInfo>();
         }
 
         internal static Type ReplaceGenericArguments(this Type type, IDictionary<Type, Type> typeArgumentMap)
@@ -302,7 +302,7 @@ namespace XSpect.Yacq
                 ? type.GetGenericTypeDefinition()
                       .MakeGenericType(
                           type.GetGenericArguments()
-                              .Select(t => (typeArgumentMap.TryGetValue(t) ?? t)
+                              .Select(t => (typeArgumentMap.GetValue(t) ?? t)
                                   .ReplaceGenericArguments(typeArgumentMap)
                               )
                               .ToArray()

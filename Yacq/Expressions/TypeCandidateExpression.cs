@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Expressions
             {
                 return this.Candidates.Count == 1
                     ? this.Candidates.Single()
-                    : this.Candidates.Where(t => t.GetGenericArguments().Length == 0)
+                    : this.Candidates.Where(t => t.GetGenericArguments().IsEmpty())
                           .Let(_ => _.Count() == 1 ? _.Single() : null);
             }
         }
@@ -85,7 +85,7 @@ namespace XSpect.Yacq.Expressions
         )
             : base(symbols)
         {
-            this.Candidates = new ReadOnlyCollection<Type>(candidates ?? new Type[0]);
+            this.Candidates = new ReadOnlyCollection<Type>(candidates ?? Type.EmptyTypes);
         }
 
         /// <summary>

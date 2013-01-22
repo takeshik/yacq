@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The field reference which refers specified field.</returns>
         public static FieldRef Serialize(FieldInfo field)
         {
-            return _reverseCache.TryGetValue(field)
+            return _reverseCache.GetValue(field)
                 ?? new FieldRef(
                        TypeRef.Serialize(field.ReflectedType),
                        field.Name
@@ -87,7 +87,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The <see cref="FieldInfo"/> which is referred by this field reference.</returns>
         public new FieldInfo Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? this.Type.Deserialize()
                        .GetField(this.Name, Binding)
                        .Apply(f => _cache.Add(this, f));

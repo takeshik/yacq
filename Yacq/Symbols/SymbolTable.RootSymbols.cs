@@ -1157,7 +1157,7 @@ namespace XSpect.Yacq.Symbols
             public static Expression NotOrElse(DispatchExpression e, SymbolTable s, Type t)
             {
                 return YacqExpression.Function(s, "!",
-                    YacqExpression.Function(s, "&&", e.Arguments)
+                    YacqExpression.Function(s, "||", e.Arguments)
                 );
             }
             

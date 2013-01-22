@@ -132,7 +132,7 @@ namespace XSpect.Yacq.Serialization
             public TypeName(String @namespace, String[] hierarchicalNames)
             {
                 this.Namespace = @namespace ?? "";
-                this.HierarchicalNames = hierarchicalNames ?? new String[0];
+                this.HierarchicalNames = hierarchicalNames ?? Arrays.Empty<String>();
             }
 
             /// <summary>

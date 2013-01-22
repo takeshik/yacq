@@ -1500,7 +1500,7 @@ namespace XSpect.Yacq.Expressions
                 case "SymbolTableExpression":
                 case "TextExpression":
                 case "TypeCandidateExpression":
-                    return new Expression[0];
+                    return Arrays.Empty<Expression>();
                 default:
                     throw new ArgumentException("Expression node type '" + expression.GetType().Name + "' is not supported.", "expression");
             }

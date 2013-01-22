@@ -30,6 +30,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -438,24 +439,6 @@ namespace XSpect
 
         #endregion
 
-        internal static TResult[] SelectAll<TSource, TResult>(this TSource[] array, Func<TSource, TResult> selector)
-        {
-#if SILVERLIGHT
-            return array.Select(selector).ToArray();
-#else
-            return Array.ConvertAll(array, e => selector(e));
-#endif
-        }
-
-        internal static TSource[] WhereAll<TSource>(this TSource[] array, Func<TSource, Boolean> predicate)
-        {
-#if SILVERLIGHT
-            return array.Where(predicate).ToArray();
-#else
-            return Array.FindAll(array, e => predicate(e));
-#endif
-        }
-
         internal static Boolean StartsWithInvariant(this String str, String value)
         {
             return str.StartsWith(value, StringComparison.InvariantCulture);
@@ -657,7 +640,7 @@ namespace XSpect
             return source.Concat(values);
         }
 
-        internal static TValue TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
+        internal static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
         {
             TValue value;
             return dictionary.TryGetValue(key, out value)
@@ -673,6 +656,63 @@ namespace XSpect
         internal static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<Tuple<TKey, TValue>> source)
         {
             return source.ToDictionary(p => p.Item1, p => p.Item2);
+        }
+    }
+
+    [DebuggerStepThrough()]
+    internal static class Arrays
+    {
+        internal static T[] Empty<T>()
+        {
+            // HACK: depends on internal implementation.
+            return (T[]) Enumerable.Empty<T>();
+        }
+
+        internal static ReadOnlyCollection<T> AsReadOnly<T>(this T[] array)
+        {
+            return new ReadOnlyCollection<T>(array);
+        }
+
+        internal static Int32 BinarySearch<T>(this T[] array, T value)
+        {
+            return Array.BinarySearch(array, value);
+        }
+
+        internal static Int32 BinarySearch<T>(this T[] array, T value, IComparer<T> comparer)
+        {
+            return Array.BinarySearch(array, value, comparer);
+        }
+
+        internal static Int32 BinarySearch<T>(this T[] array, Int32 index, Int32 length, T value, IComparer<T> comparer)
+        {
+            return Array.BinarySearch(array, index, length, value, comparer);
+        }
+
+        internal static TResult[] SelectAll<TSource, TResult>(this TSource[] array, Func<TSource, TResult> selector)
+        {
+#if SILVERLIGHT
+            return array.Select(selector).ToArray();
+#else
+            return Array.ConvertAll(array, e => selector(e));
+#endif
+        }
+
+        internal static TSource[] WhereAll<TSource>(this TSource[] array, Func<TSource, Boolean> predicate)
+        {
+#if SILVERLIGHT
+            return array.Where(predicate).ToArray();
+#else
+            return Array.FindAll(array, e => predicate(e));
+#endif
+        }
+
+        internal static TSource Last<TSource>(this TSource[] array, Func<TSource, Boolean> predicate)
+        {
+#if SILVERLIGHT
+            return array.Last(predicate);
+#else
+            return Array.FindLast(array, e => predicate(e));
+#endif
         }
     }
 }

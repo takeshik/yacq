@@ -59,7 +59,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Parameters ?? new AmbiguousParameter[0];
+                return this._Parameters ?? Arrays.Empty<AmbiguousParameter>();
             }
             set
             {
@@ -80,7 +80,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Bodies ?? new Node[0];
+                return this._Bodies ?? Arrays.Empty<Node>();
             }
             set
             {

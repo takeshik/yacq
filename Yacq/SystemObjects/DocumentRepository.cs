@@ -75,7 +75,7 @@ namespace XSpect.Yacq.SystemObjects
         /// Initializes a new instance of the <see cref="DocumentRepository"/> class.
         /// </summary>
         public DocumentRepository()
-            : this(new DirectoryInfo[0])
+            : this(Arrays.Empty<DirectoryInfo>())
         {
         }
 
@@ -122,7 +122,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private DocumentSet LoadDocumentSet(String key)
         {
-            return this.DocumentSets.TryGetValue(key)
+            return this.DocumentSets.GetValue(key)
                 ?? (this.SearchPaths
                        .Where(d => d.Exists)
                        .SelectMany(d => d.EnumerateFiles(key + ".xml"))

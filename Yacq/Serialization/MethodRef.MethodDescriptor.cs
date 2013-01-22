@@ -64,7 +64,7 @@ namespace XSpect.Yacq.Serialization
                                           .Between('('.Satisfy(), ')'.Satisfy())
                                           .Select(ts => ts.ToArray())
                                           .Or(Chars.Sequence("()")
-                                              .Select(_ => new TypeRef.TypeDescriptor[0])
+                                              .Select(_ => Arrays.Empty<TypeRef.TypeDescriptor>())
                                           ),
                                       (r, n, tas, pts) => new MethodDescriptor(
                                           n,
@@ -79,7 +79,7 @@ namespace XSpect.Yacq.Serialization
                                                   ))
                                                   .ToArray()
                                               )
-                                              .Otherwise(() => new TypeRef.TypeDescriptor[0]),
+                                              .Otherwise(Arrays.Empty<TypeRef.TypeDescriptor>),
                                           pts
                                       )
                               )
@@ -141,8 +141,8 @@ namespace XSpect.Yacq.Serialization
             )
                 : base(name, returnType)
             {
-                this.TypeArguments = typeArguments ?? new TypeRef.TypeDescriptor[0];
-                this.ParameterTypes = parameterTypes ?? new TypeRef.TypeDescriptor[0];
+                this.TypeArguments = typeArguments ?? Arrays.Empty<TypeRef.TypeDescriptor>();
+                this.ParameterTypes = parameterTypes ?? Arrays.Empty<TypeRef.TypeDescriptor>();
             }
 
             /// <summary>

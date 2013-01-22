@@ -51,7 +51,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Parameters ?? new Parameter[0];
+                return this._Parameters ?? Arrays.Empty<Parameter>();
             }
             set
             {
@@ -97,7 +97,7 @@ namespace XSpect.Yacq.Serialization
         {
             return (this.Parameters.Length != 1
                 ? "(" + String.Join(", ", this.Parameters.SelectAll(p => p.ToString())) + ")"
-                : this.Parameters.ToString()
+                : this.Parameters[0].ToString()
             ) + " => " + this.Body;
         }
     }

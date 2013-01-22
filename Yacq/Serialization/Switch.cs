@@ -89,7 +89,7 @@ namespace XSpect.Yacq.Serialization
                       .EndWith(this.DefaultBody.Null(n => new[]
                       {
                           "default: " + n,
-                      }, new String[0]))
+                      }, Arrays.Empty<String>()))
                   )
                 + " }";
         }

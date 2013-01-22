@@ -92,8 +92,8 @@ namespace XSpect.Yacq.Expressions
             : base(symbols)
         {
             this.ReturnType = returnType;
-            this.Bodies = new ReadOnlyCollection<Expression>(bodies ?? new Expression[0]);
-            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? new AmbiguousParameterExpression[0]);
+            this.Bodies = new ReadOnlyCollection<Expression>(bodies ?? Arrays.Empty<Expression>());
+            this.Parameters = new ReadOnlyCollection<AmbiguousParameterExpression>(parameters ?? Arrays.Empty<AmbiguousParameterExpression>());
             this.SetPosition(this.Bodies.Concat(this.Parameters));
         }
 
@@ -198,7 +198,7 @@ namespace XSpect.Yacq.Expressions
             return this.ApplyTypeArguments(this.Parameters
                 .Select(p => AmbiguousParameter(
                     p.Symbols,
-                    typeArgumentMap.TryGetValue(p.Type) ?? p.Type,
+                    typeArgumentMap.GetValue(p.Type) ?? p.Type,
                     p.Name
                 ))
             );

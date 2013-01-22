@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The property reference which refers specified property.</returns>
         public static PropertyRef Serialize(PropertyInfo property)
         {
-            return _reverseCache.TryGetValue(property)
+            return _reverseCache.GetValue(property)
                 ?? new PropertyRef(
                        TypeRef.Serialize(property.ReflectedType),
                        property.Name
@@ -87,7 +87,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The <see cref="PropertyInfo"/> which is referred by this property reference.</returns>
         public new PropertyInfo Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? this.Type.Deserialize()
                        .GetProperty(this.Name, Binding)
                        .Apply(p => _cache.Add(this, p));

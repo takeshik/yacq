@@ -52,7 +52,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Candidates ?? new TypeRef[0];
+                return this._Candidates ?? Arrays.Empty<TypeRef>();
             }
             set
             {

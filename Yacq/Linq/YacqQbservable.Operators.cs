@@ -3165,7 +3165,7 @@ namespace XSpect.Yacq.Linq
             return this._source.Subscribe(
                 YacqServices.ParseLambda<Action<TSource>>(this.Symbols, onNext, "it").Compile(),
                 YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onNext, "ex").Compile(),
-                YacqServices.ParseLambda<Action>(this.Symbols, onCompleted, new String[0]).Compile()
+                YacqServices.ParseLambda<Action>(this.Symbols, onCompleted, Arrays.Empty<String>()).Compile()
             );
         }
 

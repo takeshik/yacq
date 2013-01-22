@@ -446,7 +446,7 @@ namespace XSpect.Yacq.Symbols
                       .Where(p => p != null)
                       .If(ps => ps.IsEmpty(), ps => ps.StartWith(Root))
                       .ToArray()
-                : new SymbolTable[0]
+                : Arrays.Empty<SymbolTable>()
             );
             this._symbols = entries ?? new Dictionary<SymbolEntry, SymbolDefinition>();
             this._chain = new Lazy<SymbolTable[]>(() => this.Parents

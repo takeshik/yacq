@@ -174,7 +174,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The assembly reference which refers specified assembly.</returns>
         public static AssemblyRef Serialize(Assembly assembly)
         {
-            return _reverseCache.TryGetValue(assembly) ??
+            return _reverseCache.GetValue(assembly) ??
 #if SILVERLIGHT
                 assembly.FullName.Split(',')[0]
 #else
@@ -220,7 +220,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The assembly which is referred by this assembly reference.</returns>
         public Assembly Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? Assembly.Load(this.GetName())
                        .Apply(a => _cache.Add(this, a));
         }

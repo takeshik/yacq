@@ -113,8 +113,8 @@ namespace XSpect.Yacq.Expressions
             this.DispatchType = dispatchType;
             this.Left = left;
             this.Name = name;
-            this.TypeArguments = new ReadOnlyCollection<Type>(typeArguments ?? new Type[0]);
-            this.Arguments = new ReadOnlyCollection<Expression>(arguments ?? new Expression[0]);
+            this.TypeArguments = new ReadOnlyCollection<Type>(typeArguments ?? Type.EmptyTypes);
+            this.Arguments = new ReadOnlyCollection<Expression>(arguments ?? Arrays.Empty<Expression>());
             this.SetPosition(arguments.StartWith(left));
         }
 
@@ -399,7 +399,7 @@ namespace XSpect.Yacq.Expressions
                                           {
                                               method.GetParameters()
                                                   .Select(p => p.ParameterType.Let(t => t.IsGenericParameter
-                                                      ? map.TryGetValue(t)
+                                                      ? map.GetValue(t)
                                                       : t
                                                   ))
                                                   .If(ts => ts.All(t => t != null), ts =>
@@ -559,7 +559,7 @@ namespace XSpect.Yacq.Expressions
                 dispatchType,
                 left,
                 name,
-                typeArguments != null ? typeArguments.ToArray() : new Type[0],
+                typeArguments != null ? typeArguments.ToArray() : Type.EmptyTypes,
                 arguments
             );
         }
@@ -581,7 +581,7 @@ namespace XSpect.Yacq.Expressions
             params Expression[] arguments
         )
         {
-            return Dispatch(symbols, dispatchType, left, name, new Type[0], arguments);
+            return Dispatch(symbols, dispatchType, left, name, Type.EmptyTypes, arguments);
         }
 
         /// <summary>
@@ -647,7 +647,7 @@ namespace XSpect.Yacq.Expressions
                 left,
                 name,
                 typeArguments,
-                arguments != null ? arguments.ToArray() : new Expression[0]
+                arguments != null ? arguments.ToArray() : Arrays.Empty<Expression>()
             );
         }
 

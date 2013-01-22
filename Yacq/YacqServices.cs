@@ -260,7 +260,7 @@ namespace XSpect.Yacq
                     .GetDelegateSignature()
                     .GetParameters()
                     .Select(p => p.ParameterType)
-                    .Zip(parameterNames ?? new String[0], YacqExpression.AmbiguousParameter)
+                    .Zip(parameterNames ?? Arrays.Empty<String>(), YacqExpression.AmbiguousParameter)
                     .ToArray()
             );
         }
@@ -335,7 +335,7 @@ namespace XSpect.Yacq
         /// <returns>The lambda expression generated from the code.</returns>
         public static Expression<Action> ParseAction(SymbolTable symbols, IEnumerable<Char> code)
         {
-            return (Expression<Action>) ParseLambda(symbols, typeof(void), code, new AmbiguousParameterExpression[0]);
+            return (Expression<Action>) ParseLambda(symbols, typeof(void), code, Arrays.Empty<AmbiguousParameterExpression>());
         }
 
         /// <summary>
@@ -384,7 +384,7 @@ namespace XSpect.Yacq
         /// <returns>The lambda expression generated from the code.</returns>
         public static Expression<Func<TReturn>> ParseFunc<TReturn>(SymbolTable symbols, IEnumerable<Char> code)
         {
-            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code, new AmbiguousParameterExpression[0]);
+            return (Expression<Func<TReturn>>) ParseLambda(symbols, typeof(TReturn), code, Arrays.Empty<AmbiguousParameterExpression>());
         }
 
         /// <summary>

@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._TypeArguments ?? new TypeRef[0];
+                return this._TypeArguments ?? Arrays.Empty<TypeRef>();
             }
             set
             {
@@ -95,7 +95,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Arguments ?? new Node[0];
+                return this._Arguments ?? Arrays.Empty<Node>();
             }
             set
             {

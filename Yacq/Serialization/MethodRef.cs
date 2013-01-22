@@ -96,7 +96,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The method reference which refers specified method.</returns>
         public static MethodRef Serialize(MethodBase method)
         {
-            return _reverseCache.TryGetValue(method)
+            return _reverseCache.GetValue(method)
                 ?? new MethodRef(
                         TypeRef.Serialize(method.ReflectedType),
                         method.Name != ".ctor"
@@ -150,7 +150,7 @@ namespace XSpect.Yacq.Serialization
         /// <returns>The <see cref="MethodBase"/> which is referred by this method reference.</returns>
         public new MethodBase Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? (this.Name != null
                        ? (MethodBase) this.Type.Deserialize()
                              .GetMethods(Binding)

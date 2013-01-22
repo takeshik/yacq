@@ -52,7 +52,7 @@ namespace XSpect.Yacq.Serialization
 
         public override Expression Deserialize()
         {
-            return _cache.TryGetValue(this)
+            return _cache.GetValue(this)
                 ?? Expression.Parameter(
                        this.Type.Deserialize(),
                        this.Name
@@ -72,7 +72,7 @@ namespace XSpect.Yacq.Serialization
 
         internal static Parameter Parameter(ParameterExpression expression)
         {
-            return _parameterReverseCache.TryGetValue(expression)
+            return _parameterReverseCache.GetValue(expression)
                 ?? new Parameter()
                    {
                        Type = TypeRef.Serialize(expression.Type),

@@ -106,7 +106,7 @@ namespace XSpect.Yacq.Repl
         public void Start()
         {
             this._stopwatch.Start();
-            var expressions = new Expression[0];
+            var expressions = Arrays.Empty<Expression>();
             try
             {
                 expressions = YacqServices.ParseAll(this._symbols, this._code);

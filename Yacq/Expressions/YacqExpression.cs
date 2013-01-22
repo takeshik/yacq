@@ -163,7 +163,7 @@ namespace XSpect.Yacq.Expressions
             symbols = this.CreateSymbolTable(symbols);
             var hash = symbols.AllHash
                 ^ (expectedType != null ? expectedType.GetHashCode() : 0);
-            return this._reducedExpressions.TryGetValue(hash)
+            return this._reducedExpressions.GetValue(hash)
                 ?? (this.ReduceImpl(symbols, expectedType) ?? this)
                        .If(e => e != this && !(e is YacqExpression), e =>
                            ImplicitConvert(e, expectedType)
@@ -230,7 +230,7 @@ namespace XSpect.Yacq.Expressions
                 {
                     _.StartPosition,
                     _.EndPosition,
-                }) ?? new Position[0])
+                }) ?? Arrays.Empty<Position>())
             );
         }
 

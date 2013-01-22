@@ -116,7 +116,7 @@ namespace XSpect.Yacq.SystemObjects
         /// Initializes a new instance of the <see cref="ModuleLoader"/> class.
         /// </summary>
         public ModuleLoader()
-            : this(new DirectoryInfo[0])
+            : this(Arrays.Empty<DirectoryInfo>())
         {
         }
 

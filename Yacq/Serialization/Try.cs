@@ -58,7 +58,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Handlers ?? new CatchBlock[0];
+                return this._Handlers ?? Arrays.Empty<CatchBlock>();
             }
             set
             {

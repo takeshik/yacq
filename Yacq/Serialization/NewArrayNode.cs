@@ -53,7 +53,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Expressions ?? new Node[0];
+                return this._Expressions ?? Arrays.Empty<Node>();
             }
             set
             {

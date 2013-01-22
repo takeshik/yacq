@@ -55,7 +55,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Elements ?? new Node[0];
+                return this._Elements ?? Arrays.Empty<Node>();
             }
             set
             {

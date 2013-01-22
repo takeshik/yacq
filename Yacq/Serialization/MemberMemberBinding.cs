@@ -52,7 +52,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Bindings ?? new MemberBinding[0];
+                return this._Bindings ?? Arrays.Empty<MemberBinding>();
             }
             set
             {

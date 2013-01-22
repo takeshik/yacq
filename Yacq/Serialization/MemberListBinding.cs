@@ -52,7 +52,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Initializers ?? new ElementInit[0];
+                return this._Initializers ?? Arrays.Empty<ElementInit>();
             }
             set
             {

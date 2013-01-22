@@ -51,7 +51,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Variables ?? new Parameter[0];
+                return this._Variables ?? Arrays.Empty<Parameter>();
             }
             set
             {
@@ -72,7 +72,7 @@ namespace XSpect.Yacq.Serialization
         {
             get
             {
-                return this._Expressions ?? new Node[0];
+                return this._Expressions ?? Arrays.Empty<Node>();
             }
             set
             {
