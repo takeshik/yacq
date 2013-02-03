@@ -82,7 +82,7 @@ namespace XSpect.Yacq.Expressions
             )
             {
                 return Variable(symbols, this.Name)
-                    .ReduceOnce(symbols)
+                    .ReduceOnce(symbols, expectedType)
                     .Let(e => (e as MacroExpression).Null(m => m.Evaluate(symbols)) ?? e);
             }
             else
