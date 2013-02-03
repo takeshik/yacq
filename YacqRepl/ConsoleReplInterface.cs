@@ -49,13 +49,6 @@ namespace XSpect.Yacq.Repl
 
         private ISandbox _sandbox;
 
-        private Int32 _dumpLimit;
-
-        public ConsoleReplInterface()
-        {
-            this._dumpLimit = 100;
-        }
-
         public void Dispose()
         {
         }
@@ -91,12 +84,6 @@ namespace XSpect.Yacq.Repl
                                     this._manager.Unload(this._sandbox);
                                     this._sandbox = this._manager.DefaultSandbox;
                                     return "(type 'System.AppDomain').CurrentDomain.FriendlyName";
-                                case "limit":
-                                    if (_.Length > 1)
-                                    {
-                                        this._dumpLimit = Int32.Parse(_[1]);
-                                    }
-                                    return this._dumpLimit.ToString();
                                 default:
                                     return "";
                             }
@@ -161,19 +148,27 @@ namespace XSpect.Yacq.Repl
                                     Write(ConsoleColor.DarkGreen, (stringified ? " [" : " = [") + Environment.NewLine + "    ");
                                     ((IEnumerable) v.Value)
                                         .Cast<Object>()
-                                        .Take(this._dumpLimit)
-                                        .ForEach(e =>
+                                        .Take(ReplSymbols.DumpLimit + 1)
+                                        .ToArray()
+                                        .ForEach((e, i) =>
                                         {
                                             var line = Console.CursorTop;
                                             if (Console.CursorLeft == 0)
                                             {
                                                 Console.Write("    ");
                                             }
-                                            Write(
-                                                ConsoleColor.Green,
-                                                e != null ? e.ToString() : "(null)"
-                                            );
-                                            Write(ConsoleColor.DarkGreen, ", ");
+                                            if (i < ReplSymbols.DumpLimit)
+                                            {
+                                                Write(
+                                                    ConsoleColor.Green,
+                                                    e != null ? e.ToString() : "(null)"
+                                                    );
+                                                Write(ConsoleColor.DarkGreen, ", ");
+                                            }
+                                            else
+                                            {
+                                                Write(ConsoleColor.DarkGreen, "(more...)");
+                                            }
                                             if (Console.CursorTop != line || Console.CursorLeft > Console.BufferWidth * 0.8)
                                             {
                                                 Console.WriteLine();

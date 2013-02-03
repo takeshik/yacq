@@ -65,7 +65,7 @@ namespace XSpect.Yacq.Repl
             TypeNameHandling = TypeNameHandling.Auto,
         });
 
-        private static Int32 _dumpLimit
+        internal static Int32 DumpLimit
         {
             get;
             set;
@@ -73,13 +73,13 @@ namespace XSpect.Yacq.Repl
 
         static ReplSymbols()
         {
-            _dumpLimit = 100;
+            DumpLimit = 100;
         }
 
         [YacqSymbol(DispatchTypes.Member, "!dumpLimit")]
-        public static Expression DumpLimit = Expression.Property(
+        public static Expression DumpLimitSymbol = Expression.Property(
             null,
-            typeof(ReplSymbols).GetProperty("_dumpLimit", BindingFlags.NonPublic | BindingFlags.Static)
+            typeof(ReplSymbols).GetProperty("DumpLimit", BindingFlags.NonPublic | BindingFlags.Static)
         );
 
         [YacqSymbol(DispatchTypes.Method, "!exit")]
