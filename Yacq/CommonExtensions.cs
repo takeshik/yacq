@@ -693,7 +693,7 @@ namespace XSpect
 #if SILVERLIGHT
             return array.Select(selector).ToArray();
 #else
-            return Array.ConvertAll(array, e => selector(e));
+            return Array.ConvertAll(array, new Converter<TSource, TResult>(selector));
 #endif
         }
 
@@ -702,7 +702,7 @@ namespace XSpect
 #if SILVERLIGHT
             return array.Where(predicate).ToArray();
 #else
-            return Array.FindAll(array, e => predicate(e));
+            return Array.FindAll(array, (new Predicate<TSource>(predicate)));
 #endif
         }
 
@@ -711,7 +711,7 @@ namespace XSpect
 #if SILVERLIGHT
             return array.Last(predicate);
 #else
-            return Array.FindLast(array, e => predicate(e));
+            return Array.FindLast(array, new Predicate<TSource>(predicate));
 #endif
         }
     }
