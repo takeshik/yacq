@@ -37,6 +37,7 @@ using System.Xml;
 using XSpect.Yacq.Expressions;
 using XSpect.Yacq.LanguageServices;
 using XSpect.Yacq.Linq;
+using XSpect.Yacq.Serialization;
 using XSpect.Yacq.Symbols;
 using XSpect.Yacq.SystemObjects;
 using System.Reactive.Linq;
@@ -421,6 +422,140 @@ namespace XSpect.Yacq
         public static Expression<Func<T, TReturn>> ParseFunc<T, TReturn>(IEnumerable<Char> code)
         {
             return ParseFunc<T, TReturn>(null, code);
+        }
+
+        #endregion
+
+        #region Serialize
+
+        /// <summary>
+        /// Returns the member reference which refers specified member.
+        /// </summary>
+        /// <param name="member">The member to refer.</param>
+        /// <returns>The member reference which refers specified member.</returns>
+        public static MemberRef Serialize(MemberInfo member)
+        {
+            return MemberRef.Serialize(member);
+        }
+
+        /// <summary>
+        /// Returns the event reference which refers specified event.
+        /// </summary>
+        /// <param name="event">The event to refer.</param>
+        /// <returns>The event reference which refers specified event.</returns>
+        public static EventRef Serialize(EventInfo @event)
+        {
+            return EventRef.Serialize(@event);
+        }
+
+        /// <summary>
+        /// Returns the field reference which refers specified field.
+        /// </summary>
+        /// <param name="field">The field to refer.</param>
+        /// <returns>The field reference which refers specified field.</returns>
+        public static FieldRef Serialize(FieldInfo field)
+        {
+            return FieldRef.Serialize(field);
+        }
+
+        /// <summary>
+        /// Returns the method reference which refers specified method.
+        /// </summary>
+        /// <param name="method">The method to refer.</param>
+        /// <returns>The method reference which refers specified method.</returns>
+        public static MethodRef Serialize(MethodBase method)
+        {
+            return MethodRef.Serialize(method);
+        }
+
+        /// <summary>
+        /// Returns the property reference which refers specified property.
+        /// </summary>
+        /// <param name="property">The property to refer.</param>
+        /// <returns>The property reference which refers specified property.</returns>
+        public static PropertyRef Serialize(PropertyInfo property)
+        {
+            return PropertyRef.Serialize(property);
+        }
+
+        /// <summary>
+        /// Returns the type reference which refers specified type.
+        /// </summary>
+        /// <param name="type">The type to refer.</param>
+        /// <returns>The type reference which refers specified type.</returns>
+        public static TypeRef Serialize(Type type)
+        {
+            return TypeRef.Serialize(type);
+        }
+
+        /// <summary>
+        /// Returns the assembly reference which refers specified assembly.
+        /// </summary>
+        /// <param name="assembly">The type to assembly.</param>
+        /// <returns>The assembly reference which refers specified assembly.</returns>
+        public static AssemblyRef Serialize(Assembly assembly)
+        {
+            return AssemblyRef.Serialize(assembly);
+        }
+
+        /// <summary>
+        /// Returns the object graph which represents specified expression.
+        /// </summary>
+        /// <param name="expression">The expression to get object graph.</param>
+        /// <returns>The object graph which represents specified expression to serialize.</returns>
+        public static Node Serialize(Expression expression)
+        {
+            return Node.Serialize(expression);
+        }
+
+        #endregion
+
+        #region ReadAndSerialize
+
+        /// <summary>
+        /// Returns the object graph which represents the read expression from specified code.
+        /// </summary>
+        /// <param name="reader">The <see cref="Reader"/> to read the code string.</param>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
+        /// <returns>The object graph which represents the read expression from specified code.</returns>
+        public static Node ReadAndSerialize(Reader reader, IEnumerable<Char> code)
+        {
+            return Serialize(Read(reader, code));
+        }
+
+        /// <summary>
+        /// Returns the object graph which represents the read expression from specified code.
+        /// </summary>
+        /// <param name="code">Code (character sequence or string) to read and serialize.</param>
+        /// <returns>The object graph which represents the read expression from specified code.</returns>
+        public static Node ReadAndSerialize(IEnumerable<Char> code)
+        {
+            return ReadAndSerialize(null, code);
+        }
+
+        #endregion
+
+        #region ParseAndSerialize
+
+        /// <summary>
+        /// Returns the object graph which represents the parsed expression from specified code.
+        /// </summary>
+        /// <param name="symbols">Additional <see cref="SymbolTable"/> for resolve symbols.</param>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
+        /// <returns>The object graph which represents the parsed expression from specified code.</returns>
+        public static Node ParseAndSerialize(SymbolTable symbols, IEnumerable<Char> code)
+        {
+            return Serialize(Parse(symbols, code));
+        }
+
+        /// <summary>
+        /// Returns the object graph which represents the parsed expression from specified code.
+        /// </summary>
+        /// <param name="code">Code (character sequence or string) to parse and serialize.</param>
+        /// <returns>The object graph which represents the parsed expression from specified code.</returns>
+        public static Node ParseAndSerialize(IEnumerable<Char> code)
+        {
+            return ParseAndSerialize(null, code);
         }
 
         #endregion
