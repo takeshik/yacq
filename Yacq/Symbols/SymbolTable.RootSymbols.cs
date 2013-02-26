@@ -2055,9 +2055,10 @@ namespace XSpect.Yacq.Symbols
             {
                 return Expression.TryFault(
                     e.Left.Reduce(s),
-                    e.Arguments.Count != 1
+                    (e.Arguments.Count != 1
                         ? YacqExpression.Function(s, "let", e.Arguments)
-                        : e.Arguments[0].Reduce(s)
+                        : e.Arguments[0]
+                    ).Reduce(s)
                 );
             }
 
@@ -2066,9 +2067,10 @@ namespace XSpect.Yacq.Symbols
             {
                 return Expression.TryFinally(
                     e.Left.Reduce(s),
-                    e.Arguments.Count != 1
+                    (e.Arguments.Count != 1
                         ? YacqExpression.Function(s, "let", e.Arguments)
-                        : e.Arguments[0].Reduce(s)
+                        : e.Arguments[0]
+                    ).Reduce(s)
                 );
             }
 
