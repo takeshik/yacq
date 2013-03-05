@@ -38,6 +38,7 @@ namespace XSpect.Yacq.Serialization
     /// </summary>
     [DataContract(IsReference = true)]
     [KnownType(typeof(BinaryNode))]
+    [KnownType(typeof(DynamicNode))]
     [KnownType(typeof(NewArrayNode))]
     [KnownType(typeof(TypeBinaryNode))]
     [KnownType(typeof(UnaryNode))]
@@ -197,6 +198,28 @@ namespace XSpect.Yacq.Serialization
                 case ExpressionType.Decrement:
                     return Decrement((UnaryExpression) expression);
                 case ExpressionType.Dynamic:
+                    var expr = (DynamicExpression) expression;
+                    switch (expr.Binder.GetType().Name)
+                    {
+                        case "YacqBinaryOperationBinder":
+                            return DynamicBinaryOperation(expr);
+                        case "YacqConvertBinder":
+                            return DynamicConvert(expr);
+                        case "YacqGetIndexBinder":
+                            return DynamicGetIndex(expr);
+                        case "YacqGetMemberBinder":
+                            return DynamicGetMember(expr);
+                        case "YacqInvokeBinder":
+                            return DynamicInvoke(expr);
+                        case "YacqInvokeMemberBinder":
+                            return DynamicInvokeMember(expr);
+                        case "YacqSetIndexBinder":
+                            return DynamicSetIndex(expr);
+                        case "YacqSetMemberBinder":
+                            return DynamicSetMember(expr);
+                        case "YacqUnaryOperationBinder":
+                            return DynamicUnaryOperation(expr);
+                    }
                     break;
                 case ExpressionType.Default:
                     return Default((DefaultExpression) expression);

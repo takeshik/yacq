@@ -391,6 +391,36 @@
     <Compile Include="..\Yacq\Serialization\DivideAssign.cs">
       <Link>Serialization\DivideAssign.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicBinaryOperation.cs">
+      <Link>Serialization\DynamicBinaryOperation.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicConvert.cs">
+      <Link>Serialization\DynamicConvert.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicGetIndex.cs">
+      <Link>Serialization\DynamicGetIndex.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicGetMember.cs">
+      <Link>Serialization\DynamicGetMember.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicInvoke.cs">
+      <Link>Serialization\DynamicInvoke.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicInvokeMember.cs">
+      <Link>Serialization\DynamicInvokeMember.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicNode.cs">
+      <Link>Serialization\DynamicNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicSetIndex.cs">
+      <Link>Serialization\DynamicSetIndex.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicSetMember.cs">
+      <Link>Serialization\DynamicSetMember.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Serialization\DynamicUnaryOperation.cs">
+      <Link>Serialization\DynamicUnaryOperation.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Serialization\ElementInit.cs">
       <Link>Serialization\ElementInit.cs</Link>
     </Compile>
