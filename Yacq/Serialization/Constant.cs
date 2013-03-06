@@ -62,9 +62,13 @@ namespace XSpect.Yacq.Serialization
         public override String ToString()
         {
             return this.Value != null
-                ? this.Value.GetType().GetMethod("ToString", System.Type.EmptyTypes).DeclaringType != typeof(Object)
-                      ? this.Value.ToString()
-                      : "value(" + TypeRef.Serialize(this.Value.GetType()) + ")"
+                ? this.Value is String
+                      ? "\"" + (String) this.Value + "\""
+                      : this.Value is Char
+                            ? "'" + (Char) this.Value + "'"
+                            : this.Value.GetType().GetMethod("ToString", System.Type.EmptyTypes).DeclaringType != typeof(Object)
+                                  ? this.Value.ToString()
+                                  : "value(" + TypeRef.Serialize(this.Value.GetType()) + ")"
                 : "null";
         }
     }
