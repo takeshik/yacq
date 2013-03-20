@@ -121,7 +121,7 @@ namespace XSpect.Yacq.Serialization
                 Handlers = expression.Handlers.Select(CatchBlock.Serialize).ToArray(),
                 Fault = expression.Fault.Null(e => Serialize(e)),
                 Finally = expression.Finally.Null(e => Serialize(e)),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

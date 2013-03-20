@@ -94,7 +94,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Parameters = expression.Parameters.Select(AmbiguousParameter).ToArray(),
                 Body = Serialize(expression.Body),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

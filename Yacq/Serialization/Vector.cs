@@ -61,7 +61,7 @@ namespace XSpect.Yacq.Serialization
             return new Vector()
             {
                 Elements = expression.Elements.Select(Serialize).ToArray(),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

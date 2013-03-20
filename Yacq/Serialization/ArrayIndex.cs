@@ -76,7 +76,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Array = Serialize(expression.Left),
                 Index = Serialize(expression.Right),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

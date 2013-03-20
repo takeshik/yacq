@@ -91,7 +91,7 @@ namespace XSpect.Yacq.Serialization
                 Test = Serialize(expression.Test),
                 IfTrue = Serialize(expression.IfTrue),
                 IfFalse = Serialize(expression.IfFalse),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

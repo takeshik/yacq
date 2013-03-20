@@ -79,7 +79,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Expression = expression.Expression.Null(e => Serialize(e)),
                 Member = MemberRef.Serialize(expression.Member),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

@@ -81,11 +81,33 @@ namespace XSpect.Yacq.Serialization
         /// </summary>
         public const String Namespace = "http://yacq.net/schema";
 
-        [DataMember(Order = 0, EmitDefaultValue = false)]
-        internal TypeRef Type
+        internal TypeRef TypeHint
         {
             get;
             set;
+        }
+
+        [DataMember(Order = 0, Name = "Type", EmitDefaultValue = false)]
+        internal TypeRef _Type
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the type reference which references static type of this node.
+        /// </summary>
+        /// <value>The type reference which references static type of this node.</value>
+        public TypeRef Type
+        {
+            get
+            {
+                return this._Type ?? this.TypeHint;
+            }
+            set
+            {
+                this._Type = value;
+            }
         }
 
         /// <summary>

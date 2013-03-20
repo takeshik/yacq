@@ -48,7 +48,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Gets the node type of this expression.
         /// </summary>
-        /// <returns>One of the <see cref="ExpressionType"/> values.</returns>
+        /// <value>One of the <see cref="ExpressionType"/> values.</value>
         public override ExpressionType NodeType
         {
             get
@@ -60,7 +60,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Indicates that the node can be reduced to a simpler node. If this returns true, Reduce() can be called to produce the reduced form.
         /// </summary>
-        /// <returns><c>true</c> if the node can be reduced, otherwise <c>false</c>.</returns>
+        /// <value><c>true</c> if the node can be reduced, otherwise <c>false</c>.</value>
         public override Boolean CanReduce
         {
             get
@@ -72,7 +72,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Gets the static type of the expression that this expression represents.
         /// </summary>
-        /// <returns>The <see cref="System.Type"/> that represents the static type of the expression.</returns>
+        /// <value>The <see cref="System.Type"/> that represents the static type of the expression.</value>
         public override Type Type
         {
             get
@@ -89,9 +89,7 @@ namespace XSpect.Yacq.Expressions
         /// <summary>
         /// Gets the symbol table linked with this expression.
         /// </summary>
-        /// <value>
-        /// The symbol table linked with this expression.
-        /// </value>
+        /// <value>The symbol table linked with this expression.</value>
         public SymbolTable Symbols
         {
             get;

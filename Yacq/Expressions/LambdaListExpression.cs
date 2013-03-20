@@ -28,7 +28,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using XSpect.Yacq.Collections;
@@ -75,7 +74,7 @@ namespace XSpect.Yacq.Expressions
                     .Max(e =>
                     {
                         Int32 value = -1;
-                        return e is IdentifierExpression && e.Id().Let(s =>
+                        return e.Id().Null(s =>
                             s.StartsWithInvariant("$") && Int32.TryParse(s.Substring(1), out value)
                         )
                             ? value

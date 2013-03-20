@@ -94,6 +94,7 @@ namespace XSpect.Yacq.Expressions
                               )
                           ),
                           _ => (Expression) this.Elements.ReduceAll(symbols)
+                              .ToArray()
                               .Let(es => es
                                   .Select(e => e.Type)
                                   .Distinct()

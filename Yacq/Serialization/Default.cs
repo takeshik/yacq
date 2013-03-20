@@ -63,7 +63,7 @@ namespace XSpect.Yacq.Serialization
                 Type = expression.Type != typeof(Object)
                     ? TypeRef.Serialize(expression.Type)
                     : null,
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

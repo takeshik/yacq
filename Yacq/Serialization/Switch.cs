@@ -108,7 +108,7 @@ namespace XSpect.Yacq.Serialization
                 Cases = expression.Cases.Select(SwitchCase.Serialize).ToArray(),
                 DefaultBody = expression.DefaultBody.Null(e => Serialize(e)),
                 Comparison = expression.Comparison.Null(m => MethodRef.Serialize(m)),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

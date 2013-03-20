@@ -113,7 +113,7 @@ namespace XSpect.Yacq.Serialization
                 Name = expression.Name,
                 TailCall = expression.TailCall,
                 Parameters = expression.Parameters.Select(Parameter).ToArray(),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

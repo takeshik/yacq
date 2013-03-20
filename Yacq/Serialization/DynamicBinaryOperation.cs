@@ -75,7 +75,7 @@ namespace XSpect.Yacq.Serialization
                 Operation = ((YacqBinaryOperationBinder) expression.Binder).Operation,
                 Type = TypeRef.Serialize(expression.Type),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

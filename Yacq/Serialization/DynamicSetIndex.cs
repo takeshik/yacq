@@ -88,7 +88,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
                 ArgumentNames = ((YacqSetIndexBinder) expression.Binder).CallInfo.ArgumentNames.ToArray(),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

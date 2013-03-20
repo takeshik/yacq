@@ -61,7 +61,7 @@ namespace XSpect.Yacq.Serialization
             return new Quasiquoted()
             {
                 Expression = Serialize(expression.Expression),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

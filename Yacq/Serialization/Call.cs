@@ -75,6 +75,12 @@ namespace XSpect.Yacq.Serialization
             }
         }
 
+        public Boolean IsExtension
+        {
+            get;
+            set;
+        }
+
         public override Expression Deserialize()
         {
             return Expression.Call(
@@ -87,14 +93,21 @@ namespace XSpect.Yacq.Serialization
         public override String ToString()
         {
             return (this.Object.Null(n => n.ToString())
-                ?? this.Method.Type.Describe().Name.ToString()
+                ?? (this.IsExtension
+                       ? this.Arguments[0].ToString()
+                       : this.Method.Type.Describe().Name.ToString()
+                   )
             )
                 + "." + this.Method.Name
                 + this.Method.TypeArgs.Let(ts => ts != null && ts.Any()
                       ? "<" + String.Join(", ", ts.SelectAll(t => t.Describe().ToString())) + ">"
                       : ""
                   )
-                + "(" + String.Join(", ", this.Arguments.SelectAll(n => n.ToString())) + ")";
+                + "(" + String.Join(", ", (this.IsExtension
+                      ? this.Arguments.Skip(1).ToArray()
+                      : this.Arguments
+                  ).SelectAll(n => n.ToString()))
+                + ")";
         }
     }
 
@@ -107,7 +120,8 @@ namespace XSpect.Yacq.Serialization
                 Method = MethodRef.Serialize(expression.Method),
                 Object = expression.Object.Null(e => Serialize(e)),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
-            };
+                IsExtension = expression.Method.IsExtensionMethod(),
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

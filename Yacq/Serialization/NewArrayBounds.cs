@@ -66,7 +66,7 @@ namespace XSpect.Yacq.Serialization
                 Expressions = expression.Expressions.Any()
                     ? expression.Expressions.Select(Serialize).ToArray()
                     : null,
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

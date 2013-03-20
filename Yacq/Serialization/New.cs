@@ -115,7 +115,7 @@ namespace XSpect.Yacq.Serialization
                     ms => ms.Select(MemberRef.Serialize).ToArray(),
                     _ => null
                 ),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }

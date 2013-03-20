@@ -63,7 +63,7 @@ namespace XSpect.Yacq.Serialization
                 Left = Serialize(expression.Left),
                 Right = Serialize(expression.Right),
                 Conversion = expression.Conversion.Null(e => Lambda(e)),
-            };
+            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
         }
     }
 }
