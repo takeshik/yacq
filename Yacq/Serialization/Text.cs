@@ -77,7 +77,7 @@ namespace XSpect.Yacq.Serialization
             {
                 QuoteChar = expression.QuoteChar,
                 SourceText = expression.SourceText,
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.TypeHint = expression.TryType().Null(t => TypeRef.Serialize(t)));
         }
     }
 }

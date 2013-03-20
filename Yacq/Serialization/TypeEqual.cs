@@ -61,7 +61,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Expression = Serialize(expression.Expression),
                 TypeOperand = TypeRef.Serialize(expression.TypeOperand),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

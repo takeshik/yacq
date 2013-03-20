@@ -148,7 +148,7 @@ namespace XSpect.Yacq.Serialization
                 Name = expression.Name,
                 TypeArguments = expression.TypeArguments.Select(TypeRef.Serialize).ToArray(),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.TypeHint = expression.TryType().Null(t => TypeRef.Serialize(t)));
         }
     }
 }

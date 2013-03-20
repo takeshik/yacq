@@ -91,7 +91,7 @@ namespace XSpect.Yacq.Serialization
             {
                 NewExpression = New(expression.NewExpression),
                 Initializers = expression.Initializers.Select(ElementInit.Serialize).ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

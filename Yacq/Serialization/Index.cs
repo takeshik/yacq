@@ -89,7 +89,7 @@ namespace XSpect.Yacq.Serialization
                 Object = Serialize(expression.Object),
                 Indexer = expression.Indexer.Null(p => PropertyRef.Serialize(p)),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

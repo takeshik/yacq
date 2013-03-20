@@ -72,7 +72,7 @@ namespace XSpect.Yacq.Serialization
                     return new Quoted()
                     {
                         Expression = Serialize(expression.Expression),
-                    }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+                    }.Apply(n => n.TypeHint = expression.TryType().Null(t => TypeRef.Serialize(t)));
                 case QuoteType.Quasiquote:
                     return Quasiquoted(expression);
                 default:

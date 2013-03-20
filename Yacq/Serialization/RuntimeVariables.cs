@@ -81,7 +81,7 @@ namespace XSpect.Yacq.Serialization
             return new RuntimeVariables()
             {
                 Variables = expression.Variables.Select(Parameter).ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

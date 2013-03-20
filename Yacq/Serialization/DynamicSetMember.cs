@@ -72,9 +72,10 @@ namespace XSpect.Yacq.Serialization
         {
             return new DynamicSetMember()
             {
+                Type = TypeRef.Serialize(expression.Type),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
                 Name = ((YacqSetMemberBinder) expression.Binder).Name,
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            };
         }
     }
 }

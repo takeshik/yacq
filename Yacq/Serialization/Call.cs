@@ -121,7 +121,7 @@ namespace XSpect.Yacq.Serialization
                 Object = expression.Object.Null(e => Serialize(e)),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
                 IsExtension = expression.Method.IsExtensionMethod(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

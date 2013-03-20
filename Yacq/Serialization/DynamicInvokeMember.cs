@@ -93,10 +93,11 @@ namespace XSpect.Yacq.Serialization
         {
             return new DynamicInvokeMember()
             {
+                Type = TypeRef.Serialize(expression.Type),
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
                 Name = ((YacqInvokeMemberBinder) expression.Binder).Name,
                 ArgumentNames = ((YacqInvokeMemberBinder) expression.Binder).CallInfo.ArgumentNames.ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            };
         }
     }
 }

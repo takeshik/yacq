@@ -59,7 +59,7 @@ namespace XSpect.Yacq.Serialization
             return new ArrayLength()
             {
                 Operand = Serialize(expression.Operand),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

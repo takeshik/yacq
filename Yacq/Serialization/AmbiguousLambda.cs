@@ -120,7 +120,7 @@ namespace XSpect.Yacq.Serialization
                 ReturnType = expression.ReturnType.Null(t => TypeRef.Serialize(t)),
                 Parameters = expression.Parameters.Select(AmbiguousParameter).ToArray(),
                 Bodies = expression.Bodies.Select(Serialize).ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.TypeHint = expression.TryType().Null(t => TypeRef.Serialize(t)));
         }
     }
 }

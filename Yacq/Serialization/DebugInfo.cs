@@ -108,7 +108,7 @@ namespace XSpect.Yacq.Serialization
                       StartColumn = expression.StartColumn,
                       EndLine = expression.EndLine,
                       EndColumn = expression.EndColumn,
-                  }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+                  }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

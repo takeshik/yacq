@@ -75,7 +75,7 @@ namespace XSpect.Yacq.Serialization
             {
                 Target = LabelTarget.Serialize(expression.Target),
                 DefaultValue = expression.DefaultValue.Null(e => Serialize(e)),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

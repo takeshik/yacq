@@ -84,7 +84,7 @@ namespace XSpect.Yacq.Serialization
                 Body = Serialize(expression.Body),
                 BreakLabel = expression.BreakLabel.Null(l => LabelTarget.Serialize(l)),
                 ContinueLabel = expression.ContinueLabel.Null(l => LabelTarget.Serialize(l)),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            }.Apply(n => n.Type = TypeRef.Serialize(expression.Type));
         }
     }
 }

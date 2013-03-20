@@ -77,7 +77,7 @@ namespace XSpect.Yacq.Serialization
                    {
                        Type = TypeRef.Serialize(expression.Type),
                        Name = expression.Name,
-                   }.Apply(p => _parameterReverseCache.Add(expression, p));
+                   };
         }
     }
 }

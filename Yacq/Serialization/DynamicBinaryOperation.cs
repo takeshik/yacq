@@ -72,10 +72,10 @@ namespace XSpect.Yacq.Serialization
         {
             return new DynamicBinaryOperation()
             {
-                Operation = ((YacqBinaryOperationBinder) expression.Binder).Operation,
                 Type = TypeRef.Serialize(expression.Type),
+                Operation = ((YacqBinaryOperationBinder) expression.Binder).Operation,
                 Arguments = expression.Arguments.Select(Serialize).ToArray(),
-            }.If(n => n.Type == null, n => n.TypeHint = TypeRef.Serialize(expression.Type));
+            };
         }
     }
 }
