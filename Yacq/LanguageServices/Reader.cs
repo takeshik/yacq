@@ -37,32 +37,32 @@ namespace XSpect.Yacq.LanguageServices
     /// <summary>
     /// Generates pre-evaluating <see cref="YacqExpression"/> by supplied rules from code string sequence.
     /// </summary>
-    public partial class Reader
+    public class Reader
     {
         /// <summary>
-        /// Gets the parser of Yacq.
+        /// Gets the grammar definition to read.
         /// </summary>
-        /// <value>The parser of Yacq.</value>
-        public Parser<Char, IEnumerable<YacqExpression>> Parser
+        /// <value>The grammar definition to read.</value>
+        public Grammar Grammar
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
-        /// <param name="parser">The sequence of additional rules.</param>
-        public Reader(Parser<Char, IEnumerable<YacqExpression>> parser)
+        /// <param name="grammar">The grammar definition to read.</param>
+        public Reader(Grammar grammar)
         {
-            this.Parser = parser;
+            this.Grammar = grammar;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
         public Reader()
-            : this(Defaults.Yacq)
+            : this(Grammar.Standard)
         {
         }
 
@@ -78,7 +78,7 @@ namespace XSpect.Yacq.LanguageServices
                 Reply<Char, IEnumerable<YacqExpression>> reply;
                 IEnumerable<YacqExpression> result;
                 ErrorMessage message;
-                switch ((reply = this.Parser(stream)).TryGetValue(out result, out message))
+                switch ((reply = this.Grammar.Get.Default.Many()(stream)).TryGetValue(out result, out message))
                 {
                     case ReplyStatus.Success:
                         return result.ToArray();

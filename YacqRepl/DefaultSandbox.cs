@@ -90,7 +90,7 @@ namespace XSpect.Yacq.Repl
             this.Symbols = new SymbolTable(typeof(ReplSymbols))
                 .Apply(s => s["*context*"] = Expression.Default(typeof(EvaluationContext)));
             this.History = new SortedList<DateTime, String>();
-            RuntimeHelpers.RunClassConstructor(typeof(Reader.Defaults).TypeHandle);
+            RuntimeHelpers.RunClassConstructor(typeof(StandardGrammar).TypeHandle);
         }
 
         public override Object InitializeLifetimeService()

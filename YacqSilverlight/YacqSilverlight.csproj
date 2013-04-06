@@ -277,11 +277,23 @@
     <Compile Include="..\Yacq\Extensions.cs">
       <Link>Extensions.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Grammar.cs">
+      <Link>LanguageServices\Grammar.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Grammar.RuleGetter.cs">
+      <Link>LanguageServices\Grammar.RuleGetter.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Grammar.RuleKey.cs">
+      <Link>LanguageServices\Grammar.RuleKey.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Grammar.RuleSetter.cs">
+      <Link>LanguageServices\Grammar.RuleSetter.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>
     </Compile>
-    <Compile Include="..\Yacq\LanguageServices\Reader.Defaults.cs">
-      <Link>LanguageServices\Reader.Defaults.cs</Link>
+    <Compile Include="..\Yacq\LanguageServices\StandardGrammar.cs">
+      <Link>LanguageServices\StandardGrammar.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Linq\YacqQbservable.cs">
       <Link>Linq\YacqQbservable.cs</Link>

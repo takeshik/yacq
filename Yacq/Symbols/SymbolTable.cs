@@ -63,12 +63,6 @@ namespace XSpect.Yacq.Symbols
             return this._symbols.GetEnumerator();
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="IEnumerator"/> object that can be used to iterate through the collection.
-        /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
@@ -80,7 +74,7 @@ namespace XSpect.Yacq.Symbols
         }
 
         /// <summary>
-        /// Removes all symbols from this symbol table..
+        /// Removes all symbols from this symbol table.
         /// </summary>
         public void Clear()
         {
