@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yacq", "Yacq\Yacq.csproj", "{AF21A720-B805-4F95-B872-068925A11BB5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqRun", "YacqRun\YacqRun.csproj", "{833FB13E-D9C4-413F-AD4A-EB8F64C121A5}"
@@ -12,8 +12,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YacqSilverlightRun", "YacqSilverlightRun\YacqSilverlightRun.csproj", "{A726FAEF-C23A-4811-A947-E06B9A3A206C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yacq.Tests", "Yacq.Tests\Yacq.Tests.csproj", "{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}"
-EndProject
-Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "YacqReference", "YacqReference\YacqReference.shfbproj", "{1EB6D288-4FC7-426E-B403-A6447F9A29FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,9 +44,6 @@ Global
 		{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C06AE51B-4DD4-434C-9EF3-3C281B323CB5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EB6D288-4FC7-426E-B403-A6447F9A29FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EB6D288-4FC7-426E-B403-A6447F9A29FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EB6D288-4FC7-426E-B403-A6447F9A29FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
