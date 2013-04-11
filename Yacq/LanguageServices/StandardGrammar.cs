@@ -27,8 +27,6 @@
  */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Parseq.Combinators;
 using XSpect.Yacq.Expressions;
@@ -144,11 +142,11 @@ namespace XSpect.Yacq.LanguageServices
                 this.Add("yacq", "comment", g => Combinator.Choice(g["comment"]));
             }
 
-            var ignore = Combinator.Choice(
+            this.Add("yacq", "ignore", g => Combinator.Choice(
                 this.Get["yacq", "comment"].Ignore(),
                 Chars.Space().Ignore(),
                 newline.Ignore()
-            ).Many();
+            ).Many().Select(_ => (YacqExpression)YacqExpression.Ignore()));
 
             // Texts
             this.Add("term", "text", g => SetPosition(
@@ -160,6 +158,7 @@ namespace XSpect.Yacq.LanguageServices
                             .Or(Chars.Any())
                         )
                         .Many()
+                        .Left(q.Satisfy())
                         .Select(cs => cs.StartWith(q).EndWith(q))
                     )
                     .Select(cs => (YacqExpression) YacqExpression.Text(new String(cs.ToArray())))
@@ -253,7 +252,7 @@ namespace XSpect.Yacq.LanguageServices
             // Lists
             this.Add("term", "list", g => SetPosition(
                 g["yacq", "expression"]
-                    .Between(ignore, ignore)
+                    .Between(g["yacq", "ignore"], g["yacq", "ignore"])
                     .Many()
                     .Between('('.Satisfy(), ')'.Satisfy())
                     .Select(es => (YacqExpression) YacqExpression.List(es))
@@ -262,7 +261,7 @@ namespace XSpect.Yacq.LanguageServices
             // Vectors
             this.Add("term", "vector", g => SetPosition(
                 g["yacq", "expression"]
-                    .Between(ignore, ignore)
+                    .Between(g["yacq", "ignore"], g["yacq", "ignore"])
                     .Many()
                     .Between('['.Satisfy(), ']'.Satisfy())
                     .Select(es => (YacqExpression) YacqExpression.Vector(es))
@@ -271,7 +270,7 @@ namespace XSpect.Yacq.LanguageServices
             // Lambda Lists
             this.Add("term", "lambdaList", g => SetPosition(
                 g["yacq", "expression"]
-                    .Between(ignore, ignore)
+                    .Between(g["yacq", "ignore"], g["yacq", "ignore"])
                     .Many()
                     .Between('{'.Satisfy(), '}'.Satisfy())
                     .Select(es => (YacqExpression) YacqExpression.LambdaList(es))
@@ -336,7 +335,9 @@ namespace XSpect.Yacq.LanguageServices
             ));
 
             // Terms
-            this.Add("yacq", "term", g => Combinator.Choice(g["term"]).Between(ignore, ignore));
+            this.Add("yacq", "term", g => Combinator.Choice(g["term"])
+                .Between(g["yacq", "ignore"], g["yacq", "ignore"])
+            );
 
             // Infix Dots
             this.Add("infix", "dot", g => Prims.Pipe(

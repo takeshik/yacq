@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Parseq.Combinators;
 using XSpect.Yacq.Expressions;
 using Parseq;
 
@@ -78,7 +79,7 @@ namespace XSpect.Yacq.LanguageServices
                 Reply<Char, IEnumerable<YacqExpression>> reply;
                 IEnumerable<YacqExpression> result;
                 ErrorMessage message;
-                switch ((reply = this.Grammar.Get.Default.Many()(stream)).TryGetValue(out result, out message))
+                switch ((reply = this.GetDefinitiveParser()(stream)).TryGetValue(out result, out message))
                 {
                     case ReplyStatus.Success:
                         return result.ToArray();
@@ -88,6 +89,15 @@ namespace XSpect.Yacq.LanguageServices
                         throw new ParseException(message.MessageDetails, message.Beginning, message.End);
                 }
             }
+        }
+
+        private Parser<Char, IEnumerable<YacqExpression>> GetDefinitiveParser()
+        {
+            return this.Grammar.Get.Let(g => g.Default
+                .Many()
+                .Between(g["yacq", "ignore"], g["yacq", "ignore"])
+                .Left(Errors.FollowedBy(Chars.Eof()))
+            );
         }
     }
 }
