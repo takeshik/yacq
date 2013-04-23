@@ -1,4 +1,5 @@
 url: http://yacq.net/
 title: YACQ Project
 author: takeshik
+pygments: true
 markdown: rdiscount

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Home"
+title: Home
 ---
 
 # Welcome
@@ -22,30 +22,30 @@ YACQ is a library that provides run-time scripting and querying for .NET applica
 
 Construct an expression tree from YACQ code string.
 
-```c#
+{% highlight csharp %}
 Expression expr =
     YacqServices.Parse("(+ 1 2 3)");
     // same as ((1 + 2) + 3)
-```
+{% endhighlight %}
 
 Lambdas which has only one argument can construct easily by the helper method.
 
-```c#
+{% highlight csharp %}
 Expression<Func<string, string>> lambda =
     YacqServices.ParseFunc<string, string>("it.(ToUpper).(Replace 'FOO' 'bar')");
     // same as (string it) => it.ToUpper().Replace("foo", "bar")
-```
+{% endhighlight %}
 
 Constructed lambdas can compile and evaluate by standard feature in run-time.
 
-```c#
+{% highlight csharp %}
 Func<string, string> func = lambda.Compile();
 func("foooo"); // returns "barOO"
-```
+{% endhighlight %}
 
 You can use YACQ in LINQ queries.
 
-```c#
+{% highlight csharp %}
 var query = Enumerable.Range(1, 100)
     .Yacq()
     .Where("(== (% it 3) 0)")
@@ -59,18 +59,18 @@ Enumerable.Range(1, 100)
     .GroupBy(it => it / 10)
     .Select(it => it.Average())
     .OrderByDescending(it => it);
-```
+{% endhighlight %}
 
 YACQ provides expression trees serializer. In vanilla environments, they are not serializable.
 
-```c#
+{% highlight csharp %}
 string xml = YacqServices.SaveText(lambda);
 Expression lambda2 = YacqServices.LoadText(xml);
-```
+{% endhighlight %}
 
 You can construct complex expression trees with YACQ-extended Expression Trees system.
 
-```c#
+{% highlight csharp %}
 Expression expr2 = YacqExpression.TypeCandidate(typeof(Enumerable))
     .Method("Range", Expression.Constant(1), Expression.Constant(100))
     .Method("Reverse")
@@ -84,7 +84,7 @@ Expression.Call(typeof(Enumerable), "Sum", null,
         Expression.Call(typeof(Enumerable), "Reverse", new [] { typeof(int), },
             Expression.Call(typeof(Enumerable), "Range", null, Expression.Constant(1), Expression.Constant(100))
         ), Expression.Constant(10)));
-```
+{% endhighlight %}
 
 Although the main use of YACQ is to embed in other applications, YACQ also can use in standalone. Complier frontend and REPL environment are bundled.
 
@@ -99,9 +99,9 @@ PM> Install-Package Yacq
 * **[Download binary archive](http://yacq.net/download)**: You can download the binary archive. This contains all libraries, executables, and documents. If you want compiler frontend or REPL environment, please download this.
 * **[Download source code in GitHub](https://github.com/takeshik/yacq)**: You can get the source codes in GitHub.
     * **Clone the repository**: You can clone the Git repository.<br />
-    ```
-    % git clone git://github.com/takeshik/yacq.git
-    ```
+```
+% git clone git://github.com/takeshik/yacq.git
+```
     * **Download snapshot**: Snapshot archive of the repository is also available ([.tar.gz](https://github.com/takeshik/yacq/tarball/master) | [.zip](https://github.com/takeshik/yacq/zipball/master)).
 
 ## Prerequisites
