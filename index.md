@@ -3,7 +3,7 @@ layout: default
 title: Home
 ---
 
-# Welcome
+# YACQ, a Programming Language
 
 YACQ <small>(pronounced as yacc)</small> is an **application-embeddable programming language for querying and scripting**, runs on .NET platform.
 

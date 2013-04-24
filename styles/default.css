@@ -3,8 +3,6 @@ Slate Theme for GitHub Pages
 by Jason Costello, @jsncostello
 *******************************************************************************/
 
-@import url(pygment_trac.css);
-
 /*******************************************************************************
 MeyerWeb Reset
 *******************************************************************************/
@@ -60,7 +58,7 @@ body {
   color:#373737;
   background: #212121;
   font-size: 16px;
-  font-family: Calibri, Helvetica, Arial, 'Meiryo UI', sans-serif;
+  font-family: 'Segoe UI', Helvetica, Arial, 'Meiryo UI', sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -69,7 +67,7 @@ h1, h2, h3, h4, h5, h6 {
   margin: 10px 0;
   font-weight: 700;
   color:#222222;
-  font-family: Calibri, Helvetica, Arial, 'Meiryo UI', sans-serif;
+  font-family: 'Segoe UI', Helvetica, Arial, 'Meiryo UI', sans-serif;
   letter-spacing: -1px;
 }
 
@@ -257,11 +255,6 @@ form {
   padding: 20px;
 }
 
-img {
-  width: 100%;
-  max-width: 100%;
-}
-
 /*******************************************************************************
 Full-Width Styles
 *******************************************************************************/
@@ -301,68 +294,58 @@ Full-Width Styles
   background: linear-gradient(top, #373737, #212121);
 }
 
-#header_wrap .inner {
-  padding: 50px 10px 30px 10px;
+#header_logo {
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  -o-box-shadow: none;
+  -ms-box-shadow: none;
 }
 
-#project_title {
+#nav_wrap {
+  background: -webkit-gradient(linear, center top, center bottom, from(#404040), color-stop(25%, #505050), color-stop(50%, #606060), color-stop(75%, #505050), to(#404040));
+  background: -moz-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+  background: -ms-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+  background: -o-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+  background: linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+}
+
+nav.inner {
+  padding: 0;
+}
+
+nav {
+  padding: 0;
+  overflow: hidden;
+}  
+
+nav li {
+  display: block;
+  list-style: none;
   margin: 0;
-  color: #fff;
-  font-size: 42px;
-  font-weight: 700;
-  text-shadow: #111 0px 0px 10px;
+  padding: 0 6px;
+  line-height: 30px;
+  float: left;
+  color: #b0b0b0;
+  text-align: center;
 }
 
-#project_title:first-letter {
-    font-size: 150%;
-}
-
-#project_tagline {
-  color: #fff;
-  font-size: 24px;
-  font-weight: 300;
-  background: none;
-  word-spacing: 3px;
-  text-shadow: #111 0px 0px 10px;
-}
-
-#downloads {
-  position: absolute;
-  width: 210px;
-  z-index: 10;
-  bottom: -40px;
-  right: 0;
-  height: 70px;
-  background: url('../images/icon_download.png') no-repeat 0% 90%;
-}
-
-.zip_download_link {
+li.menu_item a {
   display: block;
-  float: right;
-  width: 90px;
-  height:70px;
-  text-indent: -5000px;
-  overflow: hidden;
-  background: url(../images/sprite_download.png) no-repeat bottom left;
+  color: white;
 }
 
-.tar_download_link {
-  display: block;
-  float: right;
-  width: 90px;
-  height:70px;
-  text-indent: -5000px;
-  overflow: hidden;
-  background: url(../images/sprite_download.png) no-repeat bottom right;
-  margin-left: 10px;
-}
-
-.zip_download_link:hover {
-  background: url(../images/sprite_download.png) no-repeat top left;
-}
-
-.tar_download_link:hover {
-  background: url(../images/sprite_download.png) no-repeat top right;
+li.menu_item:hover {
+  background: -webkit-gradient(linear, center top, center bottom, from(#606060), color-stop(25%, #707070), color-stop(50%, #808080), color-stop(75%, #707070), to(#606060));
+  background: -moz-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+  background: -ms-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+  background: -o-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+  background: linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
 }
 
 #main_content_wrap {
@@ -371,8 +354,8 @@ Full-Width Styles
   border-bottom: 1px solid #111;
 }
 
-#main_content {
-  padding-top: 40px;
+footer.inner {
+  padding: 0;
 }
 
 #footer_wrap {
