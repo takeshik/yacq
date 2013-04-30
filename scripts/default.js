@@ -27,7 +27,7 @@ $(function () {
             if($(window).scrollTop() >= height) {
                 $navbar.css('position', 'fixed');
                 $navbar.css('top', 0);
-                $('#main_content_wrap').css('margin-top', '60px');
+                $('#main_content_wrap').css('margin-top', '30px');
             } else {
                 $navbar.css('position', 'static');
                 $('#main_content_wrap').css('margin-top', '0');
@@ -59,11 +59,10 @@ $(function () {
         });
     })();
     (function () {
-        var _this = this;
-        $('.menu_item.lang').map(function () {
-            return $(_this).find('a').attr('href', '.' + (function (s) {
+        $.map($('.menu_item.lang'), function (e) {
+            return $(e).find('a').attr('href', (function (s) {
                 return s.substr(0, s.length - getLang().length);
-            })(getPath()) + $(_this).text());
+            })(getPath()) + $(e).text());
         });
     })();
 });

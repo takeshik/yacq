@@ -90,12 +90,11 @@ $(() => {
 
     // navigation bar: language switcher
     () => {
-        $('.menu_item.lang').map(() => $(this)
+        $.map($('.menu_item.lang'), e => $(e)
             .find('a')
-            .attr('href', '.' +
-                ((s: string) => s.substr(0, s.length - getLang().length))(getPath()) +
-                $(this).text()
-            )
+            .attr('href', ((s: string) =>
+                s.substr(0, s.length - getLang().length)
+            )(getPath()) + $(e).text())
         );
     }();
 });
