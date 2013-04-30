@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+        <meta name="description" content="YACQ - Yet Another Compilable Query Language for .NET" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/styles/default.css" />
+        <title>YACQ</title>
+    </head>
+    <body>
+        <!-- HEADER -->
+        <div id="header_wrap" class="outer">
+            <header class="inner">
+                <a id="forkme_banner" href="https://github.com/takeshik/yacq">View on GitHub</a>
+                <a href="/"><img id="header_logo" src="/images/yacq-logo.png" width="500" height="180" alt="YACQ - Yet Another Compilable Query Language for .NET, based on Expression Trees API" /></a>
+            </header>
+        </div>
+        <div id="main_content_wrap" class="outer">
+          <section id="main_content" class="inner">
+              Redirect you to the article page. Please enable JavaScript if disabled.
+          </section>
+        </div>
+        <div id="footer_wrap" class="outer">
+            <footer class="inner">
+                <p class="copyright">Copyright © 2011-2013 <a href="http://www.takeshik.org/">Takeshi KIRIYA (aka takeshik)</a>, All rights reserved.</p>
+                <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+            </footer>
+        </div>
+        <script src="scripts/jquery-2.0.0.min.js"></script>
+        <script>
+            var $mainContent = $('#main_content');
+
+            var getPath = function () {
+                return location.pathname.replace(/.html$/, '');
+            };
+            var getFileName = function () {
+                return getPath().substr(1).split('/').slice(-1)[0].replace(/.html$/, '');
+            };
+            var getLang = function () {
+                return (function (s) {
+                    return (s.indexOf('.') < 0 ? '' : s.split('.').slice(-1)[0]);
+                })(getFileName());
+            };
+            var getUALang = function () {
+                return (navigator.browserLanguage || navigator.language || navigator.userLanguage)
+                    .substr(0, 2);
+            };
+
+            var redirect = function (uri) {
+                $mainContent.empty();
+                $mainContent.append($('<p/>').append([
+                    'You will be redirected to:',
+                    $('<br/>'),
+                    $('<a/>')
+                        .attr('href', uri)
+                        .css('font-size', '125%')
+                        .text(uri)
+                    ])
+                );
+                return $.ajax({
+                    'type': 'HEAD',
+                    'url': uri
+                }).done(function () {
+                    location.replace(uri);
+                });
+            };
+
+            var onRedirectFailed = function (uri) {
+                $mainContent.empty();
+                $mainContent.append([
+                    $('<h1/>').text('Page Not Found'),
+                    $('<p/>').append([
+                        $('<span/>').text('HTTP 404 Not Found')
+                            .css('font-family', 'monospace')
+                            .css('font-weight', 'bold'),
+                        ' - The requested URI was not found on this website.',
+                    ]),
+                    $('<p/>').append([
+                        'The page was also tried to redirect to ',
+                        $('<a/>')
+                            .attr('href', uri)
+                            .text(uri),
+                        ', but it was not found as well.'
+                    ])
+                ]);
+            };
+
+            if (getLang() == '') {
+                var uri = getPath() + '.' + getUALang();
+                redirect(uri).fail(function () {
+                    if (getLang() != 'en') {
+                        var uri = getPath() + '.en';
+                        redirect(uri).fail(function () {
+                            onRedirectFailed(uri);
+                        });
+                    } else {
+                        onRedirectFailed(uri);
+                    }
+                });
+            } else {
+                $mainContent.empty();
+                $mainContent.append([
+                    $('<h1/>').text('Page Not Found'),
+                    $('<p/>').append([
+                        $('<span/>').text('HTTP 404 Not Found')
+                            .css('font-family', 'monospace'),
+                        ' - The requested URI was not found on this server.'
+                    ])
+                ]);
+            }
+        </script>
+    </body>
+</html>

@@ -308,11 +308,16 @@ Full-Width Styles
 }
 
 #nav_wrap {
+  z-index: 9;
   background: -webkit-gradient(linear, center top, center bottom, from(#404040), color-stop(25%, #505050), color-stop(50%, #606060), color-stop(75%, #505050), to(#404040));
   background: -moz-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
   background: -ms-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
   background: -o-linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
   background: linear-gradient(center top, #404040, #505050 25%, #606060 50%, #505050 75%, #404040);
+}
+
+#nav_lang {
+  float: right;
 }
 
 nav.inner {
@@ -323,6 +328,10 @@ nav {
   padding: 0;
   overflow: hidden;
 }  
+
+nav ul {
+    margin-bottom: 0;
+}
 
 nav li {
   display: block;
