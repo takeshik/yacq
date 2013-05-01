@@ -102,7 +102,9 @@ PM> Install-Package Yacq
     ```
     % git clone git://github.com/takeshik/yacq.git
     ```
-    * **スナップショットをダウンロードする**: リポジトリのスナップショット アーカイブも利用可能です ([.tar.gz](https://github.com/takeshik/yacq/tarball/master) | [.zip](https://github.com/takeshik/yacq/zipball/master))。
+    * **スナップショットをダウンロードする**: リポジトリのスナップショット アーカイブも利用可能です ([tar.gz](https://github.com/takeshik/yacq/tarball/master) | [zip](https://github.com/takeshik/yacq/zipball/master))。
+
+その他のリソースについても [ダウンロード ページ](/download) から取得できます。
 
 ## 必要要件
 
@@ -119,5 +121,5 @@ PM> Install-Package Yacq
 
 Copyright &copy; 2011-2013 Takeshi KIRIYA (aka takeshik) <small>([Web](http://www.takeshik.org/) | [Mail](mailto:takeshik_AT_yacq_DOT_net) | [GitHub](https://github.com/takeshik) | [Twitter](https://twitter.com/takeshik)</small>), All rights reserved.
 
-YACQ は[フリー ソフトウェア](http://www.gnu.org/philosophy/free-sw.html)です。ソースコード、バイナリ、およびその他の全てのリソースは [MIT ライセンス](https://github.com/takeshik/yacq/blob/master/LICENSE.txt)の下で公開されています。
+YACQ は[フリー ソフトウェア](http://www.gnu.org/philosophy/free-sw.html)です。ソースコード、バイナリ、およびその他の全てのリソースは [MIT ライセンス](/license)の下で公開されています。
 <!-- vim:set ft=markdown fenc=utf-8 ts=4 sw=4 sts=4 et: -->

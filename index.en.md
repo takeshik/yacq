@@ -102,7 +102,9 @@ PM> Install-Package Yacq
 ```
 % git clone git://github.com/takeshik/yacq.git
 ```
-    * **Download snapshot**: Snapshot archive of the repository is also available ([.tar.gz](https://github.com/takeshik/yacq/tarball/master) | [.zip](https://github.com/takeshik/yacq/zipball/master)).
+    * **Download snapshot**: Snapshot archive of the repository is also available ([tar.gz](https://github.com/takeshik/yacq/tarball/master) | [zip](https://github.com/takeshik/yacq/zipball/master)).
+
+Other resources are also available in the [Download Page](/download).
 
 ## Prerequisites
 
@@ -119,4 +121,4 @@ PM> Install-Package Yacq
 
 Copyright &copy; 2011-2013 Takeshi KIRIYA (aka takeshik) <small>([Web](http://www.takeshik.org/) | [Mail](mailto:takeshik_AT_yacq_DOT_net) | [GitHub](https://github.com/takeshik) | [Twitter](https://twitter.com/takeshik)</small>), All rights reserved.
 
-YACQ is [Free Software](http://www.gnu.org/philosophy/free-sw.html). Its source codes, binaries, and all other resources are licensed under the [MIT License](https://github.com/takeshik/yacq/blob/master/LICENSE.txt).
+YACQ is [Free Software](http://www.gnu.org/philosophy/free-sw.html). Its source codes, binaries, and all other resources are licensed under the [MIT License](/license).
