@@ -95,7 +95,7 @@ namespace XSpect.Yacq.Serialization
                               AssemblyRef.Parser,
                               (c, s, an) => an
                           ).Maybe(),
-                          (t, an) => t.If(_ => an.Exists(), _ => _.Assembly = an.Perform())
+                          (t, an) => t.If(_ => an.Exists(), _ => _.Assembly = an.Value)
                       )
                   );
 

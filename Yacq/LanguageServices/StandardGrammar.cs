@@ -190,7 +190,7 @@ namespace XSpect.Yacq.LanguageServices
                     Chars.OneOf('+', '-').Maybe(),
                     digit.Many(1),
                     (e, s, ds) => ds
-                        .If(_ => s.Exists(), _ => _.StartWith(s.Perform()))
+                        .If(_ => s.Exists(), _ => _.StartWith(s.Value))
                         .StartWith(e)
                 );
 
@@ -202,7 +202,7 @@ namespace XSpect.Yacq.LanguageServices
                         (p, n, s) => (YacqExpression) YacqExpression.Number(
                             new String(p.Concat(n).If(
                                 _ => s.Exists(),
-                                cs => cs.Concat(s.Perform())
+                                cs => cs.Concat(s.Value)
                             ).ToArray())
                         )
                     )),
@@ -213,7 +213,7 @@ namespace XSpect.Yacq.LanguageServices
                         (p, n, s) => (YacqExpression) YacqExpression.Number(
                             new String(p.Concat(n).If(
                                 _ => s.Exists(),
-                                cs => cs.Concat(s.Perform())
+                                cs => cs.Concat(s.Value)
                             ).ToArray())
                         )
                     )),
@@ -224,7 +224,7 @@ namespace XSpect.Yacq.LanguageServices
                         (p, n, s) => (YacqExpression) YacqExpression.Number(
                             new String(p.Concat(n).If(
                                 _ => s.Exists(),
-                                cs => cs.Concat(s.Perform())
+                                cs => cs.Concat(s.Value)
                             ).ToArray())
                         )
                     )),
@@ -235,7 +235,7 @@ namespace XSpect.Yacq.LanguageServices
                                     exponent.Maybe().SelectMany(e =>
                                         numberSuffix.Maybe().Select(s =>
                                             (YacqExpression) YacqExpression.Number(new String(EnumerableEx.Concat(
-                                                i.If(_ => p.Exists(), _ => _.StartWith(p.Perform())),
+                                                i.If(_ => p.Exists(), _ => _.StartWith(p.Value)),
                                                 f.Otherwise(Enumerable.Empty<Char>),
                                                 e.Otherwise(Enumerable.Empty<Char>),
                                                 s.Otherwise(Enumerable.Empty<Char>)

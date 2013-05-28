@@ -76,7 +76,7 @@ namespace XSpect.Yacq.LanguageServices
         {
             using (var stream = (input ?? "").AsStream())
             {
-                Reply<Char, IEnumerable<YacqExpression>> reply;
+                IReply<Char, IEnumerable<YacqExpression>> reply;
                 IEnumerable<YacqExpression> result;
                 ErrorMessage message;
                 switch ((reply = this.GetDefinitiveParser()(stream)).TryGetValue(out result, out message))
