@@ -261,6 +261,9 @@
     <Compile Include="..\Yacq\Expressions\VectorExpression.cs">
       <Link>Expressions\VectorExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqCombinators.cs">
+      <Link>Expressions\YacqCombinators.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\YacqExpression.cs">
       <Link>Expressions\YacqExpression.cs</Link>
     </Compile>
@@ -269,6 +272,9 @@
     </Compile>
     <Compile Include="..\Yacq\Expressions\YacqExtensions.cs">
       <Link>Expressions\YacqExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqReducingCombinator.cs">
+      <Link>Expressions\YacqReducingCombinator.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\Expressions\YacqSequenceExpression.cs">
       <Link>Expressions\YacqSequenceExpression.cs</Link>
