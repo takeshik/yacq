@@ -38,6 +38,8 @@ namespace XSpect.Yacq.Expressions
 {
     public static class YacqCombinators
     {
+        #region Satisfy / Any
+
         public static Parser<Expression, Expression> Satisfy(Func<Expression, Boolean> predicate)
         {
             return predicate.Satisfy();
@@ -60,6 +62,10 @@ namespace XSpect.Yacq.Expressions
             return Satisfy(e => true);
         }
 
+        #endregion
+
+        #region Identifier
+
         public static Parser<Expression, IdentifierExpression> Identifier(Func<String, Boolean> namePredicate)
         {
             return Satisfy<IdentifierExpression>(e => namePredicate(e.Name));
@@ -73,6 +79,19 @@ namespace XSpect.Yacq.Expressions
         public static Parser<Expression, IdentifierExpression> Identifier()
         {
             return Satisfy<IdentifierExpression>();
+        }
+
+        #endregion
+
+        #region LambdaList
+
+        public static Parser<Expression, Expression> LambdaList<TExpression>(Parser<Expression, TExpression> selector)
+            where TExpression : Expression
+        {
+            return LambdaList().AndAlso(
+                selector.Left(Errors.FollowedBy(Prims.Eof<Expression>())),
+                e => ((LambdaListExpression) e).Elements
+            );
         }
 
         public static Parser<Expression, LambdaListExpression> LambdaList(Parser<Expression, IEnumerable<Expression>> elements)
@@ -90,7 +109,20 @@ namespace XSpect.Yacq.Expressions
             return Satisfy<LambdaListExpression>();
         }
 
-        public static Parser<Expression, ListExpression> List(Parser<Expression, IEnumerable<Expression>> elements)
+        #endregion
+
+        #region List
+
+        public static Parser<Expression, Expression> List<TExpression>(Parser<Expression, TExpression> selector)
+            where TExpression : Expression
+        {
+            return List().AndAlso(
+                selector.Left(Errors.FollowedBy(Prims.Eof<Expression>())),
+                e => ((ListExpression) e).Elements
+            );
+        }
+
+        public static Parser<Expression, ListExpression > List(Parser<Expression, IEnumerable<Expression>> elements)
         {
             return Satisfy<ListExpression>(e => elements.Right(Prims.Eof<Expression>())(e.Elements.AsStream()).IsSuccess());
         }
@@ -104,6 +136,10 @@ namespace XSpect.Yacq.Expressions
         {
             return Satisfy<ListExpression>();
         }
+
+        #endregion
+
+        #region Number
 
         public static Parser<Expression, NumberExpression> Number(Func<Object, Boolean> valuePredicate)
         {
@@ -127,6 +163,10 @@ namespace XSpect.Yacq.Expressions
             return Number(e => true);
         }
 
+        #endregion
+
+        #region Text
+
         public static Parser<Expression, TextExpression> Text(Func<Object, Boolean> valuePredicate)
         {
             return Satisfy<TextExpression>(e => valuePredicate(e.Value));
@@ -147,9 +187,31 @@ namespace XSpect.Yacq.Expressions
             return Text(v => true);
         }
 
+        #endregion
+
+        #region Vector
+
+        public static Parser<Expression, Expression> Vector<TExpression>(Parser<Expression, TExpression> selector)
+            where TExpression : Expression
+        {
+            return Vector().AndAlso(
+                selector.Left(Errors.FollowedBy(Prims.Eof<Expression>())),
+                e => ((VectorExpression) e).Elements
+            );
+        }
+
         public static Parser<Expression, VectorExpression> Vector(Parser<Expression, IEnumerable<Expression>> elements)
         {
             return Satisfy<VectorExpression>(e => elements.Right(Prims.Eof<Expression>())(e.Elements.AsStream()).IsSuccess());
+        }
+
+        public static Parser<Expression, TExpression> Vector<TExpression>(
+            Parser<Expression, IEnumerable<Expression>> elements,
+            Func<IEnumerable<Expression>, TExpression> selector
+        )
+            where TExpression : Expression
+        {
+            return Vector(elements).Select(e => selector(e.Elements));
         }
 
         public static Parser<Expression, VectorExpression> Vector(params Parser<Expression, Expression>[] elements)
@@ -161,6 +223,10 @@ namespace XSpect.Yacq.Expressions
         {
             return Satisfy<VectorExpression>();
         }
+
+        #endregion
+
+        #region Utilities
 
         public static YacqReducingCombinator Reduce(this Parser<Expression, Expression> parser, SymbolTable symbols = null, Type expectedType = null)
         {
@@ -201,6 +267,62 @@ namespace XSpect.Yacq.Expressions
         {
             return As(parser, symbols, id, YacqExpression.Vector);
         }
+
+        private static Parser<Expression, TExpression> AndAlsoImpl<TExpression>(
+            this Parser<Expression, Expression> parser0,
+            Parser<Expression, TExpression> parser1,
+            Func<IStream<Expression>, IStream<TExpression>> streamSelector
+        )
+            where TExpression : Expression
+        {
+            return stream =>
+            {
+                Expression result;
+                ErrorMessage message = null;
+                switch (parser0 != null
+                    ? parser0(stream).TryGetValue(out result, out message)
+                    : ReplyStatus.Success
+                    )
+                {
+                    case ReplyStatus.Success:
+                        return parser1(stream.If(s => streamSelector != null, streamSelector));
+                    case ReplyStatus.Error:
+                        return Reply.Error<Expression, TExpression>(stream, message);
+                    default:
+                        return Reply.Failure<Expression, TExpression>(stream);
+                }
+            };
+        }
+
+        internal static Parser<Expression, TExpression> AndAlso<TExpression>(
+            this Parser<Expression, Expression> parser0,
+            Parser<Expression, TExpression> parser1,
+            Func<Expression, TExpression> streamSelector
+        )
+            where TExpression : Expression
+        {
+            return AndAlsoImpl(parser0, parser1, s => s.Select(streamSelector));
+        }
+
+        internal static Parser<Expression, TExpression> AndAlso<TExpression>(
+            this Parser<Expression, Expression> parser0,
+            Parser<Expression, TExpression> parser1,
+            Func<Expression, IEnumerable<TExpression>> streamSelector
+        )
+            where TExpression : Expression
+        {
+            return AndAlsoImpl(parser0, parser1, s => s.SelectMany(e => streamSelector(e).AsStream()));
+        }
+
+        internal static Parser<Expression, Expression> AndAlso(
+            this Parser<Expression, Expression> parser0,
+            Parser<Expression, Expression> parser1
+        )
+        {
+            return AndAlsoImpl(parser0, parser1, s => s);
+        }
+
+        #endregion
     }
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:

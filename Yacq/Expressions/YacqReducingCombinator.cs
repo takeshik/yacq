@@ -51,6 +51,8 @@ namespace XSpect.Yacq.Expressions
             this._expectedType = expectedType;
         }
 
+        #region Satisfy / Any
+
         public Parser<Expression, Expression> Satisfy(Func<Expression, Boolean> predicate)
         {
             return this.AndAlso(YacqCombinators.Satisfy(predicate));
@@ -73,6 +75,10 @@ namespace XSpect.Yacq.Expressions
             return this.Satisfy(e => true);
         }
 
+        #endregion
+
+        #region Is
+
         public Parser<Expression, Expression> Is(Func<Type, Boolean> typePredicate)
         {
             return this.Satisfy(e => typePredicate(e.Type()));
@@ -87,6 +93,10 @@ namespace XSpect.Yacq.Expressions
         {
             return this.Is(typeof(T));
         }
+
+        #endregion
+
+        #region TypeCandidate
 
         public Parser<Expression, TypeCandidateExpression> TypeCandidate(Func<Type, Boolean> typePredicate)
         {
@@ -108,25 +118,11 @@ namespace XSpect.Yacq.Expressions
             return this.Satisfy<TypeCandidateExpression>();
         }
 
+        #endregion
+
         private Parser<Expression, Expression> AndAlso(Parser<Expression, Expression> parser)
         {
-            return stream =>
-            {
-                Expression result;
-                ErrorMessage message = null;
-                switch (this._parser != null
-                    ? this._parser(stream).TryGetValue(out result, out message)
-                    : ReplyStatus.Success
-                )
-                {
-                    case ReplyStatus.Success:
-                        return parser(stream.Select(e => e.Reduce(this._symbols, this._expectedType)));
-                    case ReplyStatus.Error:
-                        return Reply.Error<Expression, Expression>(stream, message);
-                    default:
-                        return Reply.Failure<Expression, Expression>(stream);
-                }
-            };
+            return this._parser.AndAlso(parser, e => e.Reduce(this._symbols, this._expectedType));
         }
     }
 }
