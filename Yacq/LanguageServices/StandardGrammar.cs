@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Parseq.Combinators;
 using XSpect.Yacq.Expressions;
@@ -88,6 +89,15 @@ namespace XSpect.Yacq.LanguageServices
         internal StandardGrammar()
         {
             this._isReadOnly = false;
+
+            Parser<Char, YacqExpression> expressionRef = null;
+            var expression = new Lazy<Parser<Char, YacqExpression>>(
+                () => stream => expressionRef(stream)
+            );
+            this.Add("yacq", "expression", g => expression.Value);
+
+            #region Trivials
+
             var newline = Combinator.Choice(
                 Chars.Sequence("\r\n"),
                 Chars.OneOf('\r', '\n', '\x85', '\u2028', '\u2029')
@@ -96,20 +106,15 @@ namespace XSpect.Yacq.LanguageServices
 
             var punctuation = Chars.OneOf('"', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}');
 
-            Parser<Char, YacqExpression> expressionRef = null;
-            var expression = new Lazy<Parser<Char, YacqExpression>>(
-                () => stream => expressionRef(stream)
-            );
+            #endregion
 
-            this.Add("yacq", "expression", g => expression.Value);
-
-            // Comments
+            #region Comments
             {
                 this.Add("comment", "eol", g => Prims.Pipe(
                     ';'.Satisfy(),
                     newline.Not().Right(Chars.Any()).Many(),
                     newline.Ignore().Or(Chars.Eof()),
-                    (p, r, s) => (YacqExpression) YacqExpression.Ignore()
+                    (p, r, s) => YacqExpression.Ignore()
                 ));
 
                 Parser<Char, YacqExpression> blockCommentRef = null;
@@ -125,28 +130,35 @@ namespace XSpect.Yacq.LanguageServices
                 blockCommentRef = blockCommentPrefix
                     .Right(blockCommentRest.Value.Many())
                     .Left(blockCommentSuffix)
-                    .Select(_ => (YacqExpression) YacqExpression.Ignore());
+                    .Select(_ => YacqExpression.Ignore());
                 blockCommentRestRef = blockCommentPrefix.Not()
                     .Right(blockCommentSuffix.Not())
                     .Right(Chars.Any())
-                    .Select(_ => (YacqExpression) YacqExpression.Ignore())
+                    .Select(_ => YacqExpression.Ignore())
                     .Or(blockComment.Value);
                 this.Add("comment", "block", g => blockComment.Value);
 
                 this.Add("comment", "expression", g => Prims.Pipe(
                     Chars.Sequence("#;"),
                     g["yacq", "expression"],
-                    (p, r) => (YacqExpression) YacqExpression.Ignore()
+                    (p, r) => YacqExpression.Ignore()
                 ));
 
-                this.Add("yacq", "comment", g => Combinator.Choice(g["comment"]));
+                this.Add("yacq", "comment", g => g["comment"].Choice());
             }
+            #endregion
+
+            #region Ignore
 
             this.Add("yacq", "ignore", g => Combinator.Choice(
                 this.Get["yacq", "comment"].Ignore(),
                 Chars.Space().Ignore(),
                 newline.Ignore()
-            ).Many().Select(_ => (YacqExpression)YacqExpression.Ignore()));
+            ).Many().Select(_ => (YacqExpression) YacqExpression.Ignore()));
+
+            #endregion
+
+            #region Terms
 
             // Texts
             this.Add("term", "text", g => SetPosition(
@@ -161,7 +173,7 @@ namespace XSpect.Yacq.LanguageServices
                         .Left(q.Satisfy())
                         .Select(cs => cs.StartWith(q).EndWith(q))
                     )
-                    .Select(cs => (YacqExpression) YacqExpression.Text(new String(cs.ToArray())))
+                    .Select(cs => YacqExpression.Text(new String(cs.ToArray())))
             ));
 
             // Numbers
@@ -199,7 +211,7 @@ namespace XSpect.Yacq.LanguageServices
                         binPrefix,
                         bin.Many(1),
                         numberSuffix.Maybe(),
-                        (p, n, s) => (YacqExpression) YacqExpression.Number(
+                        (p, n, s) => YacqExpression.Number(
                             new String(p.Concat(n).If(
                                 _ => s.Exists(),
                                 cs => cs.Concat(s.Value)
@@ -210,7 +222,7 @@ namespace XSpect.Yacq.LanguageServices
                         octPrefix,
                         oct.Many(1),
                         numberSuffix.Maybe(),
-                        (p, n, s) => (YacqExpression) YacqExpression.Number(
+                        (p, n, s) => YacqExpression.Number(
                             new String(p.Concat(n).If(
                                 _ => s.Exists(),
                                 cs => cs.Concat(s.Value)
@@ -221,7 +233,7 @@ namespace XSpect.Yacq.LanguageServices
                         hexPrefix,
                         hex.Many(1),
                         numberSuffix.Maybe(),
-                        (p, n, s) => (YacqExpression) YacqExpression.Number(
+                        (p, n, s) => YacqExpression.Number(
                             new String(p.Concat(n).If(
                                 _ => s.Exists(),
                                 cs => cs.Concat(s.Value)
@@ -234,7 +246,7 @@ namespace XSpect.Yacq.LanguageServices
                                 fraction.Maybe().SelectMany(f =>
                                     exponent.Maybe().SelectMany(e =>
                                         numberSuffix.Maybe().Select(s =>
-                                            (YacqExpression) YacqExpression.Number(new String(EnumerableEx.Concat(
+                                            YacqExpression.Number(new String(EnumerableEx.Concat(
                                                 i.If(_ => p.Exists(), _ => _.StartWith(p.Value)),
                                                 f.Otherwise(Enumerable.Empty<Char>),
                                                 e.Otherwise(Enumerable.Empty<Char>),
@@ -255,7 +267,7 @@ namespace XSpect.Yacq.LanguageServices
                     .Between(g["yacq", "ignore"], g["yacq", "ignore"])
                     .Many()
                     .Between('('.Satisfy(), ')'.Satisfy())
-                    .Select(es => (YacqExpression) YacqExpression.List(es))
+                    .Select(YacqExpression.List)
             ));
 
             // Vectors
@@ -264,7 +276,7 @@ namespace XSpect.Yacq.LanguageServices
                     .Between(g["yacq", "ignore"], g["yacq", "ignore"])
                     .Many()
                     .Between('['.Satisfy(), ']'.Satisfy())
-                    .Select(es => (YacqExpression) YacqExpression.Vector(es))
+                    .Select(YacqExpression.Vector)
             ));
 
             // Lambda Lists
@@ -273,7 +285,7 @@ namespace XSpect.Yacq.LanguageServices
                     .Between(g["yacq", "ignore"], g["yacq", "ignore"])
                     .Many()
                     .Between('{'.Satisfy(), '}'.Satisfy())
-                    .Select(es => (YacqExpression) YacqExpression.LambdaList(es))
+                    .Select(YacqExpression.LambdaList)
             ));
 
             // Quotes
@@ -281,7 +293,7 @@ namespace XSpect.Yacq.LanguageServices
                 Prims.Pipe(
                     Chars.Sequence("#'"),
                     g["yacq", "expression"],
-                    (p, e) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("quote"), e)
+                    (p, e) => YacqExpression.List(YacqExpression.Identifier("quote"), e)
                 )
             ));
 
@@ -290,7 +302,7 @@ namespace XSpect.Yacq.LanguageServices
                 Prims.Pipe(
                     Chars.Sequence("#`"),
                     g["yacq", "expression"],
-                    (p, e) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("quasiquote"), e)
+                    (p, e) => YacqExpression.List(YacqExpression.Identifier("quasiquote"), e)
                 )
             ));
 
@@ -299,7 +311,7 @@ namespace XSpect.Yacq.LanguageServices
                 Prims.Pipe(
                     Chars.Sequence("#,@"),
                     g["yacq", "expression"],
-                    (p, e) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("unquote-splicing"), e)
+                    (p, e) => YacqExpression.List(YacqExpression.Identifier("unquote-splicing"), e)
                 )
             ));
 
@@ -308,7 +320,7 @@ namespace XSpect.Yacq.LanguageServices
                 Prims.Pipe(
                     Chars.Sequence("#,"),
                     g["yacq", "expression"],
-                    (p, e) => (YacqExpression) YacqExpression.List(YacqExpression.Identifier("unquote"), e)
+                    (p, e) => YacqExpression.List(YacqExpression.Identifier("unquote"), e)
                 )
             ));
 
@@ -316,11 +328,11 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("term", "identifier", g => Combinator.Choice(
                 SetPosition('.'.Satisfy()
                     .Many(1)
-                    .Select(cs => (YacqExpression) YacqExpression.Identifier(new String(cs.ToArray())))
+                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
                 ),
                 SetPosition(':'.Satisfy()
                     .Many(1)
-                    .Select(cs => (YacqExpression) YacqExpression.Identifier(new String(cs.ToArray())))
+                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
                 ),
                 SetPosition(Chars.Digit()
                     .Not()
@@ -330,36 +342,41 @@ namespace XSpect.Yacq.LanguageServices
                         .Right(Chars.Any())
                         .Many(1)
                     )
-                    .Select(cs => (YacqExpression) YacqExpression.Identifier(new String(cs.ToArray())))
+                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
                 )
             ));
 
-            // Terms
-            this.Add("yacq", "term", g => Combinator.Choice(g["term"])
+            this.Add("yacq", "term", g => g["term"].Choice()
                 .Between(g["yacq", "ignore"], g["yacq", "ignore"])
             );
 
-            // Infix Dots
+            #endregion
+
+            #region Infixes
+
+            // Dots
             this.Add("infix", "dot", g => Prims.Pipe(
                 g["yacq", "term"],
                 '.'.Satisfy()
                     .Right(g["yacq", "term"])
                     .Many(),
                 (h, t) => t.Aggregate(h, (l, r) =>
-                    (YacqExpression) YacqExpression.List(YacqExpression.Identifier("."), l, r)
+                    YacqExpression.List(YacqExpression.Identifier("."), l, r)
                 )
             ));
 
-            // Infix Colons
+            // Colons
             this.Add("infix", "colon", g => Prims.Pipe(
                 g["infix", "dot"],
                 ':'.Satisfy()
                     .Right(g["infix", "dot"])
                     .Many(),
                 (h, t) => t.Aggregate(h, (l, r) =>
-                    (YacqExpression) YacqExpression.List(YacqExpression.Identifier(":"), l, r)
+                    YacqExpression.List(YacqExpression.Identifier(":"), l, r)
                 )
             ));
+
+            #endregion
 
             expressionRef = this.Get["infix"].Last();
 

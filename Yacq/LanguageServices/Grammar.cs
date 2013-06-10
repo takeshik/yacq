@@ -44,6 +44,8 @@ namespace XSpect.Yacq.LanguageServices
     {
         private static readonly StandardGrammar _standard = new StandardGrammar();
 
+        private static readonly AlternativeGrammar _alternative = new AlternativeGrammar();
+
         private readonly IDictionary<RuleKey, Lazy<Parser<Char, YacqExpression>>> _rules;
 
         /// <summary>
@@ -142,6 +144,18 @@ namespace XSpect.Yacq.LanguageServices
             get
             {
                 return _standard;
+            }
+        }
+
+        /// <summary>
+        /// Gets the alternative grammar.
+        /// </summary>
+        /// <value>The alternative grammar.</value>
+        public static AlternativeGrammar Alternative
+        {
+            get
+            {
+                return _alternative;
             }
         }
 
@@ -509,7 +523,12 @@ namespace XSpect.Yacq.LanguageServices
         /// <returns>The rule key with specified parameters, if the key is found; otherwise, <c>null</c>.</returns>
         public RuleKey GetKey(String category, Int32 priority)
         {
-            return this.Keys.SingleOrDefault(k => k.Category == category && k.Priority == priority);
+            var key = this.Keys.SingleOrDefault(k => k.Category == category && k.Priority == priority);
+            if (key.Equals(RuleKey.Default))
+            {
+                throw new KeyNotFoundException("Specified key was not found: category = " + category + ", priority = " + priority);
+            }
+            return key;
         }
 
         /// <summary>
@@ -520,7 +539,12 @@ namespace XSpect.Yacq.LanguageServices
         /// <returns>The rule key with specified parameters, if the key is found; otherwise, <c>null</c>.</returns>
         public RuleKey GetKey(String category, String id)
         {
-            return this.Keys.SingleOrDefault(k => k.Category == category && k.Id == id);
+            var key = this.Keys.SingleOrDefault(k => k.Category == category && k.Id == id);
+            if (key.Equals(RuleKey.Default))
+            {
+                throw new KeyNotFoundException("Specified key was not found: category = " + category + ", id = " + id);
+            }
+            return key;
         }
 
         /// <summary>
