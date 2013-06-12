@@ -94,12 +94,12 @@ namespace XSpect.Yacq.LanguageServices
             var expression = new Lazy<Parser<Char, YacqExpression>>(
                 () => stream => expressionRef(stream)
             );
-            this.Add("yacq.alt", "expression", g => expression.Value);
+            this.Add("root", "expression", g => expression.Value);
 
             #region Common Rules
 
-            this.Add("yacq.alt", "comment", g => Standard.Get["yacq", "comment"]);
-            this.Add("yacq.alt", "ignore", g => Standard.Get["yacq", "ignore"]);
+            this.Add("root", "comment", g => Standard.Get["root", "comment"]);
+            this.Add("root", "ignore", g => Standard.Get["root", "ignore"]);
             this.Add("term", "text", g => Standard.Get["term", "text"]);
             this.Add("term", "number", g => Standard.Get["term", "number"]);
 
@@ -113,7 +113,7 @@ namespace XSpect.Yacq.LanguageServices
             );
 
             var comma = ','.Satisfy()
-                .Between(this.Get["yacq.alt", "ignore"], this.Get["yacq.alt", "ignore"])
+                .Between(this.Get["root", "ignore"], this.Get["root", "ignore"])
                 .Select(_ => YacqExpression.Ignore());
 
             #endregion
@@ -134,12 +134,12 @@ namespace XSpect.Yacq.LanguageServices
                 )
             );
 
-            this.Add("yacq.alt", "term", g => Combinator.Choice(
+            this.Add("root", "term", g => Combinator.Choice(
                 g["term", "text"],
                 g["term", "number"],
                 g["term", "identifier"]
             )
-                .Between(g["yacq.alt", "ignore"], g["yacq.alt", "ignore"])
+                .Between(g["root", "ignore"], g["root", "ignore"])
             );
 
             #endregion
@@ -150,19 +150,19 @@ namespace XSpect.Yacq.LanguageServices
             var primary = new Lazy<Parser<Char, YacqExpression>>(
                 () => stream => primaryRef(stream)
             );
-            this.Add("yacq.alt", "primary", g => primary.Value);
+            this.Add("root", "primary", g => primary.Value);
 
             // Parentheses
             this.Add("primary", "parenthesis", g => SetPosition(
-                g["yacq.alt", "expression"].Between('('.Satisfy(), ')'.Satisfy())
+                g["root", "expression"].Between('('.Satisfy(), ')'.Satisfy())
             ));
 
-            // Dots
+            // Dots (cascade to the parent)
             this.Add("primary", "dot", g => SetPosition(Prims.Pipe(
-                g["yacq.alt", "term"],
+                g["root", "term"],
                 '.'.Satisfy()
-                    .Right(g["yacq.alt", "term"])
-                    .Many(1),
+                    .Right(g["root", "term"])
+                    .Many(),
                 (h, t) => t.Aggregate(h, (l, r) =>
                     YacqExpression.List(YacqExpression.Identifier("."), l, r)
                 )
@@ -170,7 +170,7 @@ namespace XSpect.Yacq.LanguageServices
 
             // Colons
             this.Add("primary", "colon", g => SetPosition(Prims.Pipe(
-                g["yacq.alt", "dot"],
+                g["primary", "dot"],
                 '.'.Satisfy()
                     .Right(g["primary", "dot"])
                     .Many(1),
@@ -181,10 +181,10 @@ namespace XSpect.Yacq.LanguageServices
 
             // Invocations
             this.Add("primary", "invocation", g => SetPosition(Prims.Pipe(
-                g["yacq.alt", "term"],
-                g["yacq.alt", "expression"]
+                g["root", "term"],
+                g["root", "expression"]
                     .SepBy(comma)
-                    .Or(g["yacq.alt", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                    .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
                     .Between('('.Satisfy(), ')'.Satisfy())
                     .Many(1),
                 (h, t) => t.Aggregate(h, (r, ps) =>
@@ -199,7 +199,7 @@ namespace XSpect.Yacq.LanguageServices
             #region Operators
 
             // Unary Operators
-            this.Add("operator", "unary", g => g["yacq.alt", "primary"]
+            this.Add("operator", "unary", g => g["root", "primary"]
                 .Let(parent => SetPosition(Prims.Pipe(
                     Combinator.Choice(
                         Chars.Sequence("++").Select(_ => "++="),
@@ -312,7 +312,7 @@ namespace XSpect.Yacq.LanguageServices
 
             expressionRef = this.Get["operator"].Last();
 
-            this.Set.Default = g => g["yacq.alt", "expression"];
+            this.Set.Default = g => g["root", "expression"];
 
             this._isReadOnly = true;
         }

@@ -95,7 +95,7 @@ namespace XSpect.Yacq.LanguageServices
         {
             return this.Grammar.Get.Let(g => g.Default
                 .Many()
-                .Between(g["yacq", "ignore"], g["yacq", "ignore"])
+                .Between(g["root", "ignore"], g["root", "ignore"])
                 .Left(Errors.FollowedBy(Chars.Eof()))
             );
         }
