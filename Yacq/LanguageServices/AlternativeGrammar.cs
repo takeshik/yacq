@@ -96,7 +96,7 @@ namespace XSpect.Yacq.LanguageServices
             );
             this.Add("root", "expression", g => expression.Value);
 
-            #region Common Rules
+            #region Importing Rules
 
             this.Add("root", "comment", g => Standard.Get["root", "comment"]);
             this.Add("root", "ignore", g => Standard.Get["root", "ignore"]);
@@ -152,16 +152,53 @@ namespace XSpect.Yacq.LanguageServices
             );
             this.Add("root", "primary", g => primary.Value);
 
-            // Parentheses
-            this.Add("primary", "parenthesis", g => SetPosition(
+            // Parentheses, Invocations and Indexer Accesses
+            this.Add("primary", "invokeOrIndex", g => SetPosition(Prims.Pipe(
                 g["root", "expression"].Between('('.Satisfy(), ')'.Satisfy())
-            ));
+                    .Or(g["root", "term"]),
+                Combinator.Choice(
+                    g["root", "expression"]
+                        .SepBy(comma)
+                        .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                        .Between('('.Satisfy(), ')'.Satisfy())
+                        .Select(ps => Tuple.Create(
+                            Enumerable.Empty<IdentifierExpression>(),
+                            ps
+                        )),
+                    g["root", "expression"]
+                        .SepBy(comma)
+                        .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                        .Between('['.Satisfy(), ']'.Satisfy())
+                        .Select(ps => Tuple.Create(
+                            EnumerableEx.Return(YacqExpression.Identifier(".")),
+                            EnumerableEx.Return<YacqExpression>(YacqExpression.Vector(ps))
+                        ))
+                    ).Many(),
+                (h, t) => t.Aggregate(h, (r, ps) =>
+                    YacqExpression.List(ps.Item1.Concat(ps.Item2.StartWith(r)))
+                )
+            )));
 
-            // Dots (cascade to the parent)
+            // Dots (Method Invocations, Property Accesses and Indexer Accesses)
             this.Add("primary", "dot", g => SetPosition(Prims.Pipe(
-                g["root", "term"],
+                g["primary", "invokeOrIndex"],
                 '.'.Satisfy()
-                    .Right(g["root", "term"])
+                    .Right(Combinator.Choice(
+                        Prims.Pipe(
+                            g["term", "identifier"],
+                            g["root", "expression"]
+                                .SepBy(comma)
+                                .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                                .Between('('.Satisfy(), ')'.Satisfy()),
+                            (n, es) => (YacqExpression) YacqExpression.List(es.StartWith(n))
+                        ),
+                        g["root", "expression"]
+                            .SepBy(comma)
+                            .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                            .Between('['.Satisfy(), ']'.Satisfy())
+                            .Select(YacqExpression.Vector),
+                        g["term", "identifier"]
+                    ))
                     .Many(),
                 (h, t) => t.Aggregate(h, (l, r) =>
                     YacqExpression.List(YacqExpression.Identifier("."), l, r)
@@ -173,26 +210,13 @@ namespace XSpect.Yacq.LanguageServices
                 g["primary", "dot"],
                 '.'.Satisfy()
                     .Right(g["primary", "dot"])
-                    .Many(1),
+                    .Many(),
                 (h, t) => t.Aggregate(h, (l, r) =>
                     YacqExpression.List(YacqExpression.Identifier(":"), l, r)
                 )
             )));
 
-            // Invocations
-            this.Add("primary", "invocation", g => SetPosition(Prims.Pipe(
-                g["root", "term"],
-                g["root", "expression"]
-                    .SepBy(comma)
-                    .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
-                    .Between('('.Satisfy(), ')'.Satisfy())
-                    .Many(1),
-                (h, t) => t.Aggregate(h, (r, ps) =>
-                    YacqExpression.List(ps.StartWith(r))
-                )
-            )));
-
-            primaryRef = this.Get["primary"].Choice();
+            primaryRef = this.Get["primary"].Last();
 
             #endregion
 
