@@ -49,10 +49,12 @@ namespace XSpect.Yacq
     /// </summary>
     public static class YacqServices
     {
+        private static Reader _defaultReader = new Reader();
+
         /// <summary>
         /// Gets the version of this YACQ library.
         /// </summary>
-        /// <returns>The version of this YACQ library.</returns>
+        /// <value>The version of this YACQ library.</value>
         public static Version Version
         {
             get
@@ -70,6 +72,22 @@ namespace XSpect.Yacq
             }
         }
 
+        /// <summary>
+        /// Gets or sets the default reader to read and parse code strings.
+        /// </summary>
+        /// <returns>The default reader to read and parse code strings.</returns>
+        public static Reader DefaultReader
+        {
+            get
+            {
+                return _defaultReader;
+            }
+            set
+            {
+                _defaultReader = value;
+            }
+        }
+
         #region ReadAll
 
         /// <summary>
@@ -80,7 +98,7 @@ namespace XSpect.Yacq
         /// <returns>All expressions without reducing, generated from the code.</returns>
         public static YacqExpression[] ReadAll(Reader reader, IEnumerable<Char> code)
         {
-            return (reader ?? new Reader()).Read(code);
+            return (reader ?? DefaultReader).Read(code);
         }
 
         /// <summary>
@@ -1352,7 +1370,7 @@ namespace XSpect.Yacq
                     s => s.Add("$global", Expression.Constant(s))
                 )
                 .If(s => !s.ExistsKey("*reader*"),
-                    s => s.Add("*reader*", Expression.Constant(new Reader()))
+                    s => s.Add("*reader*", Expression.Constant(DefaultReader))
                 )
                 .If(s => !s.ExistsKey("*assembly*"),
                     s => s.Add("*assembly*", Expression.Constant(new YacqAssembly("YacqGeneratedTypes")))
