@@ -105,7 +105,7 @@ namespace XSpect.Yacq.LanguageServices
                     .Select(EnumerableEx.Return)
             ).Select(_ => Environment.NewLine);
 
-            var punctuation = Chars.OneOf('"', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}');
+            var punctuation = Chars.OneOf('"', '#', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}');
 
             #endregion
 
@@ -323,6 +323,13 @@ namespace XSpect.Yacq.LanguageServices
                     g["root", "expression"],
                     (p, e) => YacqExpression.List(YacqExpression.Identifier("unquote"), e)
                 )
+            ));
+
+            // Transiting Expressions (Alternative Grammer)
+            this.Add("term", "altExpression", g => SetPosition(
+                Alternative.Get.Default
+                    .Between(g["root", "ignore"], g["root", "ignore"])
+                    .Between(Chars.Sequence("#("), ')'.Satisfy())
             ));
 
             // Identifiers

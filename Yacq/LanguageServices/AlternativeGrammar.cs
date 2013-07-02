@@ -108,7 +108,9 @@ namespace XSpect.Yacq.LanguageServices
             #region Trivials
 
             var punctuation = Chars.OneOf(
-                '"', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}',
+                // From the Standard Grammar:
+                '"', '#', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}',
+                // Additional punctuation characters:
                 '%', '%', '&', '*', '+', '-', '.', '/', '<', '=', '>', '?', '^', '|', '~'
             );
 
@@ -120,6 +122,16 @@ namespace XSpect.Yacq.LanguageServices
 
             #region Terms
 
+            // Transiting Expressions (Standard Grammer)
+            this.Add("term", "stdExpression", g => SetPosition(
+                Standard.Get.Default
+                    .Many()
+                    .Between(g["root", "ignore"], g["root", "ignore"])
+                    .Between(Chars.Sequence("#("), ')'.Satisfy())
+                    .Select(YacqExpression.List)
+            ));
+
+            // Identifiers
             this.Add("term", "identifier", g => SetPosition(
                 Chars.Digit()
                     .Not()
@@ -137,6 +149,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("root", "term", g => Combinator.Choice(
                 g["term", "text"],
                 g["term", "number"],
+                g["term", "stdExpression"],
                 g["term", "identifier"]
             )
                 .Between(g["root", "ignore"], g["root", "ignore"])
@@ -216,7 +229,8 @@ namespace XSpect.Yacq.LanguageServices
                 )
             )));
 
-            primaryRef = this.Get["primary"].Last();
+            primaryRef = this.Get["primary"].Last()
+                .Between(this.Get["root", "ignore"], this.Get["root", "ignore"]);
 
             #endregion
 
