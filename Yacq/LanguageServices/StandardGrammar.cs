@@ -3,6 +3,7 @@
 /* YACQ <http://yacq.net/>
  *   Yet Another Compilable Query Language, based on Expression Trees API
  * Copyright © 2012 linerlock <x.linerlock@gmail.com>
+ * Copyright © 2011-2013 Takeshi KIRIYA (aka takeshik) <takeshik@yacq.net>
  * All rights reserved.
  * 
  * This file is part of YACQ.
