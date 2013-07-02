@@ -122,6 +122,15 @@ namespace XSpect.Yacq.LanguageServices
 
             #region Terms
 
+            // Vectors
+            this.Add("term", "vector", g => SetPosition(
+                g["root", "expression"]
+                    .Between(g["root", "ignore"], g["root", "ignore"])
+                    .SepBy(comma)
+                    .Between('['.Satisfy(), ']'.Satisfy())
+                    .Select(YacqExpression.Vector)
+            ));
+
             // Transiting Expressions (Standard Grammer)
             this.Add("term", "stdExpression", g => SetPosition(
                 Standard.Get.Default
@@ -149,6 +158,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("root", "term", g => Combinator.Choice(
                 g["term", "text"],
                 g["term", "number"],
+                g["term", "vector"],
                 g["term", "stdExpression"],
                 g["term", "identifier"]
             )
@@ -221,7 +231,7 @@ namespace XSpect.Yacq.LanguageServices
             // Colons
             this.Add("primary", "colon", g => SetPosition(Prims.Pipe(
                 g["primary", "dot"],
-                '.'.Satisfy()
+                ':'.Satisfy()
                     .Right(g["primary", "dot"])
                     .Many(),
                 (h, t) => t.Aggregate(h, (l, r) =>
@@ -229,7 +239,8 @@ namespace XSpect.Yacq.LanguageServices
                 )
             )));
 
-            primaryRef = this.Get["primary"].Last()
+            primaryRef = this.Get["primary"]
+                .Last()
                 .Between(this.Get["root", "ignore"], this.Get["root", "ignore"]);
 
             #endregion
