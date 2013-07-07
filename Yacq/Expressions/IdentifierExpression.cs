@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using XSpect.Yacq.Symbols;
@@ -39,6 +40,8 @@ namespace XSpect.Yacq.Expressions
     public class IdentifierExpression
         : YacqExpression
     {
+        private readonly Lazy<Tuple<String, IList<String>>> _result;
+
         /// <summary>
         /// Gets the character in <see cref="SourceText"/> which is used to quote the identifier.
         /// </summary>
@@ -65,8 +68,18 @@ namespace XSpect.Yacq.Expressions
         /// <value>The name of this expression.</value>
         public String Name
         {
-            get;
-            private set;
+            get
+            {
+                // TODO: Problematic code
+                return this._result.Value.Item2.Any()
+                    ? String.Format(
+                          this._result.Value.Item1,
+                          this._result.Value.Item2
+                              .Select(s => YacqServices.Parse(s).Evaluate())
+                              .ToArray()
+                      )
+                    : this._result.Value.Item1;
+            }
         }
 
         internal IdentifierExpression(
@@ -76,9 +89,9 @@ namespace XSpect.Yacq.Expressions
         )
             : base(symbols)
         {
+            this._result = new Lazy<Tuple<String, IList<String>>>(this.Parse);
             this.QuoteChar = quoteChar;
             this.SourceText = sourceText;
-            this.Name = this.Parse();
         }
 
         /// <summary>
@@ -89,7 +102,9 @@ namespace XSpect.Yacq.Expressions
         /// </returns>
         public override String ToString()
         {
-            return this.Name;
+            return this.QuoteChar == default(Char)
+                ? this.SourceText
+                : this.QuoteChar + this.SourceText + this.QuoteChar;
         }
 
         /// <summary>
@@ -100,7 +115,20 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            if (symbols.ResolveMatch(DispatchTypes.Member, this.Name) != null
+            if (this._result.Value.Item2.Any())
+            {
+                return TypeCandidate(typeof(YacqExpression))
+                    .Method(symbols, "Identifier",
+                        Default(typeof(Char)),
+                        TypeCandidate(typeof(String)).Method(symbols, "Format",
+                            this._result.Value.Item2
+                                .Select(c => YacqServices.Parse(symbols, c))
+                                .StartWith(Constant(this._result.Value.Item1))
+                        )
+                    )
+                    .Method(symbols, "eval");
+            }
+            else if (symbols.ResolveMatch(DispatchTypes.Member, this.Name) != null
                 || symbols.Missing != DispatchExpression.DefaultMissing
             )
             {
@@ -114,9 +142,28 @@ namespace XSpect.Yacq.Expressions
             }
         }
 
-        private String Parse()
+        private Tuple<String, IList<String>> Parse()
         {
-            return this.SourceText;
+            if (this.QuoteChar == default(Char))
+            {
+                return MakeTuple(this.SourceText, new String[0]);
+            }
+            var text = this.SourceText;
+            var codes = new List<String>();
+
+            if (text.Contains(@"\$("))
+            {
+                text = text
+                    .Replace("{", "{{")
+                    .Replace("}", "}}");
+            }
+
+            return MakeTuple(EscapeSequences.Parse(text, codes), codes);
+        }
+
+        private static Tuple<String, IList<String>> MakeTuple(String name, IList<String> codes)
+        {
+            return Tuple.Create(name, codes);
         }
     }
 

@@ -40,6 +40,8 @@ namespace XSpect.Yacq.Expressions
     public class NumberExpression
         : YacqExpression
     {
+        private readonly Lazy<Object> _value;
+
         /// <summary>
         /// Gets the original string and source of constant number of this expression.
         /// </summary>
@@ -56,8 +58,10 @@ namespace XSpect.Yacq.Expressions
         /// <value>The constant number which this expression represents.</value>
         public Object Value
         {
-            get;
-            private set;
+            get
+            {
+                return this._value.Value;
+            }
         }
 
         internal NumberExpression(
@@ -67,7 +71,7 @@ namespace XSpect.Yacq.Expressions
             : base(symbols)
         {
             this.SourceText = text;
-            this.Value = this.Parse();
+            this._value = new Lazy<Object>(this.Parse);
         }
 
         /// <summary>

@@ -41,7 +41,7 @@ namespace XSpect.Yacq.Expressions
     public class TextExpression
         : YacqExpression
     {
-        private readonly List<String> _codes;
+        private readonly Lazy<Tuple<Object, IList<String>>> _result;
 
         /// <summary>
         /// Gets the character in <see cref="SourceText"/> which is used to quote the string.
@@ -69,8 +69,10 @@ namespace XSpect.Yacq.Expressions
         /// <value>The constant string or character which this expression represents.</value>
         public Object Value
         {
-            get;
-            private set;
+            get
+            {
+                return this._result.Value.Item1;
+            }
         }
 
         internal TextExpression(
@@ -80,10 +82,9 @@ namespace XSpect.Yacq.Expressions
         )
             : base(symbols)
         {
-            this._codes = new List<String>();
+            this._result = new Lazy<Tuple<Object, IList<String>>>(this.Parse);
             this.QuoteChar = quoteChar;
             this.SourceText = sourceText ?? "";
-            this.Value = this.Parse();
         }
 
         /// <summary>
@@ -107,120 +108,42 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return this._codes.Any()
+            return this._result.Value.Item2.Any()
                 ? (Expression) TypeCandidate(typeof(String)).Method(symbols, "Format",
-                      this._codes
+                      this._result.Value.Item2
                           .Select(c => YacqServices.Parse(symbols, c))
                           .StartWith(Constant(this.Value))
                   )
                 : Constant(this.Value);
         }
 
-        private Object Parse()
+        private Tuple<Object, IList<String>> Parse()
         {
             if (this.QuoteChar == default(Char))
             {
-                return this.SourceText;
+                return MakeTuple(this.SourceText, new String[0]);
             }
-            String text = this.SourceText;
+            var text = this.SourceText;
+            var codes = new List<String>();
+
             if (text.Contains(@"\$("))
             {
                 text = text
                     .Replace("{", "{{")
                     .Replace("}", "}}");
             }
-            text = this.ParseEscapeSequences(text);
-            return this.QuoteChar == '\'' && text.Length == 1
-                ? (Object) text[0]
-                : text;
-        }
 
-        private String ParseEscapeSequences(String str)
-        {
-            return Regex.Replace(
-                str,
-                @"\\\$\([^\(]*(((?<Open>\()[^\(\)]*)+((?<Close-Open>\))[^\(\)]*)+)*\)(?(Open)(?!))"
-                    + @"|\\M-\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
-                    + @"|\\C-\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
-                    + @"|\\C-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
-                    + @"|\\M-(\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|[ -~])"
-                    + @"|\\u[0-9A-Fa-f]{1,4}"
-                    + @"|\\U[0-9A-Fa-f]{1,8}"
-                    + @"|\\[0-7]{1,3}"
-                    + @"|\\x[0-9A-Fa-f]{1,2}"
-                    + @"|\\.",
-                m => this.ParseEscapeSequence(m.Value)
+            text = EscapeSequences.Parse(text, codes);
+            return MakeTuple(this.QuoteChar == '\'' && text.Length == 1
+                ? (Object) text[0]
+                : text,
+                codes
             );
         }
 
-        private String ParseEscapeSequence(String str)
+        private static Tuple<Object, IList<String>> MakeTuple(Object value, IList<String> codes)
         {
-            if (str[0] != '\\')
-            {
-                return str;
-            }
-            str = str.Substring(1);
-            if (str.StartsWithInvariant("$("))
-            {
-                this._codes.Add(ParseEscapeSequences(str.Substring(1)));
-                return "{" + (this._codes.Count - 1) + "}";
-            }
-            else if (str.StartsWithInvariant("M-\\C-") || str.StartsWithInvariant("C-\\M-"))
-            {
-                return ((Char) (ParseEscapeSequence(str.Substring(4))[0] & 0x9f | 0x80)).ToString();
-            }
-            else if (str.StartsWithInvariant("C-"))
-            {
-                return ((Char) (ParseEscapeSequence(str.Substring(2))[0] & 0x9f)).ToString();
-            }
-            else if (str.StartsWithInvariant("M-"))
-            {
-                return ((Char) (ParseEscapeSequence(str.Substring(2))[0] & 0xff | 0x80)).ToString();
-            }
-            else if (str[0] == 'u' && str.Length > 1)
-            {
-                return ((Char) System.Convert.ToInt32(str.Substring(1), 16)).ToString();
-            }
-            else if (str[0] == 'U' && str.Length > 1)
-            {
-                return ((Char) System.Convert.ToInt32(str.Substring(1), 16)).ToString();
-            }
-            else if (Char.IsDigit(str, 0))
-            {
-                return ((Char) System.Convert.ToInt32(str, 8)).ToString();
-            }
-            else if (str[0] == 'x' && str.Length > 1)
-            {
-                return ((Char) System.Convert.ToInt32(str.Substring(1), 16)).ToString();
-            }
-            else
-            {
-                switch (str[0])
-                {
-                    case 'a':
-                        return "\a";
-                    case 'b':
-                        return "\b";
-                    case 'e':
-                        return "\x1b";
-                    case 'f':
-                        return "\f";
-                    case 'n':
-                        return "\n";
-                    case 'r':
-                        return "\r";
-                    case 's':
-                        return " ";
-                    case 't':
-                        return "\t";
-                    case 'v':
-                        return "\v";
-                    case 'N':
-                        return Environment.NewLine;
-                    default:
-                        return str;
-                }
-            }
+            return Tuple.Create(value, codes);
         }
     }
 

@@ -222,6 +222,9 @@
     <Compile Include="..\Yacq\Expressions\DispatchExpression.TypeNode.cs">
       <Link>Expressions\DispatchExpression.TypeNode.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\EscapeSequences.cs">
+      <Link>Expressions\EscapeSequences.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\IdentifierExpression.cs">
       <Link>Expressions\IdentifierExpression.cs</Link>
     </Compile>
