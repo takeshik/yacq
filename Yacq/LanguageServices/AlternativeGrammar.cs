@@ -115,6 +115,7 @@ namespace XSpect.Yacq.LanguageServices
             );
 
             var comma = ','.Satisfy()
+                .Maybe()
                 .Between(this.Get["root", "ignore"], this.Get["root", "ignore"])
                 .Select(_ => YacqExpression.Ignore());
 
@@ -351,8 +352,8 @@ namespace XSpect.Yacq.LanguageServices
                         Tuple.Create
                     ).Many(),
                     parent,
-                    (ls, r) => ls.Aggregate(r, (h, t) =>
-                        YacqExpression.List(YacqExpression.Identifier(t.Item2.ToString()), h, t.Item1)
+                    (ls, r) => ls.Reverse().Aggregate(r, (t, h) =>
+                        YacqExpression.List(YacqExpression.Identifier(h.Item2.ToString()), h.Item1, t)
                     )
                 )))
             );

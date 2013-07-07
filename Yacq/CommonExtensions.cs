@@ -640,6 +640,13 @@ namespace XSpect
             return source.Concat(values);
         }
 
+        internal static TSource At<TSource>(this IList<TSource> source, Int32 index)
+        {
+            return index < 0
+                ? source[source.Count + index]
+                : source[index];
+        }
+
         internal static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
         {
             TValue value;
