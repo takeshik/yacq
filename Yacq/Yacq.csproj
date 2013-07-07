@@ -172,6 +172,7 @@
     <Compile Include="Expressions\SymbolTableExpression.cs" />
     <Compile Include="Expressions\YacqExpressionVisitor.cs" />
     <Compile Include="Expressions\YacqSequenceExpression.cs" />
+    <Compile Include="LanguageServices\AlternativeGrammar.cs" />
     <Compile Include="LanguageServices\Grammar.cs" />
     <Compile Include="LanguageServices\Grammar.RuleGetter.cs" />
     <Compile Include="LanguageServices\Grammar.RuleKey.cs" />

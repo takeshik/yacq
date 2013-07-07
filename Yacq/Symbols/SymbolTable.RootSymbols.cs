@@ -86,24 +86,23 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "=")]
             public static Expression Assign(DispatchExpression e, SymbolTable s, Type t)
             {
-                return (e.Arguments[0].List(".")
+                return (e.Arguments.At(-2).List(".")
                     .Null(l => YacqBinder.IsInDynamicContext(s, l.First())
                         ? Expression.Dynamic(
                               YacqBinder.SetMember(s, l.Last().Id()),
                               typeof(Object),
                               l.First().Reduce(s),
-                              e.Arguments[1].Reduce()
+                              e.Arguments.Last().Reduce()
                           )
                         : null
-                    ) ?? e.Arguments[0].Reduce(s).Let(l =>
+                    ) ?? e.Arguments.At(-2).Reduce(s).Let(l =>
                         (Expression) Expression.Assign(l, e.Arguments.Last().Reduce(s, l.Type))
                     )
                 ).Let(_ => e.Arguments.Count > 2
                     ? (Expression) YacqExpression.Function(s, "=", e.Arguments
-                            .Skip(1)
-                            .SkipLast(1)
-                            .EndWith(_)
-                        )
+                          .SkipLast(2)
+                          .EndWith(_)
+                      )
                     : _
                 );
             }

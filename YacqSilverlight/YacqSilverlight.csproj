@@ -276,6 +276,9 @@
     <Compile Include="..\Yacq\Extensions.cs">
       <Link>Extensions.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\LanguageServices\AlternativeGrammar.cs">
+      <Link>LanguageServices\AlternativeGrammar.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\LanguageServices\Grammar.cs">
       <Link>LanguageServices\Grammar.cs</Link>
     </Compile>
