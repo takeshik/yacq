@@ -143,18 +143,30 @@ namespace XSpect.Yacq.LanguageServices
 
             // Identifiers
             this.Add("term", "identifier", g => SetPosition(
-                Chars.Digit()
-                    .Not()
-                    .Right(Chars.Space()
-                        .Or(punctuation)
-                        .Or(Chars.OneOf())
-                        .Not()
-                        .Right(Chars.Any())
-                        .Many(1)
-                    )
-                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
+                Combinator.Choice(
+                    Combinator.Choice(
+                        Chars.Digit()
+                            .Not()
+                            .Right(Chars.Space()
+                                .Or(punctuation)
+                                .Not()
+                                .Right(Chars.Any())
+                                .Many(1)
+                            )
+                    ).Select(cs => YacqExpression.Identifier(default(Char), new String(cs.ToArray()))),
+                    '`'.Satisfy().Let(q =>
+                        q.Right(q
+                            .Not()
+                            .Right('\\'.Satisfy()
+                                .Right('`'.Satisfy())
+                                .Or(Chars.Any())
+                            )
+                            .Many()
+                            .Left(q)
+                        )
+                    ).Select(cs => YacqExpression.Identifier('`', new String(cs.ToArray())))
                 )
-            );
+            ));
 
             this.Add("root", "term", g => Combinator.Choice(
                 g["term", "text"],

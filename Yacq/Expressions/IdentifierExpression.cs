@@ -40,6 +40,26 @@ namespace XSpect.Yacq.Expressions
         : YacqExpression
     {
         /// <summary>
+        /// Gets the character in <see cref="SourceText"/> which is used to quote the identifier.
+        /// </summary>
+        /// <value>The character in <see cref="SourceText"/> which is used to quote the identifier.</value>
+        public Char QuoteChar
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the quoted string which is the source of the identifier.
+        /// </summary>
+        /// <value>The quoted string which is the source the identifier.</value>
+        public String SourceText
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets the name of this expression.
         /// </summary>
         /// <value>The name of this expression.</value>
@@ -51,11 +71,14 @@ namespace XSpect.Yacq.Expressions
 
         internal IdentifierExpression(
             SymbolTable symbols,
-            String name
+            Char quoteChar,
+            String sourceText
         )
             : base(symbols)
         {
-            this.Name = name;
+            this.QuoteChar = quoteChar;
+            this.SourceText = sourceText;
+            this.Name = this.Parse();
         }
 
         /// <summary>
@@ -90,23 +113,53 @@ namespace XSpect.Yacq.Expressions
                 throw new ParseException("Identifier evaluation failed: " + this, this);
             }
         }
+
+        private String Parse()
+        {
+            return this.SourceText;
+        }
     }
 
     partial class YacqExpression
     {
         /// <summary>
-        /// Creates a <see cref="IdentifierExpression"/> that represents identifier with specified name.
+        /// Creates a <see cref="IdentifierExpression"/> that represents an identifier from specified source string.
+        /// </summary>
+        /// <param name="symbols">The symbol table for the expression.</param>
+        /// <param name="quoteChar">The character which is used for quoting the identifier.</param>
+        /// <param name="sourceText">The quoted inner string.</param>
+        /// <returns>An <see cref="IdentifierExpression"/> that has the name represented by specified source string.</returns>
+        public static IdentifierExpression Identifier(SymbolTable symbols, Char quoteChar, String sourceText)
+        {
+            return new IdentifierExpression(symbols, quoteChar, sourceText);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="IdentifierExpression"/> that represents an identifier with specified name.
         /// </summary>
         /// <param name="symbols">The symbol table for the expression.</param>
         /// <param name="name">The name of this expression.</param>
         /// <returns>An <see cref="IdentifierExpression"/> that has the specified name.</returns>
         public static IdentifierExpression Identifier(SymbolTable symbols, String name)
         {
-            return new IdentifierExpression(symbols, name);
+            return String.IsNullOrEmpty(name) || name.Length < 2 || name.First() != name.Last()
+                ? Identifier(symbols, default(Char), name)
+                : Identifier(symbols, name.First(), name.Substring(1, name.Length - 2));
         }
 
         /// <summary>
-        /// Creates a <see cref="IdentifierExpression"/> that represents identifier with specified name.
+        /// Creates a <see cref="IdentifierExpression"/> that represents an identifier from specified source string.
+        /// </summary>
+        /// <param name="quoteChar">The character which is used for quoting the identifier.</param>
+        /// <param name="sourceText">The quoted inner string.</param>
+        /// <returns>An <see cref="IdentifierExpression"/> that has the name represented by specified source string.</returns>
+        public static IdentifierExpression Identifier(Char quoteChar, String sourceText)
+        {
+            return Identifier(null, quoteChar, sourceText);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="IdentifierExpression"/> that represents an identifier with specified name.
         /// </summary>
         /// <param name="name">The name of this expression.</param>
         /// <returns>An <see cref="IdentifierExpression"/> that has the specified name.</returns>

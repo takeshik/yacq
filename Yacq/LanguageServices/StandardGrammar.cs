@@ -163,7 +163,7 @@ namespace XSpect.Yacq.LanguageServices
 
             // Texts
             this.Add("term", "text", g => SetPosition(
-                Chars.OneOf('\'', '\"', '`')
+                Chars.OneOf('\'', '\"')
                     .SelectMany(q => q.Satisfy()
                         .Not()
                         .Right('\\'.Satisfy()
@@ -172,9 +172,8 @@ namespace XSpect.Yacq.LanguageServices
                         )
                         .Many()
                         .Left(q.Satisfy())
-                        .Select(cs => cs.StartWith(q).EndWith(q))
+                        .Select(cs => YacqExpression.Text(q, new String(cs.ToArray())))
                     )
-                    .Select(cs => YacqExpression.Text(new String(cs.ToArray())))
             ));
 
             // Numbers
@@ -207,8 +206,8 @@ namespace XSpect.Yacq.LanguageServices
                         .StartWith(e)
                 );
 
-                this.Add("term", "number", g => Combinator.Choice(
-                    SetPosition(Prims.Pipe(
+                this.Add("term", "number", g => SetPosition(Combinator.Choice(
+                    Prims.Pipe(
                         binPrefix,
                         bin.Many(1),
                         numberSuffix.Maybe(),
@@ -218,8 +217,8 @@ namespace XSpect.Yacq.LanguageServices
                                 cs => cs.Concat(s.Value)
                             ).ToArray())
                         )
-                    )),
-                    SetPosition(Prims.Pipe(
+                    ),
+                    Prims.Pipe(
                         octPrefix,
                         oct.Many(1),
                         numberSuffix.Maybe(),
@@ -229,8 +228,8 @@ namespace XSpect.Yacq.LanguageServices
                                 cs => cs.Concat(s.Value)
                             ).ToArray())
                         )
-                    )),
-                    SetPosition(Prims.Pipe(
+                    ),
+                    Prims.Pipe(
                         hexPrefix,
                         hex.Many(1),
                         numberSuffix.Maybe(),
@@ -240,26 +239,24 @@ namespace XSpect.Yacq.LanguageServices
                                 cs => cs.Concat(s.Value)
                             ).ToArray())
                         )
-                    )),
-                    SetPosition(
-                        numberPrefix.Maybe().SelectMany(p =>
-                            digit.Many(1).SelectMany(i =>
-                                fraction.Maybe().SelectMany(f =>
-                                    exponent.Maybe().SelectMany(e =>
-                                        numberSuffix.Maybe().Select(s =>
-                                            YacqExpression.Number(new String(EnumerableEx.Concat(
-                                                i.If(_ => p.Exists(), _ => _.StartWith(p.Value)),
-                                                f.Otherwise(Enumerable.Empty<Char>),
-                                                e.Otherwise(Enumerable.Empty<Char>),
-                                                s.Otherwise(Enumerable.Empty<Char>)
-                                            ).ToArray()))
-                                        )
+                    ),
+                    numberPrefix.Maybe().SelectMany(p =>
+                        digit.Many(1).SelectMany(i =>
+                            fraction.Maybe().SelectMany(f =>
+                                exponent.Maybe().SelectMany(e =>
+                                    numberSuffix.Maybe().Select(s =>
+                                        YacqExpression.Number(new String(EnumerableEx.Concat(
+                                            i.If(_ => p.Exists(), _ => _.StartWith(p.Value)),
+                                            f.Otherwise(Enumerable.Empty<Char>),
+                                            e.Otherwise(Enumerable.Empty<Char>),
+                                            s.Otherwise(Enumerable.Empty<Char>)
+                                        ).ToArray()))
                                     )
                                 )
                             )
                         )
                     )
-                ));
+                )));
             }
 
             // Lists
@@ -333,24 +330,31 @@ namespace XSpect.Yacq.LanguageServices
             ));
 
             // Identifiers
-            this.Add("term", "identifier", g => Combinator.Choice(
-                SetPosition('.'.Satisfy()
-                    .Many(1)
-                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
-                ),
-                SetPosition(':'.Satisfy()
-                    .Many(1)
-                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
-                ),
-                SetPosition(Chars.Digit()
-                    .Not()
-                    .Right(Chars.Space()
-                        .Or(punctuation)
-                        .Not()
-                        .Right(Chars.Any())
-                        .Many(1)
-                    )
-                    .Select(cs => YacqExpression.Identifier(new String(cs.ToArray())))
+            this.Add("term", "identifier", g => SetPosition(
+                Combinator.Choice(
+                    Combinator.Choice(
+                        '.'.Satisfy().Many(1),
+                        ':'.Satisfy().Many(1),
+                        Chars.Digit()
+                            .Not()
+                            .Right(Chars.Space()
+                                .Or(punctuation)
+                                .Not()
+                                .Right(Chars.Any())
+                                .Many(1)
+                            )
+                    ).Select(cs => YacqExpression.Identifier(default(Char), new String(cs.ToArray()))),
+                    '`'.Satisfy().Let(q =>
+                        q.Right(q
+                            .Not()
+                            .Right('\\'.Satisfy()
+                                .Right('`'.Satisfy())
+                                .Or(Chars.Any())
+                            )
+                            .Many()
+                            .Left(q)
+                        )
+                    ).Select(cs => YacqExpression.Identifier('`', new String(cs.ToArray())))
                 )
             ));
 
