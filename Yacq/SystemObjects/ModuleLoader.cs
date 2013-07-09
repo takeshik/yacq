@@ -197,7 +197,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private Tuple<Object, String> GetFromFile(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedModules].Const<ICollection<String>>();
+            var l = symbols[LoadedModules].Evaluate<ICollection<String>>();
             return this.SearchPaths
                 .Where(d => d.Exists)
                 .SelectMany(d => _extensions
@@ -215,7 +215,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private Tuple<Object, String> GetFromResource(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedModules].Const<ICollection<String>>();
+            var l = symbols[LoadedModules].Evaluate<ICollection<String>>();
             return _assembly.GetManifestResourceNames()
                 .Select(n => n.Substring(_resourcePrefix.Length))
                 .Where(n => Path.GetFileNameWithoutExtension(n) == name)
@@ -234,7 +234,7 @@ namespace XSpect.Yacq.SystemObjects
 
         private static Tuple<Object, String> GetFromNamespace(SymbolTable symbols, String name)
         {
-            var l = symbols[LoadedModules].Const<ICollection<String>>();
+            var l = symbols[LoadedModules].Evaluate<ICollection<String>>();
             return Tuple.Create(
                 (Object)
 #if SILVERLIGHT

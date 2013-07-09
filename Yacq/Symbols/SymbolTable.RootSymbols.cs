@@ -1517,7 +1517,7 @@ namespace XSpect.Yacq.Symbols
 #else
                     AppDomain.CurrentDomain.GetAssemblies()
 #endif
-                        .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
+                        .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Evaluate<String>()))
                         .First()
                 );
             }
@@ -1527,10 +1527,10 @@ namespace XSpect.Yacq.Symbols
             {
                 return Expression.Constant(
 #if SILVERLIGHT
-                    Type.GetType(e.Arguments[0].Reduce(s).Const<String>())
+                    Type.GetType(e.Arguments[0].Reduce(s).Evaluate<String>())
 #else
                     AppDomain.CurrentDomain.GetAssemblies()
-                        .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Const<String>()))
+                        .Choose(a => a.GetType(e.Arguments[0].Reduce(s).Evaluate<String>()))
                         .First()
 #endif
                 );
@@ -1541,10 +1541,10 @@ namespace XSpect.Yacq.Symbols
             {
                 return Expression.Constant(
 #if SILVERLIGHT
-                    Assembly.Load(e.Arguments[0].Reduce(s).Const<String>())
+                    Assembly.Load(e.Arguments[0].Reduce(s).Evaluate<String>())
 #else
 #pragma warning disable 618
-                    Assembly.LoadWithPartialName(e.Arguments[0].Reduce(s).Const<String>())
+                    Assembly.LoadWithPartialName(e.Arguments[0].Reduce(s).Evaluate<String>())
 #pragma warning restore
 #endif
                 );
@@ -1561,7 +1561,7 @@ namespace XSpect.Yacq.Symbols
             {
                 return e.Arguments
                     .Share(_ => _.Zip(_, (i, v) => Tuple.Create(i.Id(), v.Reduce(s))))
-                    .Let(ms => s.Resolve("*assembly*").Const<YacqAssembly>()
+                    .Let(ms => s.Resolve("*assembly*").Evaluate<YacqAssembly>()
                         .TryDefineType(ms.ToDictionary(_ => _.Item1, _ => _.Item2.Type))
                         .Create(s)
                         .Let(nt => Expression.New(
@@ -1579,7 +1579,8 @@ namespace XSpect.Yacq.Symbols
             public static Expression CreateType(DispatchExpression e, SymbolTable s, Type t)
             {
                 var type = (e.Arguments[0].List(":") ?? new [] { e.Arguments[0], YacqExpression.TypeCandidate(typeof(Object)), })
-                    .Let(es => s.Resolve("*assembly*").Const<YacqAssembly>().DefineType(
+                    .ToArray()
+                    .Let(es => s.Resolve("*assembly*").Evaluate<YacqAssembly>().DefineType(
                         String.Join(".", GetIdentifierFragments(es.First())),
                         (es.Last() is VectorExpression
                             ? ((VectorExpression) es.Last()).Elements
@@ -1727,7 +1728,7 @@ namespace XSpect.Yacq.Symbols
                 return (e.Arguments[0].List().Null(_ => _.IsEmpty())
                     ? new SymbolTable().Apply(s_ => s_.MarkAsModule())
                     : ModuleLoader.CreatePathSymbols(
-                          s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t).Const<SymbolTable>(),
+                          s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t).Evaluate<SymbolTable>(),
                           GetIdentifierFragments(e.Arguments[0])
                       )
                 ).Let(s_ => YacqExpression.Function(s_, "$",
@@ -2205,7 +2206,7 @@ namespace XSpect.Yacq.Symbols
                 (isLiteral
                     ? (e_, s_, t_) => body
                     : ((Expression<SymbolDefinition>) body.Reduce(s, typeof(SymbolDefinition))).Compile()
-                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>().Add(SymbolEntry.Parse(e.Arguments[0], s, isLiteral), d));
+                ).Apply(d => e.Left.Reduce(s).Evaluate<SymbolTable>().Add(SymbolEntry.Parse(e.Arguments[0], s, isLiteral), d));
                 return Expression.Empty();
             }
             
@@ -2217,14 +2218,14 @@ namespace XSpect.Yacq.Symbols
                 (isLiteral
                     ? (e_, s_, t_) => body
                     : ((Expression<SymbolDefinition>) body.Reduce(s, typeof(SymbolDefinition))).Compile()
-                ).Apply(d => e.Left.Reduce(s).Const<SymbolTable>()[SymbolEntry.Parse(e.Arguments[0], s, isLiteral)] = d);
+                ).Apply(d => e.Left.Reduce(s).Evaluate<SymbolTable>()[SymbolEntry.Parse(e.Arguments[0], s, isLiteral)] = d);
                 return Expression.Empty();
             }
             
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "undef")]
             public static Expression UndefineIn(DispatchExpression e, SymbolTable s, Type t)
             {
-                e.Left.Reduce(s).Const<SymbolTable>().Apply(_ =>
+                e.Left.Reduce(s).Evaluate<SymbolTable>().Apply(_ =>
                     new [] { SymbolEntry.Parse(e.Arguments[0], s, true), SymbolEntry.Parse(e.Arguments[0], s, false), }
                         .ForEach(k => _.Remove(k))
                 );
@@ -2234,11 +2235,11 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "load")]
             public static Expression LoadTo(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Root["*modules*"].Const<ModuleLoader>().Let(m =>
-                    e.Left.Reduce(s).Const<SymbolTable>().Let(l =>
+                return Root["*modules*"].Evaluate<ModuleLoader>().Let(m =>
+                    e.Left.Reduce(s).Evaluate<SymbolTable>().Let(l =>
                         e.Arguments[0].Reduce(s).If(_ => _ is SymbolTableExpression,
                             _ => m.Load(l, ((SymbolTableExpression) _).Symbols),
-                            _ => m.Load(l, _.Const<String>())
+                            _ => m.Load(l, _.Evaluate<String>())
                         )
                     )
                 );
@@ -2247,10 +2248,10 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, typeof(SymbolTable), "import")]
             public static Expression ImportTo(DispatchExpression e, SymbolTable s, Type t)
             {
-                return Root["*modules*"].Const<ModuleLoader>().Import(
-                    e.Left.Reduce(s).Const<SymbolTable>(),
-                    e.Arguments[0].Reduce(s).Const<String>(),
-                    e.Arguments[e.Arguments.Count > 1 ? 1 : 0].Reduce(s).Const<String>()
+                return Root["*modules*"].Evaluate<ModuleLoader>().Import(
+                    e.Left.Reduce(s).Evaluate<SymbolTable>(),
+                    e.Arguments[0].Reduce(s).Evaluate<String>(),
+                    e.Arguments[e.Arguments.Count > 1 ? 1 : 0].Reduce(s).Evaluate<String>()
                 );
             }
 
@@ -2400,13 +2401,13 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Member, "here")]
             public static Expression Here(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.SymbolTable(YacqExpression.Variable(s, ModuleIdentifier).Const<SymbolTable>());
+                return YacqExpression.SymbolTable(YacqExpression.Variable(s, ModuleIdentifier).Evaluate<SymbolTable>());
             }
 
             [YacqSymbol(DispatchTypes.Member, "global")]
             public static Expression Global(DispatchExpression e, SymbolTable s, Type t)
             {
-                return YacqExpression.SymbolTable(s.Resolve("$global").Const<SymbolTable>());
+                return YacqExpression.SymbolTable(s.Resolve("$global").Evaluate<SymbolTable>());
             }
 
             #endregion

@@ -149,7 +149,7 @@ namespace XSpect.Yacq
         public static Expression[] ParseAll(SymbolTable symbols, IEnumerable<Char> code)
         {
             return CreateSymbolTable(symbols).Let(s =>
-                ReadAll(s.Resolve("*reader*").Const<Reader>(), code)
+                ReadAll(YacqExpression.Variable("*reader*").Evaluate<Reader>(s), code)
 #if SILVERLIGHT
                 .Cast<Expression>()
 #endif
@@ -207,7 +207,7 @@ namespace XSpect.Yacq
         public static LambdaExpression ParseLambda(SymbolTable symbols, Type returnType, IEnumerable<Char> code, params AmbiguousParameterExpression[] parameters)
         {
             symbols = CreateSymbolTable(symbols);
-            var expressions = ReadAll(symbols.Resolve("*reader*").Const<Reader>(), code);
+            var expressions = ReadAll(YacqExpression.Variable("*reader*").Evaluate<Reader>(symbols), code);
             return (LambdaExpression) YacqExpression.AmbiguousLambda(
                 symbols,
                 returnType,

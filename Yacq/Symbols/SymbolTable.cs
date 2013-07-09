@@ -1060,7 +1060,7 @@ namespace XSpect.Yacq.Symbols
         {
             return this.Resolve(DispatchTypes.Member, ModuleIdentifier)
                 (null, this, typeof(SymbolTable))
-                .Const<SymbolTable>();
+                .Evaluate<SymbolTable>();
         }
 
         /// <summary>

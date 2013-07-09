@@ -335,16 +335,6 @@ namespace XSpect.Yacq.Expressions
             );
         }
 
-        internal static T Const<T>(this Object self)
-            where T : class
-        {
-            return self is T
-                ? (T) self
-                : self is ConstantExpression && ((Expression) self).Type.GetConvertibleTypes().Contains(typeof(T))
-                      ? (T) ((ConstantExpression) self).Value
-                      : null;
-        }
-
         internal static String Id(this Object self)
         {
             return self is IdentifierExpression ? ((IdentifierExpression) self).Name : null;
