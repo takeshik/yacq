@@ -109,15 +109,10 @@ namespace XSpect.Yacq.LanguageServices
 
             var punctuation = Chars.OneOf(
                 // From the Standard Grammar:
-                '"', '#', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}',
+                '"', '#', '\'', '(', ')', '.', ':', ';', '[', ']', '`', '{', '}',
                 // Additional punctuation characters:
                 '%', '%', '&', '*', '+', '-', '.', '/', '<', '=', '>', '?', '^', '|', '~'
             );
-
-            var comma = ','.Satisfy()
-                .Maybe()
-                .Between(this.Get["root", "ignore"], this.Get["root", "ignore"])
-                .Select(_ => YacqExpression.Ignore());
 
             #endregion
 
@@ -127,7 +122,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("term", "vector", g => SetPosition(
                 g["root", "expression"]
                     .Between(g["root", "ignore"], g["root", "ignore"])
-                    .SepBy(comma)
+                    .Many()
                     .Between('['.Satisfy(), ']'.Satisfy())
                     .Select(YacqExpression.Vector)
             ));
@@ -135,8 +130,8 @@ namespace XSpect.Yacq.LanguageServices
             // Transiting Expressions (Standard Grammer)
             this.Add("term", "stdExpression", g => SetPosition(
                 Standard.Get.Default
-                    .Many()
                     .Between(g["root", "ignore"], g["root", "ignore"])
+                    .Many()
                     .Between(Chars.Sequence("#("), ')'.Satisfy())
                     .Select(YacqExpression.List)
             ));
@@ -194,16 +189,16 @@ namespace XSpect.Yacq.LanguageServices
                     .Or(g["root", "term"]),
                 Combinator.Choice(
                     g["root", "expression"]
-                        .SepBy(comma)
-                        .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                        .Between(g["root", "ignore"], g["root", "ignore"])
+                        .Many()
                         .Between('('.Satisfy(), ')'.Satisfy())
                         .Select(ps => Tuple.Create(
                             Enumerable.Empty<IdentifierExpression>(),
                             ps
                         )),
                     g["root", "expression"]
-                        .SepBy(comma)
-                        .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                        .Between(g["root", "ignore"], g["root", "ignore"])
+                        .Many()
                         .Between('['.Satisfy(), ']'.Satisfy())
                         .Select(ps => Tuple.Create(
                             EnumerableEx.Return(YacqExpression.Identifier(".")),
@@ -223,14 +218,14 @@ namespace XSpect.Yacq.LanguageServices
                         Prims.Pipe(
                             g["term", "identifier"],
                             g["root", "expression"]
-                                .SepBy(comma)
-                                .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                                .Between(g["root", "ignore"], g["root", "ignore"])
+                                .Many()
                                 .Between('('.Satisfy(), ')'.Satisfy()),
                             (n, es) => (YacqExpression) YacqExpression.List(es.StartWith(n))
                         ),
                         g["root", "expression"]
-                            .SepBy(comma)
-                            .Or(g["root", "ignore"].Select(e => Enumerable.Empty<YacqExpression>()))
+                            .Between(g["root", "ignore"], g["root", "ignore"])
+                            .Many()
                             .Between('['.Satisfy(), ']'.Satisfy())
                             .Select(YacqExpression.Vector),
                         g["term", "identifier"]

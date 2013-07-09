@@ -105,7 +105,7 @@ namespace XSpect.Yacq.LanguageServices
                     .Select(EnumerableEx.Return)
             ).Select(_ => Environment.NewLine);
 
-            var punctuation = Chars.OneOf('"', '#', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}');
+            var punctuation = Chars.OneOf('"', '#', '\'', '(', ')', '.', ':', ';', '[', ']', '`', '{', '}');
 
             #endregion
 
@@ -154,6 +154,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("root", "ignore", g => Combinator.Choice(
                 this.Get["root", "comment"].Ignore(),
                 Chars.Space().Ignore(),
+                ','.Satisfy().Ignore(),
                 newline.Ignore()
             ).Many().Select(_ => (YacqExpression) YacqExpression.Ignore()));
 
