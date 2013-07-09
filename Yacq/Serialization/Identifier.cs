@@ -41,8 +41,15 @@ namespace XSpect.Yacq.Serialization
     internal class Identifier
         : YacqNode
     {
-        [DataMember(Order = 0)]
-        public String Name
+        [DataMember(Order = 0, EmitDefaultValue = false)]
+        public Char QuoteChar
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Order = 1)]
+        public String SourceText
         {
             get;
             set;
@@ -51,13 +58,14 @@ namespace XSpect.Yacq.Serialization
         public override Expression Deserialize()
         {
             return YacqExpression.Identifier(
-                this.Name
+                this.QuoteChar,
+                this.SourceText
             );
         }
 
         public override String ToString()
         {
-            return this.Name;
+            return this.QuoteChar + this.SourceText + this.QuoteChar;
         }
     }
 
@@ -67,7 +75,8 @@ namespace XSpect.Yacq.Serialization
         {
             return new Identifier()
             {
-                Name = expression.Name,
+                QuoteChar = expression.QuoteChar,
+                SourceText = expression.SourceText,
             }.Apply(n => n.TypeHint = expression.TryType().Null(t => TypeRef.Serialize(t)));
         }
     }
