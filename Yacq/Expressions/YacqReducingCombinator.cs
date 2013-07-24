@@ -26,16 +26,16 @@
  * THE SOFTWARE.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using Parseq;
-using Parseq.Combinators;
+using System;
+using System.Linq.Expressions;
 using XSpect.Yacq.Symbols;
 
 namespace XSpect.Yacq.Expressions
 {
+    /// <summary>
+    /// Provides the factory methods of combinated parsers for expressions with reducing.
+    /// </summary>
     public class YacqReducingCombinator
     {
         private readonly Parser<Expression, Expression> _parser;
@@ -53,23 +53,43 @@ namespace XSpect.Yacq.Expressions
 
         #region Satisfy / Any
 
+        /// <summary>
+        /// Returns a parser which accepts reduced expressions that satisfies specified condition.
+        /// </summary>
+        /// <param name="predicate">A predicate function to test the expression.</param>
+        /// <returns>A parser for reduced expression with specified test.</returns>
         public Parser<Expression, Expression> Satisfy(Func<Expression, Boolean> predicate)
         {
             return this.AndAlso(YacqCombinators.Satisfy(predicate));
         }
 
+        /// <summary>
+        /// Returns a parser which accepts reduced expressions that satisfies specified condition and type constraint.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of the expression to match.</typeparam>
+        /// <param name="predicate">A predicate function to test the expression.</param>
+        /// <returns>A parser for reduced expression with specified test and type constraint.</returns>
         public Parser<Expression, TExpression> Satisfy<TExpression>(Func<TExpression, Boolean> predicate)
             where TExpression : Expression
         {
             return this.Satisfy(e => (e as TExpression).Null(predicate)).Select(e => (TExpression) e);
         }
 
+        /// <summary>
+        /// Returns a parser which accepts reduced expressions that satisfies specified type constraint.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of the expression to match.</typeparam>
+        /// <returns>A parser for reduced expression with specified type constraint.</returns>
         public Parser<Expression, TExpression> Satisfy<TExpression>()
             where TExpression : Expression
         {
             return this.Satisfy<TExpression>(e => true);
         }
 
+        /// <summary>
+        /// Returns a parser which accepts all reduced expressions.
+        /// </summary>
+        /// <returns>A parser which accepts all reduced expressions.</returns>
         public Parser<Expression, Expression> Any()
         {
             return this.Satisfy(e => true);
@@ -79,16 +99,31 @@ namespace XSpect.Yacq.Expressions
 
         #region Is
 
+        /// <summary>
+        /// Returns a parser which accepts reduced expressions whose static type satisfies specified predicate.
+        /// </summary>
+        /// <param name="typePredicate">A predicate function to test the static type of the expression.</param>
+        /// <returns>A parser for reduced expression with specified test.</returns>
         public Parser<Expression, Expression> Is(Func<Type, Boolean> typePredicate)
         {
             return this.Satisfy(e => typePredicate(e.Type()));
         }
 
+        /// <summary>
+        /// Returns a parser which accepts reduced expressions whose static type satisfies specified constraint.
+        /// </summary>
+        /// <param name="type">A static type of the expression to test.</param>
+        /// <returns>A parser for reduced expression with specified test.</returns>
         public Parser<Expression, Expression> Is(Type type)
         {
             return this.Is(type.IsAssignableFrom);
         }
 
+        /// <summary>
+        /// Returns a parser which accepts reduced expressions whose static type satisfies specified constraint.
+        /// </summary>
+        /// <typeparam name="T">A static type of the expression to test.</typeparam>
+        /// <returns>A parser for reduced expression with specified test.</returns>
         public Parser<Expression, Expression> Is<T>()
         {
             return this.Is(typeof(T));
@@ -98,21 +133,40 @@ namespace XSpect.Yacq.Expressions
 
         #region TypeCandidate
 
+        /// <summary>
+        /// Returns a parser which accepts type candidates whose elected type satisfies specified predicate.
+        /// </summary>
+        /// <param name="typePredicate">A predicate function to test the elected type of the type candidate.</param>
+        /// <returns>A parser for type candidate with specified test.</returns>
         public Parser<Expression, TypeCandidateExpression> TypeCandidate(Func<Type, Boolean> typePredicate)
         {
             return this.Satisfy<TypeCandidateExpression>(e => typePredicate(e.ElectedType));
         }
 
+        /// <summary>
+        /// Returns a parser which accepts type candidates whose elected type satisfies specified predicate.
+        /// </summary>
+        /// <param name="type">A elected type of the type candidate to test.</param>
+        /// <returns>A parser for type candidate with specified test.</returns>
         public Parser<Expression, TypeCandidateExpression> TypeCandidate(Type type)
         {
             return this.TypeCandidate(type.IsAssignableFrom);
         }
 
+        /// <summary>
+        /// Returns a parser which accepts type candidates whose elected type satisfies specified predicate.
+        /// </summary>
+        /// <typeparam name="T">A elected type of the type candidate to test.</typeparam>
+        /// <returns>A parser for type candidate with specified test.</returns>
         public Parser<Expression, TypeCandidateExpression> TypeCandidate<T>()
         {
             return this.TypeCandidate(typeof(T));
         }
 
+        /// <summary>
+        /// Returns a parser which accepts all type candidates.
+        /// </summary>
+        /// <returns>A parser which accepts all type candidates.</returns>
         public Parser<Expression, TypeCandidateExpression> TypeCandidate()
         {
             return this.Satisfy<TypeCandidateExpression>();
