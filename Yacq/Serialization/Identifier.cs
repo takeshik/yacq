@@ -65,7 +65,9 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return this.QuoteChar + this.SourceText + this.QuoteChar;
+            return this.QuoteChar == default(Char)
+                ? this.SourceText
+                : this.QuoteChar + this.SourceText + this.QuoteChar;
         }
     }
 
