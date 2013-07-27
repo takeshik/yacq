@@ -334,20 +334,6 @@ namespace XSpect.Yacq.Expressions
         /// </summary>
         /// <param name="elements">An array of parsers for each element of the vector.</param>
         /// <returns>A parser for vector with elements which are accepted by the parsers.</returns>
-        public static Parser<Expression, TExpression> Vector<TExpression>(
-            Parser<Expression, IEnumerable<Expression>> elements,
-            Func<IEnumerable<Expression>, TExpression> selector
-        )
-            where TExpression : Expression
-        {
-            return Vector(elements).Select(e => selector(e.Elements));
-        }
-
-        /// <summary>
-        /// Returns a parser which accepts vectors whose elements are parsed by specified parsers.
-        /// </summary>
-        /// <param name="elements">An array of parsers for each element of the vector.</param>
-        /// <returns>A parser for vector with elements which are accepted by the parsers.</returns>
         public static Parser<Expression, VectorExpression> Vector(params Parser<Expression, Expression>[] elements)
         {
             return Vector(Combinator.Sequence(elements));
