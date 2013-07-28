@@ -287,49 +287,6 @@ namespace XSpect.Yacq.LanguageServices
                     .Select(YacqExpression.LambdaList)
             ));
 
-            // Quotes
-            this.Add("term", "quote", g => SetPosition(
-                Prims.Pipe(
-                    Chars.Sequence("#'"),
-                    g["root", "expression"],
-                    (p, e) => YacqExpression.List(YacqExpression.Identifier("quote"), e)
-                )
-            ));
-
-            // Quasiquotes
-            this.Add("term", "quasiquote", g => SetPosition(
-                Prims.Pipe(
-                    Chars.Sequence("#`"),
-                    g["root", "expression"],
-                    (p, e) => YacqExpression.List(YacqExpression.Identifier("quasiquote"), e)
-                )
-            ));
-
-            // Unquote-Splicings
-            this.Add("term", "unquoteSplicing", g => SetPosition(
-                Prims.Pipe(
-                    Chars.Sequence("#,@"),
-                    g["root", "expression"],
-                    (p, e) => YacqExpression.List(YacqExpression.Identifier("unquote-splicing"), e)
-                )
-            ));
-
-            // Unquotes
-            this.Add("term", "unquote", g => SetPosition(
-                Prims.Pipe(
-                    Chars.Sequence("#,"),
-                    g["root", "expression"],
-                    (p, e) => YacqExpression.List(YacqExpression.Identifier("unquote"), e)
-                )
-            ));
-
-            // Transiting Expressions (Alternative Grammer)
-            this.Add("term", "altExpression", g => SetPosition(
-                Alternative.Get.Default
-                    .Between(g["root", "ignore"], g["root", "ignore"])
-                    .Between(Chars.Sequence("#("), ')'.Satisfy())
-            ));
-
             // Identifiers
             this.Add("term", "identifier", g => SetPosition(
                 Combinator.Choice(
@@ -359,8 +316,55 @@ namespace XSpect.Yacq.LanguageServices
                 )
             ));
 
+            // Extended Terms
+            this.Add("term", "ext", g => SetPosition('#'.Satisfy()
+                .Right(g["term.ext"].Choice())
+            ));
+
             this.Add("root", "term", g => g["term"].Choice()
                 .Between(g["root", "ignore"], g["root", "ignore"])
+            );
+
+            #endregion
+
+            #region Extended Terms (Reader Macros, #-prefixed)
+
+            // Quotes
+            this.Add("term.ext", "quote", g => '\''.Satisfy()
+                .Right(g["root", "expression"])
+                .Select(e => YacqExpression.List(YacqExpression.Identifier("quote"), e))
+            );
+
+            // Quasiquotes
+            this.Add("term.ext", "quasiquote", g => '`'.Satisfy()
+                .Right(g["root", "expression"])
+                .Select(e => YacqExpression.List(YacqExpression.Identifier("quasiquote"), e))
+            );
+
+            // Unquote-Splicings
+            this.Add("term.ext", "unquoteSplicing", g => Chars.Sequence(",@")
+                .Right(g["root", "expression"])
+                .Select(e => YacqExpression.List(YacqExpression.Identifier("unquote-splicing"), e))
+            );
+
+            // Unquotes
+            this.Add("term.ext", "unquote", g => ','.Satisfy()
+                .Right(g["root", "expression"])
+                .Select(e => YacqExpression.List(YacqExpression.Identifier("unquote"), e))
+            );
+
+            // Transiting Expressions (Alternative Grammer)
+            this.Add("term.ext", "altExpression", g => Alternative.Get.Default
+                .Between(g["root", "ignore"], g["root", "ignore"])
+                .Between(Chars.Sequence("("), ')'.Satisfy())
+            );
+
+            // Tuples
+            this.Add("term.ext", "tuple", g => g["root", "expression"]
+                .Between(g["root", "ignore"], g["root", "ignore"])
+                .Many()
+                .Between(Chars.Sequence("["), ']'.Satisfy())
+                .Select(es => YacqExpression.List(es.StartWith(YacqExpression.Identifier("tuple"))))
             );
 
             #endregion

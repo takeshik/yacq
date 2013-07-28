@@ -50,6 +50,15 @@ namespace XSpect.Yacq.LanguageServices
             private set;
         }
 
+        public IEnumerable<Parser<Char, YacqExpression>> Macros
+        {
+            get
+            {
+                this.CheckIfMacrosSupported();
+                return this.Grammar.Get["term.ext"];
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Reader"/> class.
         /// </summary>
@@ -91,6 +100,18 @@ namespace XSpect.Yacq.LanguageServices
             }
         }
 
+        public Parser<Char, YacqExpression> GetMacro(String id)
+        {
+            this.CheckIfMacrosSupported();
+            return this.Grammar.Get["term.ext", id];
+        }
+
+        public void SetMacro(String id, Func<Grammar.RuleGetter, Parser<Char, YacqExpression>> rule)
+        {
+            this.CheckIfMacrosSupported();
+            this.Grammar.Set["term.ext", id] = rule;
+        }
+
         private Parser<Char, IEnumerable<YacqExpression>> GetDefinitiveParser()
         {
             return this.Grammar.Get.Let(g => g.Default
@@ -98,6 +119,14 @@ namespace XSpect.Yacq.LanguageServices
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Left(Errors.FollowedBy(Chars.Eof()))
             );
+        }
+
+        private void CheckIfMacrosSupported()
+        {
+            if (!this.Grammar.ContainsKey("term", "ext"))
+            {
+                throw new NotSupportedException("The grammar of this reader does not support reader macros.");
+            }
         }
     }
 }
