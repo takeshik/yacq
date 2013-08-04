@@ -176,6 +176,7 @@
     <Compile Include="Expressions\YacqReducingCombinator.cs" />
     <Compile Include="Expressions\YacqSequenceExpression.cs" />
     <Compile Include="LanguageServices\AlternativeGrammar.cs" />
+    <Compile Include="LanguageServices\PatternGrammar.cs" />
     <Compile Include="LanguageServices\Grammar.cs" />
     <Compile Include="LanguageServices\Grammar.RuleGetter.cs" />
     <Compile Include="LanguageServices\Grammar.RuleKey.cs" />

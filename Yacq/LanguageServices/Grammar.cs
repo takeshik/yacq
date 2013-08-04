@@ -46,6 +46,8 @@ namespace XSpect.Yacq.LanguageServices
 
         private static readonly AlternativeGrammar _alternative = new AlternativeGrammar();
 
+        private static readonly PatternGrammar _pattern = new PatternGrammar();
+
         private readonly IDictionary<RuleKey, Lazy<Parser<Char, YacqExpression>>> _rules;
 
         /// <summary>
@@ -156,6 +158,18 @@ namespace XSpect.Yacq.LanguageServices
             get
             {
                 return _alternative;
+            }
+        }
+
+        /// <summary>
+        /// Gets the pattern grammar.
+        /// </summary>
+        /// <value>The pattern grammar.</value>
+        public static PatternGrammar Pattern
+        {
+            get
+            {
+                return _pattern;
             }
         }
 

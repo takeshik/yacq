@@ -300,6 +300,9 @@
     <Compile Include="..\Yacq\LanguageServices\Grammar.RuleSetter.cs">
       <Link>LanguageServices\Grammar.RuleSetter.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\LanguageServices\PatternGrammar.cs">
+      <Link>LanguageServices\PatternGrammar.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>
     </Compile>
