@@ -37,7 +37,7 @@ using System.Linq;
 namespace XSpect
 {
     [DebuggerStepThrough()]
-    internal static class CommonExtensions
+    internal static class Flows
     {
         #region Let
 
@@ -204,81 +204,18 @@ namespace XSpect
 
         #endregion
 
-        #region Default
-
-        internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfDefault)
-        {
-            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
-                ? func(self)
-                : funcIfDefault();
-        }
-
-        internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfDefault)
-        {
-            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
-                ? func(self)
-                : valueIfDefault;
-        }
-
-        internal static TReturn Default<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
-        {
-            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
-                ? func(self)
-                : default(TReturn);
-        }
-
-        internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action, Func<TReceiver> funcIfDefault)
-        {
-            if (EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
-            {
-                action(self);
-                return self;
-            }
-            else
-            {
-                return funcIfDefault();
-            }
-        }
-
-        internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action, TReceiver valueIfDefault)
-        {
-            if (EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
-            {
-                action(self);
-                return self;
-            }
-            else
-            {
-                return valueIfDefault;
-            }
-        }
-
-        internal static TReceiver Default<TReceiver>(this TReceiver self, Action<TReceiver> action)
-        {
-            if (!EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver)))
-            {
-                action(self);
-                return self;
-            }
-            else
-            {
-                return default(TReceiver);
-            }
-        }
-
-        #endregion
-
         #region Null
 
-        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfNull)
-            where TReceiver : class
+        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, params Func<TReturn>[] funcsIfNull)
         {
-            return self != null
-                ? func(self)
-                : funcIfNull();
+            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
+                ? funcsIfNull
+                      .Select(f => f())
+                      .FirstOrDefault(_ => !EqualityComparer<TReturn>.Default.Equals(_, default(TReturn)))
+                : func(self);
         }
 
-        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfNull)
+        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfNull = default(TReturn))
             where TReceiver : class
         {
             return self != null
@@ -286,15 +223,7 @@ namespace XSpect
                 : valueIfNull;
         }
 
-        internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
-            where TReceiver : class
-        {
-            return self != null
-                ? func(self)
-                : default(TReturn);
-        }
-
-        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action, Func<TReceiver> funcIfNull)
+        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action, params Func<TReceiver>[] funcsIfNull)
             where TReceiver : class
         {
             if (self != null)
@@ -304,11 +233,11 @@ namespace XSpect
             }
             else
             {
-                return funcIfNull();
+                return funcsIfNull.Select(f => f()).FirstOrDefault(_ => _ != null);
             }
         }
 
-        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action, TReceiver valueIfNull)
+        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action, TReceiver valueIfNull = default(TReceiver))
             where TReceiver : class
         {
             if (self != null)
@@ -320,48 +249,6 @@ namespace XSpect
             {
                 return valueIfNull;
             }
-        }
-
-        internal static TReceiver Null<TReceiver>(this TReceiver self, Action<TReceiver> action)
-            where TReceiver : class
-        {
-            if (self != null)
-            {
-                action(self);
-                return self;
-            }
-            else
-            {
-                return default(TReceiver);
-            }
-        }
-
-        #endregion
-
-        #region Nullable
-
-        internal static Nullable<TReturn> Nullable<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, Func<TReturn> funcIfDefault)
-            where TReturn : struct
-        {
-            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
-                ? func(self)
-                : funcIfDefault();
-        }
-
-        internal static Nullable<TReturn> Nullable<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, TReturn valueIfDefault)
-            where TReturn : struct
-        {
-            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
-                ? func(self)
-                : valueIfDefault;
-        }
-
-        internal static Nullable<TReturn> Nullable<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
-            where TReturn : struct
-        {
-            return EqualityComparer<TReceiver>.Default.Equals(self, default(TReceiver))
-                ? func(self)
-                : default(Nullable<TReturn>);
         }
 
         #endregion
@@ -438,16 +325,6 @@ namespace XSpect
         }
 
         #endregion
-
-        internal static Boolean StartsWithInvariant(this String str, String value)
-        {
-            return str.StartsWith(value, StringComparison.InvariantCulture);
-        }
-
-        internal static Boolean EndsWithInvariant(this String str, String value)
-        {
-            return str.EndsWith(value, StringComparison.InvariantCulture);
-        }
 
         #region Zip
 
@@ -590,12 +467,98 @@ namespace XSpect
         }
 
         #endregion
+    }
 
+    [DebuggerStepThrough()]
+    internal static class Enumerables
+    {
         internal static IEnumerable<TResult> Choose<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
             where TSource : class
         {
             return source.Select(selector).Where(_ => _ != null);
         }
+
+        internal static IEnumerable<TSource> In<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, params TKey[] keys)
+        {
+            return source.Where(e => keys.Contains(keySelector(e)));
+        }
+
+        internal static IEnumerable<TSource> In<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEnumerable<TKey> keys)
+        {
+            return In(source, keySelector, keys.ToArray());
+        }
+
+        internal static IEnumerable<TSource> Between<TSource>(this IEnumerable<TSource> source, TSource from, TSource to)
+            where  TSource : IComparable<TSource>
+        {
+            return source.Where(e => from.CompareTo(e) <= 0 && e.CompareTo(to) <= 0);
+        }
+
+        internal static IEnumerable<TSource> Between<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, TKey from, TKey to)
+            where TKey : IComparable<TKey>
+        {
+            return source.Where(e => keySelector(e).Let(k => from.CompareTo(k) <= 0 && k.CompareTo(to) <= 0));
+        }
+
+        #region IndexOf
+
+        internal static Int32 IndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
+        {
+            return source
+                .Select((e, i) => Tuple.Create<TSource, int>(e, i))
+                .First(_ => predicate(_.Item1))
+                .Item2;
+        }
+
+        internal static Int32 IndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, Int32, Boolean> predicate)
+        {
+            return source
+                .Select((e, i) => Tuple.Create<TSource, int>(e, i))
+                .First(_ => predicate(_.Item1, _.Item2))
+                .Item2;
+        }
+
+        internal static Int32 IndexOf<TSource>(this IEnumerable<TSource> source, TSource element, IEqualityComparer<TSource> comparer)
+        {
+            return IndexOf(source, e => comparer.Equals(e, element));
+        }
+
+        internal static Int32 IndexOf<TSource>(this IEnumerable<TSource> source, TSource element)
+        {
+            return IndexOf(source, element, EqualityComparer<TSource>.Default);
+        }
+
+        #endregion
+
+        #region LastIndexOf
+
+        internal static Int32 LastIndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
+        {
+            return source
+                .Select((e, i) => Tuple.Create(e, i))
+                .Last(_ => predicate(_.Item1))
+                .Item2;
+        }
+
+        internal static Int32 LastIndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, Int32, Boolean> predicate)
+        {
+            return source
+                .Select((e, i) => Tuple.Create(e, i))
+                .Last(_ => predicate(_.Item1, _.Item2))
+                .Item2;
+        }
+
+        internal static Int32 LastIndexOf<TSource>(this IEnumerable<TSource> source, TSource element, IEqualityComparer<TSource> comparer)
+        {
+            return LastIndexOf(source, e => comparer.Equals(e, element));
+        }
+
+        internal static Int32 LastIndexOf<TSource>(this IEnumerable<TSource> source, TSource element)
+        {
+            return LastIndexOf(source, element, EqualityComparer<TSource>.Default);
+        }
+
+        #endregion
 
         internal static TSource FirstOrLast<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
         {
@@ -640,30 +603,16 @@ namespace XSpect
             return source.Concat(values);
         }
 
-        internal static TSource At<TSource>(this IList<TSource> source, Int32 index)
+        internal static IEnumerable<T> Generate<T>(this T initialValue, Func<T, T> func)
         {
-            return index < 0
-                ? source[source.Count + index]
-                : source[index];
+            var value = initialValue;
+            while (true)
+            {
+                yield return value = func(value);
+            }
+            // ReSharper disable FunctionNeverReturns
         }
-
-        internal static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
-        {
-            TValue value;
-            return dictionary.TryGetValue(key, out value)
-                ? value
-                : defaultValue;
-        }
-
-        internal static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source)
-        {
-            return source.ToDictionary(p => p.Key, p => p.Value);
-        }
-
-        internal static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<Tuple<TKey, TValue>> source)
-        {
-            return source.ToDictionary(p => p.Item1, p => p.Item2);
-        }
+        // ReSharper restore FunctionNeverReturns
     }
 
     [DebuggerStepThrough()]
@@ -673,11 +622,6 @@ namespace XSpect
         {
             // HACK: depends on internal implementation.
             return (T[]) Enumerable.Empty<T>();
-        }
-
-        internal static ReadOnlyCollection<T> AsReadOnly<T>(this T[] array)
-        {
-            return new ReadOnlyCollection<T>(array);
         }
 
         internal static Int32 BinarySearch<T>(this T[] array, T value)
@@ -695,32 +639,240 @@ namespace XSpect
             return Array.BinarySearch(array, index, length, value, comparer);
         }
 
-        internal static TResult[] SelectAll<TSource, TResult>(this TSource[] array, Func<TSource, TResult> selector)
+        internal static TResult[] SelectAll<TElement, TResult>(this TElement[] array, Func<TElement, TResult> selector)
         {
 #if SILVERLIGHT
             return array.Select(selector).ToArray();
 #else
-            return Array.ConvertAll(array, new Converter<TSource, TResult>(selector));
+            return Array.ConvertAll(array, new Converter<TElement, TResult>(selector));
 #endif
         }
 
-        internal static TSource[] WhereAll<TSource>(this TSource[] array, Func<TSource, Boolean> predicate)
+        internal static TElement[] WhereAll<TElement>(this TElement[] array, Func<TElement, Boolean> predicate)
         {
 #if SILVERLIGHT
             return array.Where(predicate).ToArray();
 #else
-            return Array.FindAll(array, (new Predicate<TSource>(predicate)));
+            return Array.FindAll(array, (new Predicate<TElement>(predicate)));
 #endif
         }
 
-        internal static TSource Last<TSource>(this TSource[] array, Func<TSource, Boolean> predicate)
+        internal static TElement Last<TElement>(this TElement[] array, Func<TElement, Boolean> predicate)
         {
 #if SILVERLIGHT
             return array.Last(predicate);
 #else
-            return Array.FindLast(array, new Predicate<TSource>(predicate));
+            return Array.FindLast(array, new Predicate<TElement>(predicate));
 #endif
         }
+
+        internal static ArraySegment<T> Range<T>(this T[] array, Int32 offset, Int32 count)
+        {
+            return new ArraySegment<T>(array, offset, count);
+        }
+    }
+
+    [DebuggerStepThrough()]
+    internal static class Lists
+    {
+        internal static void AddRange<TElement>(this IList<TElement> list, IEnumerable<TElement> elements)
+        {
+            foreach (var e in elements)
+            {
+                list.Add(e);
+            }
+        }
+
+        internal static void AddRange<TElement>(this IList<TElement> list, params TElement[] elements)
+        {
+            AddRange(list, (IEnumerable<TElement>) elements);
+        }
+
+        internal static ReadOnlyCollection<TElement> AsReadOnly<TElement>(this IList<TElement> list)
+        {
+            return new ReadOnlyCollection<TElement>(list);
+        }
+
+        internal static void InsertRange<TElement>(this IList<TElement> list, Int32 index, IEnumerable<TElement> elements)
+        {
+            foreach (var e in elements)
+            {
+                list.Insert(index++, e);
+            }
+        }
+
+        internal static void InsertRange<TElement>(this IList<TElement> list, Int32 index, params TElement[] elements)
+        {
+            InsertRange(list, index, (IEnumerable<TElement>) elements);
+        }
+
+        internal static Int32 RemoveAll<TElement>(this IList<TElement> list, Func<TElement, Boolean> predicate)
+        {
+            var targets = list.Select((e, i) => Tuple.Create(e, i)).Where(_ => predicate(_.Item1))
+                .Select(_ => _.Item2)
+                .OrderByDescending(i => i)
+                .ToArray();
+            foreach (var i in targets)
+            {
+                list.RemoveAt(i);
+            }
+            return targets.Length;
+        }
+
+        internal static Int32 RemoveAll<TElement>(this IList<TElement> list, Func<TElement, Int32, Boolean> predicate)
+        {
+            var targets = list.Select((e, i) => Tuple.Create(e, i)).Where(_ => predicate(_.Item1, _.Item2))
+                .Select(_ => _.Item2)
+                .OrderByDescending(i => i)
+                .ToArray();
+            foreach (var i in targets)
+            {
+                list.RemoveAt(i);
+            }
+            return targets.Length;
+        }
+
+        internal static void RemoveRange<TElement>(this IList<TElement> list, Int32 index, Int32 count)
+        {
+            Enumerable.Range(index, count)
+                .Reverse()
+                .ForEach(list.RemoveAt);
+        }
+
+        internal static TElement At<TElement>(this IList<TElement> source, Int32 index)
+        {
+            return index < 0
+                ? source[source.Count + index]
+                : source[index];
+        }
+
+        internal static IEnumerable<TElement> Slice<TElement>(IList<TElement> list, Int32 from, Int32 to)
+        {
+            switch (Math.Sign(from))
+            {
+                case -1:
+                    switch (Math.Sign(to))
+                    {
+                        case -1:
+                            return from >= to
+                                ? list.Skip(list.Count + to).Take(from - to + 1).Reverse()
+                                : list.Skip(list.Count + from).Take(to - from + 1);
+                        case 0:
+                            return list.Skip(list.Count + from).EndWith(list[0]);
+                        case 1:
+                            return list.Skip(list.Count + from).Concat(list.Take(to + 1));
+                    }
+                    break;
+                case 0:
+                    switch (Math.Sign(to))
+                    {
+                        case -1:
+                            return list.Skip(list.Count + to).Reverse().StartWith(list[0]);
+                        case 0:
+                            return list.Take(1);
+                        case 1:
+                            return list.Take(to + 1);
+                    }
+                    break;
+                case 1:
+                    switch (Math.Sign(to))
+                    {
+                        case -1:
+                            return list.Skip(list.Count + to).Concat(list.Take(from + 1)).Reverse();
+                        case 0:
+                            return list.Take(from + 1).Reverse();
+                        case 1:
+                            return from <= to
+                                ? list.Skip(from).Take(to - from + 1)
+                                : list.Skip(to).Take(from - to + 1).Reverse();
+                    }
+                    break;
+            }
+            throw new ArgumentException();
+        }
+    }
+
+    [DebuggerStepThrough()]
+    internal static class Dictionaries
+    {
+        internal static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
+        {
+            TValue value;
+            return dictionary.TryGetValue(key, out value)
+                ? value
+                : defaultValue;
+        }
+
+        internal static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> defaultValueFactory)
+        {
+            TValue value;
+            return dictionary.TryGetValue(key, out value)
+                ? value
+                : defaultValueFactory();
+        }
+
+        internal static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source)
+        {
+            return source.ToDictionary(p => p.Key, p => p.Value);
+        }
+
+        internal static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<Tuple<TKey, TValue>> source)
+        {
+            return source.ToDictionary(p => p.Item1, p => p.Item2);
+        }
+
+        internal static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<TKey> keys, IEnumerable<TValue> values)
+        {
+            return keys.Zip(values, Tuple.Create).ToDictionary();
+        }
+    }
+
+    [DebuggerStepThrough()]
+    internal static class Strings
+    {
+        internal static Boolean StartsWithInvariant(this String str, String value)
+        {
+            return str.StartsWith(value, StringComparison.InvariantCulture);
+        }
+
+        internal static Boolean EndsWithInvariant(this String str, String value)
+        {
+            return str.EndsWith(value, StringComparison.InvariantCulture);
+        }
+
+        #region Stringify
+
+        internal static String Stringify(this IEnumerable<Char> chars)
+        {
+            return new String(chars.ToArray());
+        }
+
+        internal static String Stringify(this IEnumerable<Char> chars, String joinner)
+        {
+            return String.Join(joinner, chars);
+        }
+
+        internal static String Stringify(this IEnumerable<String> strings)
+        {
+            return String.Concat(strings);
+        }
+
+        internal static String Stringify(this IEnumerable<String> strings, String joinner)
+        {
+            return String.Join(joinner, strings);
+        }
+
+        internal static String Stringify<TSource>(this IEnumerable<TSource> source, Func<TSource, String> selector)
+        {
+            return String.Concat(source.Select(selector));
+        }
+
+        internal static String Stringify<TSource>(this IEnumerable<TSource> source, Func<TSource, String> selector, String joinner)
+        {
+            return String.Join(joinner, source.Select(selector));
+        }
+
+        #endregion
     }
 }
 // vim:set ft=cs fenc=utf-8 ts=4 sw=4 sts=4 et:
