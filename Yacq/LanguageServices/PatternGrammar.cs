@@ -100,6 +100,7 @@ namespace XSpect.Yacq.LanguageServices
             #region Importing Rules
 
             this.Add("root", "comment", g => Standard.Get["root", "comment"]);
+            this.Add("root", "ignore", g => Standard.Get["root", "ignore"]);
 
             #endregion
 
@@ -109,23 +110,58 @@ namespace XSpect.Yacq.LanguageServices
                 // From the Standard Grammar:
                 '"', '#', '\'', '(', ')', '.', ':', ';', '[', ']', '`', '{', '}',
                 // Additional punctuation characters:
-                '%', '?', '*'
+                '*', '+', '<', '>', '?', '|'
             );
 
             #endregion
 
-            #region Ignore
+            #region Terms
 
-            this.Add("root", "ignore", g => Combinator.Choice(
-                this.Get["root", "comment"].Ignore(),
-                Chars.Space().Ignore(),
-                ','.Satisfy().Ignore(),
+            // Texts
+            this.Add("term", "text", g => Alternative.Get["term", "text"]
+                .Select(e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
+                    .Method("Reduce")
+                    .Method("Satisfy", YacqExpression.AmbiguousParameter(typeof(Expression), "$e").Let(p =>
+                        YacqExpression.AmbiguousLambda(YacqExpression.Function("==", p, YacqExpression.Quote(e)), p)
+                    ))
+                )
+            );
+
+            // Numbers
+            this.Add("term", "number", g => Alternative.Get["term", "number"]
+                .Select(e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
+                    .Method("Reduce")
+                    .Method("Satisfy", YacqExpression.AmbiguousParameter(typeof(Expression), "$e").Let(p =>
+                        YacqExpression.AmbiguousLambda(YacqExpression.Function("==", p, YacqExpression.Quote(e)), p)
+                    ))
+                )
+            );
+
+            // Identifiers
+            this.Add("term", "identifier", g => SetPosition(
                 Combinator.Choice(
-                    Chars.Sequence("\r\n"),
-                    Chars.OneOf('\r', '\n', '\x85', '\u2028', '\u2029')
-                        .Select(EnumerableEx.Return)
-                ).Select(_ => Environment.NewLine).Ignore()
-            ).Many().Select(_ => (YacqExpression) YacqExpression.Ignore()));
+                    Chars.Digit()
+                        .Not()
+                        .Right(Chars.Space()
+                            .Or(punctuation)
+                            .Not()
+                            .Right(Chars.Any())
+                            .Many(1)
+                        )
+                ).Select(cs => YacqExpression.TypeCandidate(typeof(YacqCombinators))
+                    .Method("Reduce")
+                    .Method("Satisfy", YacqExpression.AmbiguousParameter(typeof(Expression), "$e").Let(p =>
+                        YacqExpression.AmbiguousLambda(YacqExpression.Function("==", p, YacqExpression.Quote(
+                            YacqExpression.Identifier(default(Char), new String(cs.ToArray()))
+                        )), p)
+                    ))
+                )
+            ));
+
+            this.Add("root", "term", g => g["term"]
+                .Choice()
+                .Between(g["root", "ignore"], g["root", "ignore"])
+            );
 
             #endregion
 
@@ -139,7 +175,9 @@ namespace XSpect.Yacq.LanguageServices
 
             // Parentheses
             this.Add("primary", "parenthesis", g => SetPosition(
-                g["root", "expression"].Between('('.Satisfy(), ')'.Satisfy())
+                g["root", "expression"]
+                    .Between('('.Satisfy(), ')'.Satisfy())
+                    .Or(g["root", "term"])
             ));
 
             // Lists
