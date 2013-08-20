@@ -52,25 +52,6 @@ namespace XSpect.Yacq
                 ?? expr.Reduce(symbols).TryConvert(expectedType);
         }
 
-        internal static Boolean EqualsExact(this Expression self, Expression other)
-        {
-            return self.GetType() == other.GetType() &&
-                self.GetType().GetConvertibleTypes()
-                    .SelectMany(t => t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
-                    .All(f => EqualsExact(f.GetValue(self), f.GetValue(other)));
-        }
-
-        private static Boolean EqualsExact(this Object self, Object other)
-        {
-            return self == other || (self != null && other != null &&
-                self is Expression
-                    ? EqualsExact((Expression) self, (Expression) other)
-                    : self is IEnumerable<object>
-                          ? ((IEnumerable<Object>) self).Zip((IEnumerable<Object>) other, EqualsExact).All(_ => _)
-                          : self.Equals(other)
-            );
-        }
-
         internal static IEnumerable<Type> GetConvertibleTypes(this Type type)
         {
             return type != null
@@ -168,13 +149,6 @@ namespace XSpect.Yacq
             return Attribute.IsDefined(method, typeof(ExtensionAttribute));
         }
 
-        internal static IEnumerable<MethodInfo> GetExtensionMethods(this Type type)
-        {
-            return type.HasExtensionMethods()
-                ? type.GetMethods().Where(IsExtensionMethod)
-                : Enumerable.Empty<MethodInfo>();
-        }
-
         internal static Type TryGetGenericTypeDefinition(this Type type)
         {
             return type != null && type.IsGenericType && !type.IsGenericTypeDefinition
@@ -214,36 +188,33 @@ namespace XSpect.Yacq
 
         internal static Boolean IsAppropriate(this Type type, Type target)
         {
-            return ((type.IsArray && target.IsArray) || (type.IsByRef && target.IsByRef) || (type.IsPointer && target.IsPointer)
-                && type.GetElementType().IsAppropriate(target.GetElementType())
-            ) ||
-                (type.IsGenericParameter &&
-                    !(
-                        (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint)
-                            && target.GetConstructor(Type.EmptyTypes) == null
-                        ) ||
-                        (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint)
-                            && target.IsClass
-                            || target.TryGetGenericTypeDefinition() == typeof(Nullable<>)
-                        ) ||
-                        (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint)
-                            && target.IsValueType
-                        )
-                    ) &&
-                    target.GetConvertibleTypes().Let(cs =>
-                        type.GetGenericParameterConstraints().All(cs.Contains)
-                    )
-                ) ||
-                    target.GetConvertibleTypes()
-                        .Select(t => t.TryGetGenericTypeDefinition())
-                        .Contains(type.TryGetGenericTypeDefinition())
-                // Special matches:
-                || (
-                    typeof(LambdaExpression).IsAssignableFrom(type) &&
-                    typeof(Delegate).IsAssignableFrom(target) &&
-                    type.GetDelegateSignature() == target.GetDelegateSignature()
-                )
-                || (type.IsValueType && target == typeof(Object));
+            return type.IsAssignableFrom(target)
+                || ((type.IsGenericTypeDefinition || target.IsGenericTypeDefinition) &&
+                       ((((type.IsArray && target.IsArray) || (type.IsByRef && target.IsByRef) || (type.IsPointer && target.IsPointer))
+                           && type.GetElementType().IsAppropriate(target.GetElementType())
+                       ) || target.GetConvertibleTypes()
+                                .Select(t => t.TryGetGenericTypeDefinition())
+                                .Contains(type.TryGetGenericTypeDefinition())
+                   ))
+                || (type.IsGenericParameter && (
+                       (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint)
+                           && target.GetConstructor(Type.EmptyTypes) != null
+                       ) ||
+                       (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint)
+                           && target.IsValueType
+                           || target.TryGetGenericTypeDefinition() != typeof(Nullable<>)
+                       ) ||
+                       (type.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint)
+                           && !target.IsValueType
+                       )
+                   ) &&
+                   target.GetConvertibleTypes().Let(cs =>
+                       type.GetGenericParameterConstraints().All(cs.Contains)
+                   ))
+                || (typeof(LambdaExpression).IsAssignableFrom(type)
+                       && typeof(Delegate).IsAssignableFrom(target)
+                       && type.GetDelegateSignature() == target.GetDelegateSignature()
+                   );
         }
 
         internal static MethodInfo GetDelegateSignature(this Type type)
@@ -273,27 +244,41 @@ namespace XSpect.Yacq
             ).GetGenericArguments()[0];
         }
 
-        internal static Type GetCommonType(this IEnumerable<Type> types)
+        internal static Type GetCommonType(this IEnumerable<Type> types, Boolean contravariant = false)
         {
+            types = types.ToArray();
             return types
                 .SelectMany(t => t.GetConvertibleTypes())
                 .Distinct()
                 .Except(EnumerableEx.Return(typeof(Object)))
-                .OrderByDescending(t => EnumerableEx
-                    .Generate(t, _ => _.BaseType != null, _ => _.BaseType, _ => _)
-                    .Count()
+                .OrderByDescending(t => t.IsInterface
+                    ? t.GetInterfaces().Length
+                    : EnumerableEx
+                          .Generate(t, _ => _.BaseType != null, _ => _.BaseType, _ => _)
+                          .Count()
                 )
                 .EndWith(typeof(Object))
-                .First(t => types.All(t.IsAssignableFrom));
-        }
-
-        internal static ParameterInfo[] GetParameters(this MemberInfo member)
-        {
-            return member is MethodBase
-                ? ((MethodBase) member).GetParameters()
-                : member is PropertyInfo
-                      ? ((PropertyInfo) member).GetIndexParameters()
-                      : Arrays.Empty<ParameterInfo>();
+                .ToArray()
+                .If(_ => contravariant,
+                    ts => ts.First(t => ts.All(t_ => t.IsAppropriate(t_) || t_.IsAppropriate(t))),
+                    ts => ts.First(t => types.All(t.IsAppropriate))
+                )
+                .If(ct => ct.IsGenericTypeDefinition, ct => ct.GetGenericArguments()
+                    .Let(ps => types.SelectMany(t => ps.Zip(
+                        t.GetConvertibleTypes().First(x => x.TryGetGenericTypeDefinition() == ct).GetGenericArguments(),
+                        Tuple.Create
+                    )))
+                    .ToLookup(_ => _.Item1, _ => _.Item2)
+                    .Select(ts => (ts.Key.GenericParameterAttributes & GenericParameterAttributes.VarianceMask).Let(f =>
+                        f == GenericParameterAttributes.Contravariant
+                            ? ts.GetCommonType(true)
+                            : f == GenericParameterAttributes.Covariant
+                                  ? ts.GetCommonType()
+                                  : ts.First()
+                        )
+                    )
+                    .Let(ts => ct.MakeGenericType(ts.ToArray()))
+                );
         }
 
         internal static Type ReplaceGenericArguments(this Type type, IDictionary<Type, Type> typeArgumentMap)
