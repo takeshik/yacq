@@ -189,7 +189,7 @@ namespace XSpect.Yacq
         internal static Boolean IsAppropriate(this Type type, Type target)
         {
             return type.IsAssignableFrom(target)
-                || ((type.IsGenericTypeDefinition || target.IsGenericTypeDefinition) &&
+                || ((type.ContainsGenericParameters || target.ContainsGenericParameters) &&
                        ((((type.IsArray && target.IsArray) || (type.IsByRef && target.IsByRef) || (type.IsPointer && target.IsPointer))
                            && type.GetElementType().IsAppropriate(target.GetElementType())
                        ) || target.GetConvertibleTypes()
