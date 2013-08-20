@@ -110,7 +110,7 @@ namespace XSpect.Yacq.LanguageServices
                 // From the Standard Grammar:
                 '"', '#', '\'', '(', ')', '.', ':', ';', '[', ']', '`', '{', '}',
                 // Additional punctuation characters:
-                '*', '+', '<', '>', '?', '|'
+                '%', '*', '+', '<', '>', '?', '|'
             );
 
             #endregion
@@ -232,8 +232,42 @@ namespace XSpect.Yacq.LanguageServices
 
             #region Operators
 
+            // Dots
+            this.Add("operator", "dot", g => g["root", "primary"]
+                .Let(parent => SetPosition(Prims.Pipe(
+                    parent,
+                    '.'.Satisfy()
+                        .Right(parent)
+                        .Many(),
+                    (l, rs) => rs.Aggregate(l, (h, t) =>
+                        YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("List",
+                            YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("Identifier", Expression.Constant(".")),
+                            h,
+                            t
+                        )
+                    )
+                )))
+            );
+
+            // Dots
+            this.Add("operator", "colon", g => g["operator", "dot"]
+                .Let(parent => SetPosition(Prims.Pipe(
+                    parent,
+                    ':'.Satisfy()
+                        .Right(parent)
+                        .Many(),
+                    (l, rs) => rs.Aggregate(l, (h, t) =>
+                        YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("List",
+                            YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("Identifier", Expression.Constant(":")),
+                            h,
+                            t
+                        )
+                    )
+                )))
+            );
+
             // Unary Operators
-            this.Add("operator", "unary", g => g["root", "primary"]
+            this.Add("operator", "unary", g => g["operator", "colon"]
                 .Let(parent => SetPosition(Prims.Pipe(
                     parent,
                     Combinator.Choice(
