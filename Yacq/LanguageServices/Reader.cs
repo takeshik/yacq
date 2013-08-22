@@ -50,6 +50,10 @@ namespace XSpect.Yacq.LanguageServices
             private set;
         }
 
+        /// <summary>
+        /// Gets the reader macro rules.
+        /// </summary>
+        /// <value>A sequence of the reader macro rules.</value>
         public IEnumerable<Parser<Char, YacqExpression>> Macros
         {
             get
@@ -100,16 +104,48 @@ namespace XSpect.Yacq.LanguageServices
             }
         }
 
+        /// <summary>
+        /// Returns the reader macro rule with specified ID.
+        /// </summary>
+        /// <param name="id">The ID of the reader macro rule.</param>
+        /// <returns>The reader macro rule with specified ID.</returns>
         public Parser<Char, YacqExpression> GetMacro(String id)
         {
             this.CheckIfMacrosSupported();
             return this.Grammar.Get["term.ext", id];
         }
 
-        public void SetMacro(String id, Func<Grammar.RuleGetter, Parser<Char, YacqExpression>> rule)
+        /// <summary>
+        /// Determines whether the specified reader macro is defined.
+        /// </summary>
+        /// <param name="id">The ID of the reader macro to locate.</param>
+        /// <returns><c>true</c> if the grammar contains a reader macro with the key; otherwise, <c>false</c>.</returns>
+        public Boolean IsMacroDefined(String id)
+        {
+            this.CheckIfMacrosSupported();
+            return this.Grammar.ContainsKey("term.ext", id);
+        }
+
+        /// <summary>
+        /// Defines the reader macro rule with specified ID.
+        /// </summary>
+        /// <param name="id">The ID of new reader macro rule to define.</param>
+        /// <param name="rule">The factory function of the parser, which has a parameter to the getter for the grammar.</param>
+        public void DefineMacro(String id, Func<Grammar.RuleGetter, Parser<Char, YacqExpression>> rule)
         {
             this.CheckIfMacrosSupported();
             this.Grammar.Set["term.ext", id] = rule;
+        }
+
+        /// <summary>
+        /// Undefines the reader macro rule with specified ID.
+        /// </summary>
+        /// <param name="id">The ID of reader macro rule to remove.</param>
+        /// <returns><c>true</c> if the reader macro rule is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
+        public Boolean UndefineMacro(String id)
+        {
+            this.CheckIfMacrosSupported();
+            return this.Grammar.Remove("term.ext", id);
         }
 
         private Parser<Char, IEnumerable<YacqExpression>> GetDefinitiveParser()
@@ -117,7 +153,7 @@ namespace XSpect.Yacq.LanguageServices
             return this.Grammar.Get.Let(g => g.Default
                 .Many()
                 .Between(g["root", "ignore"], g["root", "ignore"])
-                .Left(Errors.FollowedBy(Chars.Eof()))
+                .Left(Errors.FollowedBy(Chars.Eof(), "Syntax Error: unexpected end of code"))
             );
         }
 
