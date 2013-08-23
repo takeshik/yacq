@@ -100,12 +100,32 @@ namespace XSpect.Yacq.LanguageServices
             }
 
             /// <summary>
+            /// Determines whether two specified rule keys have the same value.
+            /// </summary>
+            /// <param name="left">The first rule key to compare, or <c>null</c>.</param>
+            /// <param name="right">The second rule key to compare, or <c>null</c>.</param>
+            /// <returns><c>true</c> if the value of <paramref name="left"/> is the same as the value of <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+            public static Boolean operator ==(RuleKey left, RuleKey right)
+            {
+                return left.Equals(right);
+            }
+
+            /// <summary>
+            /// Determines whether two specified rule keys have different values.
+            /// </summary>
+            /// <param name="left">The first rule key to compare, or <c>null</c>.</param>
+            /// <param name="right">The second rule key to compare, or <c>null</c>.</param>
+            /// <returns><c>true</c> if the value of <paramref name="left"/> is different from the value of <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+            public static Boolean operator !=(RuleKey left, RuleKey right)
+            {
+                return !left.Equals(right);
+            }
+
+            /// <summary>
             /// Indicates whether this instance and a specified object are equal.
             /// </summary>
             /// <param name="obj">Another object to compare to.</param>
-            /// <returns>
-            /// <c>true</c> if <paramref name="obj"/> and this instance are the same type and represent the same value; otherwise, <c>false</c>.
-            /// </returns>
+            /// <returns><c>true</c> if <paramref name="obj"/> and this instance are the same type and represent the same value; otherwise, <c>false</c>.</returns>
             public override Boolean Equals(Object obj)
             {
                 return obj is RuleKey && this.Equals((RuleKey) obj);
@@ -114,9 +134,7 @@ namespace XSpect.Yacq.LanguageServices
             /// <summary>
             /// Returns the hash code for this instance.
             /// </summary>
-            /// <returns>
-            /// A 32-bit signed integer that is the hash code for this instance.
-            /// </returns>
+            /// <returns>A 32-bit signed integer that is the hash code for this instance.</returns>
             public override Int32 GetHashCode()
             {
                 return unchecked(
@@ -129,9 +147,7 @@ namespace XSpect.Yacq.LanguageServices
             /// <summary>
             /// Returns the fully qualified type name of this instance.
             /// </summary>
-            /// <returns>
-            /// A <see cref="String"/> containing a fully qualified type name.
-            /// </returns>
+            /// <returns>A <see cref="String"/> containing a fully qualified type name.</returns>
             public override String ToString()
             {
                 return this.Equals(Default)
@@ -144,10 +160,10 @@ namespace XSpect.Yacq.LanguageServices
             /// </summary>
             /// <param name="other">A rule key to compare with this rule key.</param>
             /// <returns>
-            /// A value that indicates the relative order of the rule keys being compared. The return value has the following meanings:
-            /// Less than zero - This rule key is less than the <paramref name="other"/>.
-            /// Zero - This rule key is equal to <paramref name="other"/>.
-            /// Greater than zero - This rule key is greater than <paramref name="other"/>.
+            /// <para>A value that indicates the relative order of the rule keys being compared. The return value has the following meanings:</para>
+            /// <para>Less than zero - This rule key is less than the <paramref name="other"/>.</para>
+            /// <para>Zero - This rule key is equal to <paramref name="other"/>.</para>
+            /// <para>Greater than zero - This rule key is greater than <paramref name="other"/>.</para>
             /// </returns>
             public Int32 CompareTo(RuleKey other)
             {
@@ -163,9 +179,7 @@ namespace XSpect.Yacq.LanguageServices
             /// Indicates whether this rule and a specified rule are equal.
             /// </summary>
             /// <param name="other">Another rule to compare to.</param>
-            /// <returns>
-            /// <c>true</c> if <paramref name="other"/> and this rule are the same value; otherwise, <c>false</c>.
-            /// </returns>
+            /// <returns><c>true</c> if <paramref name="other"/> and this rule are the same value; otherwise, <c>false</c>.</returns>
             public Boolean Equals(RuleKey other)
             {
                 return this.Category == other.Category && (this.Priority == other.Priority || this.Id == other.Id);

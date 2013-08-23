@@ -112,7 +112,7 @@ namespace XSpect.Yacq.LanguageServices
         {
             get
             {
-                return this[this.GetKey(category, id)];
+                return this[this.GetKey(category, id, true)];
             }
             set
             {
@@ -326,11 +326,11 @@ namespace XSpect.Yacq.LanguageServices
         }
 
         /// <summary>
-        /// Removes the symbol with the specified symbol key from this symbol table.
+        /// Removes the rule with the specified rule key from this grammar.
         /// </summary>
         /// <param name="key">The rule key to remove.</param>
         /// <returns>
-        /// <c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.
+        /// <c>true</c> if the rule is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.
         /// </returns>
         public virtual Boolean Remove(RuleKey key)
         {
@@ -389,7 +389,7 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="category">The category of new rule to add.</param>
         /// <param name="priority">The priority of new rule to add.</param>
-        /// <param name="id">The ID to of new rule to add.</param>
+        /// <param name="id">The ID of new rule to add.</param>
         /// <param name="rule">The factory function of the parser, which has a parameter to the getter for this grammar.</param>
         public void Add(String category, Int32 priority, String id, Func<RuleGetter, Parser<Char, YacqExpression>> rule)
         {
@@ -400,7 +400,7 @@ namespace XSpect.Yacq.LanguageServices
         /// Adds the rule to this grammar. The priority of new rule is computed automatically.
         /// </summary>
         /// <param name="category">The category of new rule to add.</param>
-        /// <param name="id">The ID to of new rule to add.</param>
+        /// <param name="id">The ID of new rule to add.</param>
         /// <param name="rule">The factory function of the parser, which has a parameter to the getter for this grammar.</param>
         public void Add(String category, String id, Func<RuleGetter, Parser<Char, YacqExpression>> rule)
         {
@@ -412,7 +412,7 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="category">The category of the rule to locate.</param>
         /// <param name="priority">The priority of the rule to locate.</param>
-        /// <param name="id">The ID to of the rule to locate.</param>
+        /// <param name="id">The ID of the rule to locate.</param>
         /// <returns><c>true</c> if this grammar contains a rule with the key; otherwise, <c>false</c>.</returns>
         public Boolean ContainsKey(String category, Int32 priority, String id)
         {
@@ -427,52 +427,62 @@ namespace XSpect.Yacq.LanguageServices
         /// <returns><c>true</c> if this grammar contains a rule with the key; otherwise, <c>false</c>.</returns>
         public Boolean ContainsKey(String category, Int32 priority)
         {
-            return this.ContainsKey(this.GetKey(category, priority));
+            return this.GetKey(category, priority)
+                .Let(k => k != RuleKey.Default && this.ContainsKey(k));
         }
 
         /// <summary>
         /// Determines whether the specified rule is contained in this grammar.
         /// </summary>
         /// <param name="category">The category of the rule to locate.</param>
-        /// <param name="id">The ID to of the rule to locate.</param>
+        /// <param name="id">The ID of the rule to locate.</param>
         /// <returns><c>true</c> if this grammar contains a rule with the key; otherwise, <c>false</c>.</returns>
         public Boolean ContainsKey(String category, String id)
         {
-            return this.ContainsKey(this.GetKey(category, id));
+            return this.GetKey(category, id)
+                .Let(k => k != RuleKey.Default && this.ContainsKey(k));
         }
 
         /// <summary>
-        /// Removes the symbol with the specified symbol key from this symbol table.
+        /// Removes the rule with the specified rule key from this grammar.
         /// </summary>
         /// <param name="category">The category of the rule to remove.</param>
         /// <param name="priority">The priority of the rule to remove.</param>
-        /// <param name="id">The ID to of the rule to remove.</param>
-        /// <returns><c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
+        /// <param name="id">The ID of the rule to remove.</param>
+        /// <returns><c>true</c> if the rule is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
         public Boolean Remove(String category, Int32 priority, String id)
         {
-            return this.ContainsKey(new RuleKey(category, priority, id));
+            return this.Remove(new RuleKey(category, priority, id));
         }
 
         /// <summary>
-        /// Removes the symbol with the specified symbol key from this symbol table.
+        /// Removes the rule with the specified rule key from this grammar.
         /// </summary>
         /// <param name="category">The category of the rule to remove.</param>
         /// <param name="priority">The priority of the rule to remove.</param>
-        /// <returns><c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
+        /// <returns><c>true</c> if the rule is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
         public Boolean Remove(String category, Int32 priority)
         {
-            return this.ContainsKey(this.GetKey(category, priority));
+            return this.GetKey(category, priority).If(
+                k => k == RuleKey.Default,
+                k => false,
+                this.Remove
+            );
         }
 
         /// <summary>
-        /// Removes the symbol with the specified symbol key from this symbol table.
+        /// Removes the rule with the specified rule key from this grammar.
         /// </summary>
         /// <param name="category">The category of the rule to remove.</param>
-        /// <param name="id">The ID to of the rule to remove.</param>
-        /// <returns><c>true</c> if the symbol is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
+        /// <param name="id">The ID of the rule to remove.</param>
+        /// <returns><c>true</c> if the rule is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if key was not found in the grammar.</returns>
         public Boolean Remove(String category, String id)
         {
-            return this.ContainsKey(this.GetKey(category, id));
+            return this.GetKey(category, id).If(
+                k => k == RuleKey.Default,
+                k => false,
+                this.Remove
+            );
         }
 
         /// <summary>
@@ -480,7 +490,7 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="category">The category of the rule to get.</param>
         /// <param name="priority">The priority of the rule to get.</param>
-        /// <param name="id">The ID to of the rule to get.</param>
+        /// <param name="id">The ID of the rule to get.</param>
         /// <param name="value">When this method returns, contains the value associated with the specified rule key, if the key is found;
         /// otherwise, <c>null</c>. This parameter is passed uninitialized.</param>
         /// <returns><c>true</c> if the specified rule key is contained in this grammar; otherwise, <c>false</c>.</returns>
@@ -506,7 +516,7 @@ namespace XSpect.Yacq.LanguageServices
         /// Gets the reference to the parser associated with the specified rule key.
         /// </summary>
         /// <param name="category">The category of the rule to get.</param>
-        /// <param name="id">The ID to of the rule to get.</param>
+        /// <param name="id">The ID of the rule to get.</param>
         /// <param name="value">When this method returns, contains the value associated with the specified rule key, if the key is found;
         /// otherwise, <c>null</c>. This parameter is passed uninitialized.</param>
         /// <returns><c>true</c> if the specified rule key is contained in this grammar; otherwise, <c>false</c>.</returns>
@@ -520,11 +530,12 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="category">The category of the rule to get.</param>
         /// <param name="priority">The priority of the rule to get.</param>
-        /// <returns>The rule key with specified parameters, if the key is found; otherwise, <c>null</c>.</returns>
-        public RuleKey GetKey(String category, Int32 priority)
+        /// <param name="throwOnError"><c>true</c> to throw an exception if the rule cannot be found; <c>false</c> to return <c>null</c>.</param>
+        /// <returns>The rule key with specified parameters. if the key is not found, the <paramref name="throwOnError"/> parameter specifies whether <c>null</c> is returned or an exception is thrown.</returns>
+        public RuleKey GetKey(String category, Int32 priority, Boolean throwOnError = false)
         {
             var key = this.Keys.SingleOrDefault(k => k.Category == category && k.Priority == priority);
-            if (key.Equals(RuleKey.Default))
+            if (key == RuleKey.Default && throwOnError)
             {
                 throw new KeyNotFoundException("Specified key was not found: category = " + category + ", priority = " + priority);
             }
@@ -536,11 +547,12 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         /// <param name="category">The category of the rule to get.</param>
         /// <param name="id">The ID of the rule to get.</param>
-        /// <returns>The rule key with specified parameters, if the key is found; otherwise, <c>null</c>.</returns>
-        public RuleKey GetKey(String category, String id)
+        /// <param name="throwOnError"><c>true</c> to throw an exception if the rule cannot be found; <c>false</c> to return <c>null</c>.</param>
+        /// <returns>The rule key with specified parameters. if the key is not found, the <paramref name="throwOnError"/> parameter specifies whether <c>null</c> is returned or an exception is thrown.</returns>
+        public RuleKey GetKey(String category, String id, Boolean throwOnError = false)
         {
             var key = this.Keys.SingleOrDefault(k => k.Category == category && k.Id == id);
-            if (key.Equals(RuleKey.Default))
+            if (key == RuleKey.Default && throwOnError)
             {
                 throw new KeyNotFoundException("Specified key was not found: category = " + category + ", id = " + id);
             }
@@ -550,7 +562,7 @@ namespace XSpect.Yacq.LanguageServices
         /// <summary>
         /// Creates a modifiable clone of this grammar.
         /// </summary>
-        /// <returns>A modifiable clone of this grammar.</returns>
+        /// <returns>A modifiable clone of this grammar.</returns>r
         public Grammar Clone()
         {
             return new Grammar(this._rules);
