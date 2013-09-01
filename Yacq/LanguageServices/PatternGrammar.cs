@@ -120,20 +120,16 @@ namespace XSpect.Yacq.LanguageServices
             // Texts
             this.Add("term", "text", g => Alternative.Get["term", "text"]
                 .Select(e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
-                    .Method("Reduce")
-                    .Method("Satisfy", YacqExpression.AmbiguousParameter(typeof(Expression), "$e").Let(p =>
-                        YacqExpression.AmbiguousLambda(YacqExpression.Function("==", p, YacqExpression.Quote(e)), p)
-                    ))
+                    .Method("Evaluate")
+                    .Method("Where", e)
                 )
             );
 
             // Numbers
             this.Add("term", "number", g => Alternative.Get["term", "number"]
                 .Select(e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
-                    .Method("Reduce")
-                    .Method("Satisfy", YacqExpression.AmbiguousParameter(typeof(Expression), "$e").Let(p =>
-                        YacqExpression.AmbiguousLambda(YacqExpression.Function("==", p, YacqExpression.Quote(e)), p)
-                    ))
+                    .Method("Evaluate")
+                    .Method("Where", e)
                 )
             );
 
@@ -148,14 +144,15 @@ namespace XSpect.Yacq.LanguageServices
                             .Right(Chars.Any())
                             .Many(1)
                         )
-                ).Select(cs => YacqExpression.TypeCandidate(typeof(YacqCombinators))
-                    .Method("Reduce")
-                    .Method("Satisfy", YacqExpression.AmbiguousParameter(typeof(Expression), "$e").Let(p =>
-                        YacqExpression.AmbiguousLambda(YacqExpression.Function("==", p, YacqExpression.Quote(
-                            YacqExpression.Identifier(default(Char), new String(cs.ToArray()))
-                        )), p)
-                    ))
-                )
+                ).Select(cs =>
+                    YacqExpression.Identifier(default(Char), new String(cs.ToArray()))
+                ).Select(ei => ei.Reduce().If(
+                    e => e.Type().IsAppropriate(typeof(Parser<Expression, Expression>)),
+                    e => (YacqExpression) ei,
+                    e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
+                        .Method("Evaluate")
+                        .Method("Where", e)
+                ))
             ));
 
             this.Add("root", "term", g => g["term"]

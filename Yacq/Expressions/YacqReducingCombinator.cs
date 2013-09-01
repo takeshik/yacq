@@ -46,7 +46,7 @@ namespace XSpect.Yacq.Expressions
 
         internal YacqReducingCombinator(Parser<Expression, Expression> parser, SymbolTable symbols, Type expectedType)
         {
-            this._parser = parser;
+            this._parser = parser ?? YacqCombinators.Any();
             this._symbols = symbols;
             this._expectedType = expectedType;
         }
@@ -116,7 +116,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>A parser for reduced expression with specified test.</returns>
         public Parser<Expression, Expression> Is(Type type)
         {
-            return this.Is(type.IsAssignableFrom);
+            return this.Is(type.IsAppropriate);
         }
 
         /// <summary>
@@ -173,6 +173,15 @@ namespace XSpect.Yacq.Expressions
         }
 
         #endregion
+
+        /// <summary>
+        /// Returns an accessor for parsers which combinates with specified parser and evaluates parsing expressions.
+        /// </summary>
+        /// <returns>An accessor for parsing with evaluated values of expressions.</returns>
+        public YacqEvaluatingCombinator Evaluate()
+        {
+            return new YacqEvaluatingCombinator(this._parser.Select(e => e.Reduce(this._symbols, this._expectedType)));
+        }
 
         private Parser<Expression, Expression> AndAlso(Parser<Expression, Expression> parser)
         {

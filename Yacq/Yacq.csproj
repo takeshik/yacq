@@ -163,6 +163,7 @@
     <Compile Include="Dynamic\YacqUnaryOperationBinder.cs" />
     <Compile Include="Expressions\ContextfulExpression.cs" />
     <Compile Include="Expressions\ContextType.cs" />
+    <Compile Include="Expressions\YacqEvaluatingCombinator.cs" />
     <Compile Include="Expressions\DispatchExpression.TypeNode.cs" />
     <Compile Include="Expressions\EscapeSequences.cs" />
     <Compile Include="Expressions\IgnoredExpression.cs" />

@@ -267,6 +267,9 @@
     <Compile Include="..\Yacq\Expressions\YacqCombinators.cs">
       <Link>Expressions\YacqCombinators.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqEvaluatingCombinator.cs">
+      <Link>Expressions\YacqEvaluatingCombinator.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\YacqExpression.cs">
       <Link>Expressions\YacqExpression.cs</Link>
     </Compile>
