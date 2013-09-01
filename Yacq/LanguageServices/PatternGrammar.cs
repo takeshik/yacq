@@ -117,47 +117,45 @@ namespace XSpect.Yacq.LanguageServices
 
             #region Terms
 
-            // Texts
-            this.Add("term", "text", g => Alternative.Get["term", "text"]
-                .Select(e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
-                    .Method("Evaluate")
-                    .Method("Where", e)
-                )
-            );
-
-            // Numbers
-            this.Add("term", "number", g => Alternative.Get["term", "number"]
-                .Select(e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
-                    .Method("Evaluate")
-                    .Method("Where", e)
-                )
-            );
-
-            // Identifiers
-            this.Add("term", "identifier", g => SetPosition(
+            this.Add("root", "term", g =>
                 Combinator.Choice(
-                    Chars.Digit()
-                        .Not()
-                        .Right(Chars.Space()
-                            .Or(punctuation)
+                    Standard.Get["term", "text"],
+                    Standard.Get["term", "number"],
+                    '#'.Satisfy().Right(Combinator.Choice(
+                        Standard.Get["term", "list"],
+                        Standard.Get["term", "vector"],
+                        Standard.Get["term", "lambdaList"]
+                    )),
+                    // Identifiers
+                    Combinator.Choice(
+                        Chars.Digit()
                             .Not()
-                            .Right(Chars.Any())
-                            .Many(1)
-                        )
-                ).Select(cs =>
-                    YacqExpression.Identifier(default(Char), new String(cs.ToArray()))
-                ).Select(ei => ei.Reduce().If(
+                            .Right(Chars.Space()
+                                .Or(punctuation)
+                                .Not()
+                                .Right(Chars.Any())
+                                .Many(1)
+                            )
+                    ).Select(cs =>
+                        YacqExpression.Identifier(default(Char), new String(cs.ToArray()))
+                    )
+                )
+                .Let(ps => Prims.Pipe(
+                    ps,
+                    '.'.Satisfy()
+                        .Right(ps)
+                        .Many(),
+                    (h, t) => t.Aggregate(h, (l, r) =>
+                        YacqExpression.List(YacqExpression.Identifier("."), l, r)
+                    )
+                ))
+                .Select(et => et.Reduce().If(
                     e => e.Type().IsAppropriate(typeof(Parser<Expression, Expression>)),
-                    e => (YacqExpression) ei,
+                    e => et,
                     e => YacqExpression.TypeCandidate(typeof(YacqCombinators))
                         .Method("Evaluate")
                         .Method("Where", e)
                 ))
-            ));
-
-            this.Add("root", "term", g => g["term"]
-                .Choice()
-                .Between(g["root", "ignore"], g["root", "ignore"])
             );
 
             #endregion
@@ -246,7 +244,7 @@ namespace XSpect.Yacq.LanguageServices
                 )))
             );
 
-            // Dots
+            // Colons
             this.Add("operator", "colon", g => g["operator", "dot"]
                 .Let(parent => SetPosition(Prims.Pipe(
                     parent,
