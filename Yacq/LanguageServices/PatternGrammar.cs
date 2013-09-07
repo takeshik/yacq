@@ -266,11 +266,25 @@ namespace XSpect.Yacq.LanguageServices
                 .Let(parent => SetPosition(Prims.Pipe(
                     parent,
                     Combinator.Choice(
-                        Chars.Sequence("?").Select(_ => Tuple.Create("Maybe", Arrays.Empty<Expression>())),
-                        Chars.Sequence("*").Select(_ => Tuple.Create("Many", Arrays.Empty<Expression>())),
-                        Chars.Sequence("+").Select(_ => Tuple.Create("Many", new Expression[] { Expression.Constant(1), }))
-                    )
-                        .Many(),
+                        Chars.Sequence("?")
+                            .Select(_ => Tuple.Create("Maybe", Arrays.Empty<Expression>())),
+                        Combinator.Choice(
+                            Chars.Sequence("*")
+                                .Select(_ => Arrays.Empty<Expression>()),
+                            Chars.Sequence("+")
+                                .Select(_ => new Expression[] { Expression.Constant(1), }),
+                            Chars.Number()
+                                .Many(1)
+                                .Select(cs => Int32.Parse(new String(cs.ToArray())))
+                                .Between(g["root", "ignore"], g["root", "ignore"])
+                                .Let(p => Combinator.Choice(
+                                    p.Pipe('-'.Satisfy().Right(p), (m, n) => new Expression[] { Expression.Constant(m), Expression.Constant(n), }),
+                                    p.Left('-'.Satisfy()).Select(n => new Expression[] { Expression.Constant(n), }),
+                                    p.Select(n => new Expression[] { Expression.Constant(n), Expression.Constant(n), })
+                                ))
+                                .Between('{'.Satisfy(), '}'.Satisfy())
+                        ).Select(_ => Tuple.Create("Many", _))
+                    ).Many(),
                     (l, cs) => cs.Aggregate(l, (l_, c) => YacqExpression.TypeCandidate(typeof(Combinator)).Method(c.Item1, c.Item2.StartWith(l_)))
                 )))
             );
