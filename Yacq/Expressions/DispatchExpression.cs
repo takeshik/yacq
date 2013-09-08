@@ -235,10 +235,12 @@ namespace XSpect.Yacq.Expressions
                     : null
                 )
                 .Where(c => c.ParameterMap.Select(_ => _.Item1.GetDelegateSignature().Null(m => m.GetParameters().Length))
-                    .SequenceEqual(c.ParameterMap.Select(_ => Math.Max(
-                        (_.Item2 as LambdaExpression).Null(e => e.Parameters.Count),
-                        (_.Item2 as AmbiguousLambdaExpression).Null(e => e.Parameters.Count)
-                    )))
+                    .SequenceEqual(c.ParameterMap.Select(_ =>
+                        (_.Item2 as LambdaExpression).Null(e => e.Parameters.Count,
+                            () => (_.Item2 as AmbiguousLambdaExpression).Null(e => e.Parameters.Count),
+                            () => _.Item2.Type(symbols).GetDelegateSignature().Null(m => m.GetParameters().Length)
+                        )
+                    ))
                 )
                 .Choose(c => InferTypeArguments(c, c.TypeArgumentMap, symbols))
                 .Where(c => !c.Arguments.Any(e => e == null || e is YacqExpression))
@@ -412,9 +414,12 @@ namespace XSpect.Yacq.Expressions
                                                   );
                                           }
                                       }
-                                      else if (_.Item2 is LambdaExpression)
+                                      else
                                       {
-                                          map = new TypeNode(_.Item1).Match(map, _.Item2.Type.GetDelegateSignature().GetDelegateType());
+                                          map = new TypeNode(_.Item1).Match(map, _.Item2.Type.If(
+                                              t => _.Item2 is LambdaExpression,
+                                              t => t.GetDelegateSignature().GetDelegateType()
+                                          ));
                                       }
                                   }
                                   else if (_.Item1.ContainsGenericParameters)

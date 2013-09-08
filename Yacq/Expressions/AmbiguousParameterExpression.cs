@@ -41,6 +41,8 @@ namespace XSpect.Yacq.Expressions
     {
         private readonly Type _type;
 
+        private readonly Lazy<ParameterExpression> _parameter;
+
         /// <summary>
         /// Gets the static type of the expression that this expression represents.
         /// </summary>
@@ -91,6 +93,10 @@ namespace XSpect.Yacq.Expressions
         {
             this._type = type;
             this.Name = name;
+            this._parameter = new Lazy<ParameterExpression>(() => this.IsUnfixed
+                ? null
+                : Parameter(this.Type, this.Name)
+            );
         }
 
         /// <summary>
@@ -112,9 +118,7 @@ namespace XSpect.Yacq.Expressions
         /// <returns>The reduced expression.</returns>
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
-            return this.IsUnfixed
-                ? null
-                : Parameter(this.Type, this.Name);
+            return this._parameter.Value;
         }
     }
 

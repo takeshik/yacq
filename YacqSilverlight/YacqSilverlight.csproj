@@ -267,6 +267,9 @@
     <Compile Include="..\Yacq\Expressions\YacqCombinators.cs">
       <Link>Expressions\YacqCombinators.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\Expressions\YacqEvaluatingCombinator.cs">
+      <Link>Expressions\YacqEvaluatingCombinator.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\Expressions\YacqExpression.cs">
       <Link>Expressions\YacqExpression.cs</Link>
     </Compile>
@@ -299,6 +302,9 @@
     </Compile>
     <Compile Include="..\Yacq\LanguageServices\Grammar.RuleSetter.cs">
       <Link>LanguageServices\Grammar.RuleSetter.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\PatternGrammar.cs">
+      <Link>LanguageServices\PatternGrammar.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>

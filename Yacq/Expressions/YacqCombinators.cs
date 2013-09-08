@@ -350,7 +350,7 @@ namespace XSpect.Yacq.Expressions
 
         #endregion
 
-        #region Utilities
+        #region Reduce
 
         /// <summary>
         /// Returns an accessor for parsers which combinates with specified parser and reduces parsing expressions.
@@ -374,6 +374,37 @@ namespace XSpect.Yacq.Expressions
         {
             return Reduce(null, symbols, expectedType);
         }
+
+        #endregion
+
+        #region Evaluate
+
+        /// <summary>
+        /// Returns an accessor for parsers which combinates with specified parser and evaluates parsing expressions.
+        /// </summary>
+        /// <param name="parser">A parser to wrap for evaluating.</param>
+        /// <param name="symbols">The additional symbol table for evaluating.</param>
+        /// <param name="expectedType">The type which is expected as the type of evaluated value.</param>
+        /// <returns>An accessor for parsing with evaluated values of expressions.</returns>
+        public static YacqEvaluatingCombinator Evaluate(this Parser<Expression, Expression> parser, SymbolTable symbols = null, Type expectedType = null)
+        {
+            return parser.Reduce(symbols, expectedType).Evaluate();
+        }
+
+        /// <summary>
+        /// Returns an accessor for parsers which combinates with specified parser and evaluates parsing expressions.
+        /// </summary>
+        /// <param name="symbols">The additional symbol table for evaluating.</param>
+        /// <param name="expectedType">The type which is expected as the type of evaluated value.</param>
+        /// <returns>An accessor for parsing with evaluated values of expressions.</returns>
+        public static YacqEvaluatingCombinator Evaluate(SymbolTable symbols = null, Type expectedType = null)
+        {
+            return Reduce(symbols, expectedType).Evaluate();
+        }
+
+        #endregion
+
+        #region As
 
         /// <summary>
         /// Sets the result of the parser with applying selector function to the symbol table with specified name.
@@ -431,12 +462,15 @@ namespace XSpect.Yacq.Expressions
             return As(parser, symbols, id, YacqExpression.Vector);
         }
 
-        private static Parser<Expression, TExpression> AndAlsoImpl<TExpression>(
+        #endregion
+
+        #region Utilities
+
+        private static Parser<Expression, TResult> AndAlsoImpl<TResult>(
             this Parser<Expression, Expression> parser0,
-            Parser<Expression, TExpression> parser1,
-            Func<IStream<Expression>, IStream<TExpression>> streamSelector
+            Parser<Expression, TResult> parser1,
+            Func<IStream<Expression>, IStream<Expression>> streamSelector
         )
-            where TExpression : Expression
         {
             return stream =>
             {
@@ -445,41 +479,39 @@ namespace XSpect.Yacq.Expressions
                 switch (parser0 != null
                     ? parser0(stream).TryGetValue(out result, out message)
                     : ReplyStatus.Success
-                    )
+                )
                 {
                     case ReplyStatus.Success:
                         return parser1(stream.If(s => streamSelector != null, streamSelector));
                     case ReplyStatus.Error:
-                        return Reply.Error<Expression, TExpression>(stream, message);
+                        return Reply.Error<Expression, TResult>(stream, message);
                     default:
-                        return Reply.Failure<Expression, TExpression>(stream);
+                        return Reply.Failure<Expression, TResult>(stream);
                 }
             };
         }
 
-        internal static Parser<Expression, TExpression> AndAlso<TExpression>(
+        internal static Parser<Expression, TResult> AndAlso<TResult>(
             this Parser<Expression, Expression> parser0,
-            Parser<Expression, TExpression> parser1,
-            Func<Expression, TExpression> streamSelector
+            Parser<Expression, TResult> parser1,
+            Func<Expression, Expression> streamSelector
         )
-            where TExpression : Expression
         {
             return AndAlsoImpl(parser0, parser1, s => s.Select(streamSelector));
         }
 
-        internal static Parser<Expression, TExpression> AndAlso<TExpression>(
+        internal static Parser<Expression, TResult> AndAlso<TResult>(
             this Parser<Expression, Expression> parser0,
-            Parser<Expression, TExpression> parser1,
-            Func<Expression, IEnumerable<TExpression>> streamSelector
+            Parser<Expression, TResult> parser1,
+            Func<Expression, IEnumerable<Expression>> streamSelector
         )
-            where TExpression : Expression
         {
             return AndAlsoImpl(parser0, parser1, s => s.SelectMany(e => streamSelector(e).AsStream()));
         }
 
-        internal static Parser<Expression, Expression> AndAlso(
+        internal static Parser<Expression, TResult> AndAlso<TResult>(
             this Parser<Expression, Expression> parser0,
-            Parser<Expression, Expression> parser1
+            Parser<Expression, TResult> parser1
         )
         {
             return AndAlsoImpl(parser0, parser1, s => s);
