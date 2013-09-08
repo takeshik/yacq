@@ -110,7 +110,7 @@ namespace XSpect.Yacq.LanguageServices
                 // From the Standard Grammar:
                 '"', '#', '\'', '(', ')', '.', ':', ';', '[', ']', '`', '{', '}',
                 // Additional punctuation characters:
-                '%', '*', '+', '<', '>', '?', '|'
+                '%', '*', '+', '<', '>', '?', '@', '|'
             );
 
             #endregion
@@ -303,6 +303,26 @@ namespace XSpect.Yacq.LanguageServices
                     ).Many(),
                     (l, rs) => rs.Aggregate(l, (h, t) =>
                         YacqExpression.TypeCandidate(t.Item1.Item1).Method(t.Item1.Item2, t.Item1.Item3.StartWith(h, t.Item2))
+                    )
+                )))
+            );
+
+            this.Add("operator", "as", g => g["operator", "binary"]
+                .Let(parent => SetPosition(Prims.Pipe(
+                    Chars.Digit()
+                        .Not()
+                        .Right(Chars.Space()
+                            .Or(punctuation)
+                            .Not()
+                            .Right(Chars.Any())
+                            .Many(1)
+                        )
+                        .Select(cs => YacqExpression.Text(default(Char), new String(cs.ToArray())))
+                        .Left('@'.Satisfy())
+                        .Many(),
+                    parent,
+                    (ls, r) => ls.Reverse().Aggregate(r, (h, t) =>
+                        YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("As", h, YacqExpression.Variable("$here"), t)
                     )
                 )))
             );
