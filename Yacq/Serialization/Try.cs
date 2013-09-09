@@ -96,15 +96,14 @@ namespace XSpect.Yacq.Serialization
         public override String ToString()
         {
             return "try { " + this.Body + " } "
-                + String.Join(" ", this.Handlers
+                + this.Handlers
                       .SelectAll(h => h.ToString())
                       .EndWith(new []
                       {
                           this.Fault.Null(n => "fault { " + n + " }"),
                           this.Finally.Null(n => "finally { " + n + " }"),
                       }.WhereAll(s => s != null))
-                  );
-
+                      .Stringify(" ");
         }
     }
 

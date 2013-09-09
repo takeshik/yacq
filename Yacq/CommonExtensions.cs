@@ -603,16 +603,68 @@ namespace XSpect
             return source.Concat(values);
         }
 
-        internal static IEnumerable<T> Generate<T>(this T initialValue, Func<T, T> func)
+        #region Generate
+
+        internal static IEnumerable<TResult> Generate<T, TResult>(
+            this T initialValue,
+            Func<T, T> iterator,
+            Func<T, Boolean> predicate,
+            Func<T, TResult> selector
+        )
         {
-            var value = initialValue;
-            while (true)
+            var arg = initialValue;
+            while (predicate(arg))
             {
-                yield return value = func(value);
+                yield return selector(arg);
+                arg = iterator(arg);
             }
-            // ReSharper disable FunctionNeverReturns
         }
-        // ReSharper restore FunctionNeverReturns
+
+        internal static IEnumerable<TResult> Generate<T, TResult>(
+            this T initialValue,
+            Func<T, Int32, T> iterator,
+            Func<T, Int32, Boolean> predicate,
+            Func<T, Int32, TResult> selector
+        )
+        {
+            var index = 0;
+            var arg = initialValue;
+            while (predicate(arg, index))
+            {
+                yield return selector(arg, index);
+                arg = iterator(arg, index++);
+            }
+        }
+
+        internal static IEnumerable<T> Generate<T>(
+            this T initialValue,
+            Func<T, T> iterator,
+            Func<T, Boolean> predicate
+        )
+        {
+            return initialValue.Generate(iterator, predicate, _ => _);
+        }
+
+        internal static IEnumerable<T> Generate<T>(
+            this T initialValue,
+            Func<T, Int32, T> iterator,
+            Func<T, Int32, Boolean> predicate
+        )
+        {
+            return initialValue.Generate(iterator, predicate, (_, i) => _);
+        }
+
+        internal static IEnumerable<T> Generate<T>(this T initialValue, Func<T, T> iterator)
+        {
+            return initialValue.Generate(iterator, _ => true, _ => _);
+        }
+
+        internal static IEnumerable<T> Generate<T>(this T initialValue, Func<T, Int32, T> iterator)
+        {
+            return initialValue.Generate(iterator, (_, i) => true, (_, i) => _);
+        }
+
+        #endregion
     }
 
     [DebuggerStepThrough()]
@@ -862,9 +914,24 @@ namespace XSpect
             return String.Join(joinner, strings);
         }
 
+        internal static String Stringify<TSource>(this IEnumerable<TSource> source, String joinner)
+        {
+            return String.Join(joinner, source);
+        }
+
+        internal static String Stringify<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
+        {
+            return String.Concat(source.Select(selector));
+        }
+
         internal static String Stringify<TSource>(this IEnumerable<TSource> source, Func<TSource, String> selector)
         {
             return String.Concat(source.Select(selector));
+        }
+
+        internal static String Stringify<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, String joinner)
+        {
+            return String.Join(joinner, source.Select(selector));
         }
 
         internal static String Stringify<TSource>(this IEnumerable<TSource> source, Func<TSource, String> selector, String joinner)

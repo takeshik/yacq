@@ -100,13 +100,14 @@ namespace XSpect.Yacq.Serialization
             )
                 + "." + this.Method.Name
                 + this.Method.TypeArgs.Let(ts => ts != null && ts.Any()
-                      ? "<" + String.Join(", ", ts.SelectAll(t => t.Describe().ToString())) + ">"
+                      ? "<" + ts.Stringify(t => t.Describe(), ", ") + ">"
                       : ""
                   )
-                + "(" + String.Join(", ", (this.IsExtension
+                + "("
+                + (this.IsExtension
                       ? this.Arguments.Skip(1).ToArray()
                       : this.Arguments
-                  ).SelectAll(n => n.ToString()))
+                  ).Stringify(", ")
                 + ")";
         }
     }

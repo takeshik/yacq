@@ -291,9 +291,7 @@ namespace XSpect.Yacq.SystemObjects
 
         internal static SymbolTable CreatePathSymbols(SymbolTable symbols, IEnumerable<String> fragments)
         {
-            return ((SymbolTableExpression) EnumerableEx.Generate(
-                Tuple.Create(fragments, symbols.ResolveModule()),
-                _ => _.Item1.Any(),
+            return ((SymbolTableExpression) Tuple.Create(fragments, symbols.ResolveModule()).Generate(
                 _ => Tuple.Create(_.Item1.Skip(1), _.Item1.First()
                     .Let(f => _.Item2.ExistsKey(f) && _.Item2.Resolve(f) is SymbolTableExpression
                         ? ((SymbolTableExpression) _.Item2.Resolve(f)).Symbols
@@ -302,6 +300,7 @@ namespace XSpect.Yacq.SystemObjects
                               s => _.Item2[f] = YacqExpression.SymbolTable(s)
                           )
                 )),
+                _ => _.Item1.Any(),
                 _ => _.Item2
             ).Last().Resolve(fragments.Last())).Symbols;
         }

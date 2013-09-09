@@ -75,7 +75,7 @@ namespace XSpect.Yacq.Serialization
         {
             return "SetIndex"
                 + "("
-                + String.Join(", ", this.Arguments.SelectAll(n => n.ToString()))
+                + this.Arguments.Stringify(", ")
                 + ")";
         }
     }

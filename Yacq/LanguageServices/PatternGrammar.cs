@@ -137,7 +137,7 @@ namespace XSpect.Yacq.LanguageServices
                                 .Many(1)
                             )
                     ).Select(cs =>
-                        YacqExpression.Identifier(default(Char), new String(cs.ToArray()))
+                        YacqExpression.Identifier(default(Char), cs.Stringify())
                     )
                 )
                 .Let(ps => Prims.Pipe(
@@ -215,7 +215,7 @@ namespace XSpect.Yacq.LanguageServices
                         .Left(q)
                     )
                 ).Select(cs => YacqExpression.TypeCandidate(typeof(YacqCombinators))
-                    .Method("Identifier", YacqExpression.Text("\"" + new String(cs.ToArray()) + "\""))
+                    .Method("Identifier", YacqExpression.Text("\"" + cs.Stringify() + "\""))
                 )
             ));
 
@@ -275,7 +275,7 @@ namespace XSpect.Yacq.LanguageServices
                                 .Select(_ => new Expression[] { Expression.Constant(1), }),
                             Chars.Number()
                                 .Many(1)
-                                .Select(cs => Int32.Parse(new String(cs.ToArray())))
+                                .Select(cs => Int32.Parse(cs.Stringify()))
                                 .Between(g["root", "ignore"], g["root", "ignore"])
                                 .Let(p => Combinator.Choice(
                                     p.Pipe('-'.Satisfy().Right(p), (m, n) => new Expression[] { Expression.Constant(m), Expression.Constant(n), }),
@@ -317,7 +317,7 @@ namespace XSpect.Yacq.LanguageServices
                             .Right(Chars.Any())
                             .Many(1)
                         )
-                        .Select(cs => YacqExpression.Text(default(Char), new String(cs.ToArray())))
+                        .Select(cs => YacqExpression.Text(default(Char), cs.Stringify()))
                         .Left('@'.Satisfy())
                         .Many(),
                     parent,

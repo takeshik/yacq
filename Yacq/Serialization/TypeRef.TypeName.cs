@@ -54,19 +54,19 @@ namespace XSpect.Yacq.Serialization
                                   name,
                                   Chars.Sequence(".")
                               )
-                                  .Select(_ => new String(_.SelectMany(cs => cs).SkipLast(1).ToArray()))
+                                  .Select(_ => _.SelectMany(cs => cs).SkipLast(1).Stringify())
                                   .Many()
                                   .Pipe(
                                       name
-                                          .Select(cs => new String(cs.ToArray())),
+                                          .Select(cs => cs.Stringify()),
                                       Combinator.Sequence(
                                           Chars.Sequence("+"),
                                           name
                                       )
-                                          .Select(_ => new String(_.SelectMany(cs => cs).Skip(1).ToArray()))
+                                          .Select(_ => _.SelectMany(cs => cs).Skip(1).Stringify())
                                           .Many(),
                                       (nss, n, ins) => new TypeName(
-                                          String.Join(".", nss),
+                                          nss.Stringify("."),
                                           ins
                                               .StartWith(n)
                                               .ToArray()
@@ -143,7 +143,7 @@ namespace XSpect.Yacq.Serialization
             /// </returns>
             public override String ToString()
             {
-                return String.Join("+", this.HierarchicalNames);
+                return this.HierarchicalNames.Stringify("+");
             }
         }
     }

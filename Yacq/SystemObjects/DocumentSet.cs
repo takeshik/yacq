@@ -115,9 +115,8 @@ namespace XSpect.Yacq.SystemObjects
                               )
                             + (method.GetParameters().Any()
                                   ? "("
-                                        + String.Join(",", method.GetParameters()
-                                              .Select(p => Format(p.ParameterType, false))
-                                          )
+                                        + method.GetParameters()
+                                              .Stringify(p => Format(p.ParameterType, false), ",")
                                         + ")"
                                   : ""
                               );
@@ -138,7 +137,8 @@ namespace XSpect.Yacq.SystemObjects
                             + property.Name
                             + (property.GetIndexParameters().Any()
                                   ? ("("
-                                        + String.Join(",", property.GetIndexParameters().Select(p => Format(p.ParameterType, false)))
+                                        + property.GetIndexParameters()
+                                              .Stringify(p => Format(p.ParameterType, false), ",")
                                         + ")"
                                     )
                                   : ""
@@ -191,7 +191,7 @@ namespace XSpect.Yacq.SystemObjects
                     ? d
                     : d.Remove(d.LastIndexOf('`'))
                           + "{"
-                          + String.Join(",", type.GetGenericArguments().Select(t => Format(t, false)))
+                          + type.GetGenericArguments().Stringify(t => Format(t, false), ",")
                           + "}";
             }
             else if (type.IsArray)

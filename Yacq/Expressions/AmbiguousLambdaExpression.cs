@@ -105,7 +105,7 @@ namespace XSpect.Yacq.Expressions
         /// </returns>
         public override String ToString()
         {
-            return String.Join(", ", this.Parameters.Select(p => p.ToString()))
+            return this.Parameters.Stringify(", ")
                 + " => "
                 + (this.Bodies.Count > 2 ? "{ ... }" : this.Bodies.Single().ToString());
         }

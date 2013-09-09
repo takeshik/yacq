@@ -65,7 +65,7 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return this.AddMethod + "(" + String.Join(", ", this.Arguments.SelectAll(n => n.ToString())) + ")";
+            return this.AddMethod + "(" + this.Arguments.Stringify(", ") + ")";
         }
 
         public E.ElementInit Deserialize()

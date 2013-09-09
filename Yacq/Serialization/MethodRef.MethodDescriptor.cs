@@ -49,7 +49,7 @@ namespace XSpect.Yacq.Serialization
                           .Or(Chars.NoneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')'))
                           .Many()
                       )
-                          .Select(cs => new String(cs.ToArray()))
+                          .Select(cs => cs.Stringify())
                           .Let(name =>
                               TypeRef.TypeDescriptor.Parser
                                   .Pipe(' '.Satisfy(), (t, _) => t)
@@ -154,9 +154,9 @@ namespace XSpect.Yacq.Serialization
             public override String ToString()
             {
                 return this.Name + (this.TypeArguments.Any()
-                    ? "<" + String.Join(", ", this.TypeArguments.SelectAll(t => t.ToString())) + ">("
+                    ? "<" + this.TypeArguments.Stringify(", ") + ">("
                     : "("
-                ) + String.Join(", ", this.ParameterTypes.SelectAll(t => t.ToString())) + ")";
+                ) + this.ParameterTypes.Stringify(", ") + ")";
             }
         }
     }

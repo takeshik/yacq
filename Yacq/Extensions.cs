@@ -56,7 +56,7 @@ namespace XSpect.Yacq
         {
             return type != null
                 ? EnumerableEx.Concat(
-                      EnumerableEx.Generate(type, t => t != null, t => t.BaseType, _ => _),
+                      type.Generate(t => t.BaseType, t => t != null),
                       type.GetInterfaces(),
                       type.IsInterface ? EnumerableEx.Return(typeof(Object)) : Enumerable.Empty<Type>()
                   ).If(_ => type.IsGenericType && !type.IsGenericTypeDefinition, _ =>
@@ -253,8 +253,7 @@ namespace XSpect.Yacq
                 .Except(EnumerableEx.Return(typeof(Object)))
                 .OrderByDescending(t => t.IsInterface
                     ? t.GetInterfaces().Length
-                    : EnumerableEx
-                          .Generate(t, _ => _.BaseType != null, _ => _.BaseType, _ => _)
+                    : t.Generate(_ => _.BaseType, _ => _ != null)
                           .Count()
                 )
                 .EndWith(typeof(Object))
@@ -311,7 +310,8 @@ namespace XSpect.Yacq
 
         internal static Type GetNominalType(this Type type)
         {
-            return EnumerableEx.Generate(type, t => t != null, t => t.BaseType, _ => _)
+            return type
+                .Generate(t => t.BaseType, t => t != null)
                 .First(t => t.IsPublic);
         }
     }

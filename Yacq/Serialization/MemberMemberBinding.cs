@@ -73,7 +73,7 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return this.Member + " = { " + String.Join(", ", this.Bindings.SelectAll(i => i.ToString())) + " }";
+            return this.Member + " = { " + this.Bindings.Stringify(", ") + " }";
         }
 
         public new E.MemberMemberBinding Deserialize()

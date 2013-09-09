@@ -173,7 +173,7 @@ namespace XSpect.Yacq.LanguageServices
                         )
                         .Many()
                         .Left(q.Satisfy())
-                        .Select(cs => YacqExpression.Text(q, new String(cs.ToArray())))
+                        .Select(cs => YacqExpression.Text(q, cs.Stringify()))
                     )
             ));
 
@@ -213,10 +213,10 @@ namespace XSpect.Yacq.LanguageServices
                         bin.Many(1),
                         numberSuffix.Maybe(),
                         (p, n, s) => YacqExpression.Number(
-                            new String(p.Concat(n).If(
+                            p.Concat(n).If(
                                 _ => s.Exists(),
                                 cs => cs.Concat(s.Value)
-                            ).ToArray())
+                            ).Stringify()
                         )
                     ),
                     Prims.Pipe(
@@ -224,10 +224,10 @@ namespace XSpect.Yacq.LanguageServices
                         oct.Many(1),
                         numberSuffix.Maybe(),
                         (p, n, s) => YacqExpression.Number(
-                            new String(p.Concat(n).If(
+                            p.Concat(n).If(
                                 _ => s.Exists(),
                                 cs => cs.Concat(s.Value)
-                            ).ToArray())
+                            ).Stringify()
                         )
                     ),
                     Prims.Pipe(
@@ -235,10 +235,10 @@ namespace XSpect.Yacq.LanguageServices
                         hex.Many(1),
                         numberSuffix.Maybe(),
                         (p, n, s) => YacqExpression.Number(
-                            new String(p.Concat(n).If(
+                            p.Concat(n).If(
                                 _ => s.Exists(),
                                 cs => cs.Concat(s.Value)
-                            ).ToArray())
+                            ).Stringify()
                         )
                     ),
                     numberPrefix.Maybe().SelectMany(p =>
@@ -246,12 +246,12 @@ namespace XSpect.Yacq.LanguageServices
                             fraction.Maybe().SelectMany(f =>
                                 exponent.Maybe().SelectMany(e =>
                                     numberSuffix.Maybe().Select(s =>
-                                        YacqExpression.Number(new String(EnumerableEx.Concat(
+                                        YacqExpression.Number(EnumerableEx.Concat(
                                             i.If(_ => p.Exists(), _ => _.StartWith(p.Value)),
                                             f.Otherwise(Enumerable.Empty<Char>),
                                             e.Otherwise(Enumerable.Empty<Char>),
                                             s.Otherwise(Enumerable.Empty<Char>)
-                                        ).ToArray()))
+                                        ).Stringify())
                                     )
                                 )
                             )
@@ -301,7 +301,7 @@ namespace XSpect.Yacq.LanguageServices
                                 .Right(Chars.Any())
                                 .Many(1)
                             )
-                    ).Select(cs => YacqExpression.Identifier(default(Char), new String(cs.ToArray()))),
+                    ).Select(cs => YacqExpression.Identifier(default(Char), cs.Stringify())),
                     '`'.Satisfy().Let(q =>
                         q.Right(q
                             .Not()
@@ -312,7 +312,7 @@ namespace XSpect.Yacq.LanguageServices
                             .Many()
                             .Left(q)
                         )
-                    ).Select(cs => YacqExpression.Identifier('`', new String(cs.ToArray())))
+                    ).Select(cs => YacqExpression.Identifier('`', cs.Stringify()))
                 )
             ));
 

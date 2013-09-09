@@ -89,15 +89,15 @@ namespace XSpect.Yacq.Serialization
         {
             return "new " + this.Constructor.Type
                 + "("
-                + String.Join(", ", this.Members != null
+                + (this.Members != null
                       ? this.Arguments.Zip(
                             this.Members,
                             (n, m) => m != null
                                 ? m + " = " + n
                                 : n.ToString()
                         )
-                      : this.Arguments.SelectAll(n => n.ToString())
-                  )
+                      : this.Arguments.Select(n => n.ToString())
+                  ).Stringify(", ")
                 + ")";
         }
     }

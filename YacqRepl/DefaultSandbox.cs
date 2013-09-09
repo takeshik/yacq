@@ -100,7 +100,7 @@ namespace XSpect.Yacq.Repl
 
         public EvaluationContext Evaluate(IEnumerable<Char> code)
         {
-            return new EvaluationContext(this.Symbols, new String(code.ToArray())
+            return new EvaluationContext(this.Symbols, code.Stringify()
                 .Apply(c => this.History.Add(DateTime.Now, c))
             );
         }

@@ -82,7 +82,7 @@ namespace XSpect.Yacq.Serialization
         {
             return "Call:" + this.Name
                 + "("
-                + String.Join(", ", this.Arguments.SelectAll(n => n.ToString()))
+                + this.Arguments.Stringify(", ")
                 + ")";
         }
     }

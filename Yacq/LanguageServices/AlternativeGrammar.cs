@@ -148,7 +148,7 @@ namespace XSpect.Yacq.LanguageServices
                                 .Right(Chars.Any())
                                 .Many(1)
                             )
-                    ).Select(cs => YacqExpression.Identifier(default(Char), new String(cs.ToArray()))),
+                    ).Select(cs => YacqExpression.Identifier(default(Char), cs.Stringify())),
                     '`'.Satisfy().Let(q =>
                         q.Right(q
                             .Not()
@@ -159,7 +159,7 @@ namespace XSpect.Yacq.LanguageServices
                             .Many()
                             .Left(q)
                         )
-                    ).Select(cs => YacqExpression.Identifier('`', new String(cs.ToArray())))
+                    ).Select(cs => YacqExpression.Identifier('`', cs.Stringify()))
                 )
             ));
 
@@ -314,7 +314,7 @@ namespace XSpect.Yacq.LanguageServices
                         Chars.Sequence("!"),
                         Chars.Sequence("~")
                     )
-                        .Select(cs => new String(cs.ToArray()))
+                        .Select(cs => cs.Stringify())
                         .Many(),
                     parent,
                     (cs, r) => cs.Aggregate(r, (r_, c) => YacqExpression.List(YacqExpression.Identifier(c), r_))
@@ -403,7 +403,7 @@ namespace XSpect.Yacq.LanguageServices
                             Chars.Sequence("^="),
                             Chars.Sequence("<<="),
                             Chars.Sequence(">>=")
-                        ).Select(cs => new String(cs.ToArray())),
+                        ).Select(cs => cs.Stringify()),
                         Tuple.Create
                     ).Many(),
                     parent,
@@ -428,7 +428,7 @@ namespace XSpect.Yacq.LanguageServices
                 .Let(parent => SetPosition(Prims.Pipe(
                     parent,
                     Prims.Pipe(
-                        opcodes.Choice().Select(cs => new String(cs.ToArray())),
+                        opcodes.Choice().Select(cs => cs.Stringify()),
                         parent,
                         Tuple.Create
                     ).Many(),

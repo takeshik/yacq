@@ -122,15 +122,15 @@ namespace XSpect.Yacq.Serialization
             {
                 case DispatchTypes.Member:
                     return this.Arguments.Any()
-                        ? this.Left + "[" + String.Join(", ", this.Arguments.SelectAll(e => e.ToString())) + "]"
+                        ? this.Left + "[" + this.Arguments.Stringify(", ") + "]"
                         : (this.Left != null ? this.Left + "." : "") + this.Name;
                 case DispatchTypes.Method:
                     return (this.Left != null ? this.Left + "." : "")
                         + this.Name
-                        + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.SelectAll(t => t.Name)) + ">" : "")
-                        + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                        + (this.TypeArguments.Any() ? "<" + this.TypeArguments.Stringify(", ") + ">" : "")
+                        + "(" + this.Arguments.Stringify(", ") + ")";
                 case DispatchTypes.Constructor:
-                    return this.Left + "(" + String.Join(", ", this.Arguments.SelectAll(e => e.ToString())) + ")";
+                    return this.Left + "(" + this.Arguments.Stringify(", ") + ")";
                 default:
                     return "Dispatch(?)";
             }

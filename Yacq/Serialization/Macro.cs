@@ -80,7 +80,7 @@ namespace XSpect.Yacq.Serialization
         public override String ToString()
         {
             return "macro(" + (this.Parameters.Length != 1
-                ? "(" + String.Join(", ", this.Parameters.SelectAll(p => p.ToString())) + ")"
+                ? "(" + this.Parameters.Stringify(", ") + ")"
                 : this.Parameters[0].ToString()
             ) + " => " + this.Body + ")";
         }

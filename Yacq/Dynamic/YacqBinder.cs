@@ -320,12 +320,7 @@ namespace XSpect.Yacq.Dynamic
 
         internal static Boolean IsInDynamicContext(SymbolTable symbols, Expression expression)
         {
-            return EnumerableEx.Generate(
-                expression,
-                e => e != null,
-                e => e.List(".").Null(_ => _.FirstOrDefault()),
-                e => e
-            )
+            return expression.Generate(e => e.List(".").Null(_ => _.FirstOrDefault()), e => e != null)
                 .Reverse()
                 .Any(expr => expr is DynamicExpression
                     || (expr as ContextfulExpression

@@ -84,13 +84,13 @@ namespace XSpect.Yacq.Serialization
             return "switch ("
                 + this.SwitchValue
                 + ") { "
-                + String.Join("; ", this.Cases
+                + this.Cases
                       .SelectAll(c => c.ToString())
-                      .EndWith(this.DefaultBody.Null(n => new[]
+                      .EndWith(this.DefaultBody.Null(n => new []
                       {
                           "default: " + n,
                       }, Arrays.Empty<String>()))
-                  )
+                      .Stringify()
                 + " }";
         }
     }

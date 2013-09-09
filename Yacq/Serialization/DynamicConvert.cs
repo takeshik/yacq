@@ -54,7 +54,7 @@ namespace XSpect.Yacq.Serialization
         {
             return "Convert:" + this.Type
                 + "("
-                + String.Join(", ", this.Arguments.SelectAll(n => n.ToString()))
+                + this.Arguments.Stringify(", ")
                 + ")";
         }
     }

@@ -61,7 +61,7 @@ namespace XSpect.Yacq.Serialization
         {
             return "GetMember:" + this.Name
                 + "("
-                + String.Join(", ", this.Arguments.SelectAll(n => n.ToString()))
+                + this.Arguments.Stringify(", ")
                 + ")";
         }
     }

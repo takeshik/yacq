@@ -69,7 +69,7 @@ namespace XSpect.Yacq.Serialization
             return "case "
                 + (this.TestValues.Length == 1
                       ? this.TestValues[0].ToString()
-                      : "(" + String.Join(", ", this.TestValues.SelectAll(n => n.ToString())) + ")"
+                      : "(" + this.TestValues.Stringify(", ") + ")"
                   )
                 + ": " + this.Body;
         }

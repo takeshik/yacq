@@ -96,10 +96,10 @@ namespace XSpect.Yacq.Serialization
         public override String ToString()
         {
             return (this.Variables.Any()
-                ? "{|" + String.Join(", ", this.Variables.SelectAll(p => p.ToString())) + "|"
+                ? "{|" + this.Variables.Stringify(", ") + "|"
                 : "{"
             ) + (this.Expressions.Any()
-                ? " " + String.Join("; ", this.Expressions.SelectAll(n => n.ToString())) + " }"
+                ? " " + this.Expressions.Stringify("; ") + " }"
                 : "}"
             );
         }

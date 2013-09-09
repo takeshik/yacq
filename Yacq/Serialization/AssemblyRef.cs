@@ -87,13 +87,14 @@ namespace XSpect.Yacq.Serialization
                       ).Select(_ => _.SelectMany(cs => cs))
                   )
                       .SepBy(comma)
-                      .Select(fs => new String(fs
+                      .Select(fs => fs
                           .SelectMany(cs => cs.EndWith(','))
-                          .ToArray()
-                      ).If(String.IsNullOrWhiteSpace,
-                          _ => new AssemblyName(),
-                          s => new AssemblyName(s.Last() == ',' ? s.Remove(s.Length - 1) : s)
-                      ))
+                          .Stringify()
+                          .If(String.IsNullOrWhiteSpace,
+                              _ => new AssemblyName(),
+                              s => new AssemblyName(s.Last() == ',' ? s.Remove(s.Length - 1) : s)
+                          )
+                      )
               ));
 
 #if !SILVERLIGHT

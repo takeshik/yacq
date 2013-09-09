@@ -127,10 +127,9 @@ namespace XSpect.Yacq.Expressions
         private static Expression Unquote(Expression expression, SymbolTable symbols, Int32 level)
         {
             return expression.List("unquote") != null
-                ? EnumerableEx.Generate(
-                      (ListExpression) expression,
-                      _ => _ != null && _[0].Id() == "unquote",
+                ? ((ListExpression) expression).Generate(
                       _ => _[1] as ListExpression,
+                      _ => _ != null && _[0].Id() == "unquote",
                       _ => _[1]
                   )
                       .ToArray()

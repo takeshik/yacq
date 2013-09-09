@@ -52,7 +52,7 @@ namespace XSpect.Yacq.Serialization
         {
             return "new " + this.Type.Describe().Let(
                 d => d.ToString().Let(s => s.Remove(d.Suffixes.Last().Length))
-            ) + "[" + String.Join(", ", this.Expressions.SelectAll(n => n.ToString())) + "]";
+            ) + "[" + this.Expressions.Stringify(", ") + "]";
         }
     }
 

@@ -76,7 +76,7 @@ namespace XSpect.Yacq.Serialization
                 ?? this.Object.Type.Describe().ToString()
             )
                 + this.Indexer.Null(p => "." + p, "")
-                + "[" + String.Join(", ", this.Arguments.SelectAll(n => n.ToString())) + "]";
+                + "[" + this.Arguments.Stringify(", ") + "]";
         }
     }
 

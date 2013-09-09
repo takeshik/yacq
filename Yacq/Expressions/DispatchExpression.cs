@@ -130,15 +130,15 @@ namespace XSpect.Yacq.Expressions
             {
                 case DispatchTypes.Member:
                     return this.Arguments.Any()
-                        ? this.Left + "[" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + "]"
+                        ? this.Left + "[" + this.Arguments.Stringify(", ") + "]"
                         : (this.Left != null ? this.Left + "." : "") + this.Name;
                 case DispatchTypes.Method:
                     return (this.Left != null ? this.Left + "." : "")
                         + this.Name
-                        + (this.TypeArguments.Any() ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">" : "")
-                        + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                        + (this.TypeArguments.Any() ? "<" + this.TypeArguments.Stringify(t => t.Name, ", ") + ">" : "")
+                        + "(" + this.Arguments.Stringify(", ") + ")";
                 case DispatchTypes.Constructor:
-                    return this.Left + "(" + String.Join(", ", this.Arguments.Select(e => e.ToString())) + ")";
+                    return this.Left + "(" + this.Arguments.Stringify(", ") + ")";
                 default:
                     return "Dispatch(?)";
             }
@@ -257,10 +257,9 @@ namespace XSpect.Yacq.Expressions
                 )
                 .OrderBy(c => c)
                 .ThenBy(c => c.Arguments.Sum(e => e.GetParameterCount()))
-                .ThenBy(c => c.Arguments.Sum(a => EnumerableEx.Generate(
-                    a,
-                    _ => _ is UnaryExpression && _.NodeType == ExpressionType.Convert,
+                .ThenBy(c => c.Arguments.Sum(a => a.Generate(
                     _ => ((UnaryExpression) _).Operand,
+                    _ => _ is UnaryExpression && _.NodeType == ExpressionType.Convert,
                     _ => _
                 ).Count()))
                 .FirstOrDefault()

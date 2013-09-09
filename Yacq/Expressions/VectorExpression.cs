@@ -57,7 +57,7 @@ namespace XSpect.Yacq.Expressions
         /// </returns>
         public override String ToString()
         {
-            return "[" + String.Join(" ", this.Elements.Select(e => e.ToString())) + "]";
+            return "[" + this.Elements.Stringify(" ") + "]";
         }
 
         /// <summary>

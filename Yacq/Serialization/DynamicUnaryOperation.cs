@@ -61,7 +61,7 @@ namespace XSpect.Yacq.Serialization
         {
             return this.Operation
                 + "("
-                + String.Join(", ", this.Arguments.SelectAll(n => n.ToString()))
+                + this.Arguments.Stringify(", ")
                 + ")";
         }
     }

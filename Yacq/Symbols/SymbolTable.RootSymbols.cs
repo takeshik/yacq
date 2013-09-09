@@ -1581,7 +1581,7 @@ namespace XSpect.Yacq.Symbols
                 var type = (e.Arguments[0].List(":") ?? new [] { e.Arguments[0], YacqExpression.TypeCandidate(typeof(Object)), })
                     .ToArray()
                     .Let(es => s.Resolve("*assembly*").Evaluate<YacqAssembly>().DefineType(
-                        String.Join(".", GetIdentifierFragments(es.First())),
+                        GetIdentifierFragments(es.First()).Stringify("."),
                         (es.Last() is VectorExpression
                             ? ((VectorExpression) es.Last()).Elements
                             : EnumerableEx.Return(es.Last())
@@ -1619,7 +1619,7 @@ namespace XSpect.Yacq.Symbols
                                           mt == MemberTypes.Field
                                               ? typeof(FieldAttributes)
                                               : typeof(MethodAttributes),
-                                          String.Join(",", _.SkipLast(1)),
+                                          _.SkipLast(1).Stringify(","),
                                           true
                                       )
                                     : null

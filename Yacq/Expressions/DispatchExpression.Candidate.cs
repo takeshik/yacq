@@ -278,12 +278,14 @@ namespace XSpect.Yacq.Expressions
                 return (this.Instance != null ? this.Instance + "." : "")
                     + this.Member
                     + (this.TypeArguments.Any()
-                          ? "<" + String.Join(", ", this.TypeArguments.Select(t => t.Name)) + ">"
-                          : String.Join(", ", this.TypeArguments.Select(t => t.Name)))
-                    + "(" + String.Join(", ", this.ArgumentNames.Zip(this.Arguments, (n, a) => n != null
+                          ? "<" + this.TypeArguments.Stringify(t => t.Name, ", ") + ">"
+                          : this.TypeArguments.Stringify(t => t.Name, ", ")
+                      )
+                    + "("
+                    + this.ArgumentNames.Zip(this.Arguments, (n, a) => n != null
                           ? n + ": " + a
                           : a.ToString()
-                      ))
+                      ).Stringify(", ")
                     + ")";
             }
 

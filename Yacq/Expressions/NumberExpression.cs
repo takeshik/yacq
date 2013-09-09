@@ -111,14 +111,13 @@ namespace XSpect.Yacq.Expressions
                       ? GetBase(text.Substring(1, 3))
                       : 10;
             var suffix = text.Length > 1
-                ? new String(text
+                ? text
                       .Substring(text.Length - 2)
                       .Where(b == 10
                           ? (_ => _ == 'D' || _ == 'F' || _ == 'M' || _ == 'L' || _ == 'U')
                           : ((Func<Char, Boolean>) (_ => _ == 'L' || _ == 'U'))
                       )
-                      .ToArray()
-                  )
+                      .Stringify()
                 : "";
             text = text.Substring(0, text.Length - suffix.Length);
             if (b == 10 && suffix == "M")

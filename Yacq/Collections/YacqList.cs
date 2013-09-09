@@ -181,7 +181,7 @@ namespace XSpect.Yacq.Collections
         /// </returns>
         public IEnumerator<Expression> GetEnumerator()
         {
-            return EnumerableEx.Generate(this, l => !l.IsEmpty, l => l.Tail, l => l.Head)
+            return this.Generate(l => l.Tail, l => !l.IsEmpty, l => l.Head)
                 .GetEnumerator();
         }
 

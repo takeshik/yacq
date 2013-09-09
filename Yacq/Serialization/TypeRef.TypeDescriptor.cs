@@ -49,7 +49,7 @@ namespace XSpect.Yacq.Serialization
                               .Pipe(
                                   Chars.Digit()
                                       .Many()
-                                      .Select(ds => Int32.Parse(new String(ds.ToArray()))),
+                                      .Select(ds => Int32.Parse(ds.Stringify())),
                                   ParserAssemblyQualified
                                       .Between('['.Satisfy(), ']'.Satisfy())
                                       .Or(Parser)
@@ -79,7 +79,7 @@ namespace XSpect.Yacq.Serialization
                               tas.ToArray(),
                               ss
                                   .Select(_ => _
-                                      .Select(cs => new String(cs.ToArray()))
+                                      .Select(cs => cs.Stringify())
                                       .ToArray()
                                   )
                                   .Otherwise(Arrays.Empty<String>)
@@ -200,7 +200,7 @@ namespace XSpect.Yacq.Serialization
             public override String ToString()
             {
                 return this.Name + (this.TypeArguments.Any()
-                    ? "<" + String.Join(", ", this.TypeArguments.SelectAll(t => t.ToString())) + ">"
+                    ? "<" + this.TypeArguments.Stringify(", ") + ">"
                     : ""
                 ) + String.Concat(this.Suffixes);
             }

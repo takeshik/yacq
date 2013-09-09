@@ -49,7 +49,7 @@ namespace XSpect.Yacq.Serialization
                                   .Right('\\'.Satisfy().Right(ds))
                                   .Or(Chars.NoneOf('`', '[', ']', '+', '.', ',', '*', '&', '(', ')'))
                                   .Many()
-                              ).Select(cs => new String(cs.ToArray())),
+                              ).Select(cs => cs.Stringify()),
                               (t, n) => new MemberDescriptor(n, t)
                           )
                   );

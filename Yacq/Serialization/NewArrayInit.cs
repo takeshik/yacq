@@ -50,7 +50,7 @@ namespace XSpect.Yacq.Serialization
 
         public override String ToString()
         {
-            return "new [] { " + String.Join(", ", this.Expressions.SelectAll(n => n.ToString())) + " }";
+            return "new [] { " + this.Expressions.Stringify(", ") + " }";
         }
     }
 
