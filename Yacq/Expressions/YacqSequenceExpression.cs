@@ -29,6 +29,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Parseq;
 using XSpect.Yacq.Collections;
 using XSpect.Yacq.Symbols;
 
@@ -99,7 +100,10 @@ namespace XSpect.Yacq.Expressions
             : base(symbols)
         {
             this.Elements = elements ?? YacqList.Empty;
-            this.SetPosition(this.Elements);
+            if (this.StartPosition == default(Position))
+            {
+                this.SetPosition(this.Elements);
+            }
         }
 
         /// <summary>
