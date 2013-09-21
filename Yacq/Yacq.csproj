@@ -177,12 +177,14 @@
     <Compile Include="Expressions\YacqReducingCombinator.cs" />
     <Compile Include="Expressions\YacqSequenceExpression.cs" />
     <Compile Include="LanguageServices\AlternativeGrammar.cs" />
-    <Compile Include="LanguageServices\GrammarExtensions.cs" />
+    <Compile Include="LanguageServices\Reader.Context.cs" />
+    <Compile Include="LanguageServices\ParserExtensions.cs" />
     <Compile Include="LanguageServices\PatternGrammar.cs" />
     <Compile Include="LanguageServices\Grammar.cs" />
     <Compile Include="LanguageServices\Grammar.RuleGetter.cs" />
     <Compile Include="LanguageServices\Grammar.RuleKey.cs" />
     <Compile Include="LanguageServices\Grammar.RuleSetter.cs" />
+    <Compile Include="LanguageServices\Reader.State.cs" />
     <Compile Include="LanguageServices\StandardGrammar.cs" />
     <Compile Include="MemberAccessibilities.cs" />
     <Compile Include="Serialization\Add.cs" />

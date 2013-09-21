@@ -27,14 +27,24 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Parseq;
+using Parseq.Combinators;
 using XSpect.Yacq.Expressions;
 
 namespace XSpect.Yacq.LanguageServices
 {
-    internal static class GrammarExtensions
+    internal static class ParserExtensions
     {
+        internal static Parser<TToken, TResult> Do<TToken, TResult>(
+            this Parser<TToken, TResult> parser,
+            params Action<TResult>[] actions
+        )
+        {
+            return parser.Select(e => e.Apply(actions));
+        }
+
         internal static Parser<Char, YacqExpression> SetPosition(this Parser<Char, YacqExpression> parser)
         {
             Parser<Char, Position> pos = stream => Reply.Success(stream, stream.Position);
@@ -45,6 +55,24 @@ namespace XSpect.Yacq.LanguageServices
                     )
                 )
             );
+        }
+
+        internal static Parser<TToken, TResult> EnterContext<TToken, TResult>(
+            this Parser<TToken, TResult> parser,
+            String name
+        )
+        {
+            return ((Parser<TToken, Position>) (stream => Reply.Success(stream, stream.Position)))
+                .SelectMany(p => parser.Do(_ => Reader.State.Current.Null(s => s.EnterContext(name, p))));
+        }
+
+        internal static Parser<TToken, TResult> LeaveContext<TToken, TResult>(
+            this Parser<TToken, TResult> parser,
+            String name
+        )
+        {
+            return ((Parser<TToken, Position>) (stream => Reply.Success(stream, stream.Position)))
+                .SelectMany(p => parser.Do(_ => Reader.State.Current.Null(s => s.LeaveContext(name))));
         }
     }
 }
