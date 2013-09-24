@@ -303,11 +303,20 @@
     <Compile Include="..\Yacq\LanguageServices\Grammar.RuleSetter.cs">
       <Link>LanguageServices\Grammar.RuleSetter.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\LanguageServices\ParserExtensions.cs">
+      <Link>LanguageServices\ParserExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\LanguageServices\PatternGrammar.cs">
       <Link>LanguageServices\PatternGrammar.cs</Link>
     </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Reader.Context.cs">
+      <Link>LanguageServices\Reader.Context.cs</Link>
+    </Compile>
     <Compile Include="..\Yacq\LanguageServices\Reader.cs">
       <Link>LanguageServices\Reader.cs</Link>
+    </Compile>
+    <Compile Include="..\Yacq\LanguageServices\Reader.State.cs">
+      <Link>LanguageServices\Reader.State.cs</Link>
     </Compile>
     <Compile Include="..\Yacq\LanguageServices\StandardGrammar.cs">
       <Link>LanguageServices\StandardGrammar.cs</Link>

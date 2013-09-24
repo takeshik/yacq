@@ -181,29 +181,6 @@ namespace XSpect
 
         #endregion
 
-        #region Dispose
-
-        internal static TReturn Dispose<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
-            where TReceiver : IDisposable
-        {
-            using (self)
-            {
-                return func(self);
-            }
-        }
-
-        internal static TReceiver Dispose<TReceiver>(this TReceiver self, Action<TReceiver> func)
-            where TReceiver : IDisposable
-        {
-            using (self)
-            {
-                func(self);
-            }
-            return self;
-        }
-
-        #endregion
-
         #region Null
 
         internal static TReturn Null<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func, params Func<TReturn>[] funcsIfNull)
@@ -244,6 +221,46 @@ namespace XSpect
             {
                 action(self);
                 return self;
+            }
+            else
+            {
+                return valueIfNull;
+            }
+        }
+
+        #endregion
+
+        #region Nullable
+
+        internal static TReturn Nullable<TReceiver, TReturn>(this Nullable<TReceiver> self, Func<TReceiver, TReturn> func, TReturn valueIfNull = default(TReturn))
+            where TReceiver : struct
+        {
+            return self != null
+                ? func(self.Value)
+                : valueIfNull;
+        }
+
+        internal static TReceiver Nullable<TReceiver>(this Nullable<TReceiver> self, Action<TReceiver> action, params Func<Nullable<TReceiver>>[] funcsIfNull)
+            where TReceiver : struct
+        {
+            if (self != null)
+            {
+                action(self.Value);
+                return self.Value;
+            }
+            else
+            {
+                return funcsIfNull.Select(f => f()).FirstOrDefault(_ => _ != null) ?? default(TReceiver);
+            }
+        }
+
+        internal static TReceiver Nullable<TReceiver>(this Nullable<TReceiver> self, Action<TReceiver> action, TReceiver valueIfNull = default(TReceiver))
+            where TReceiver : struct
+        {
+            if (self != null)
+            {
+                action(self.Value);
+                return self.Value;
             }
             else
             {
@@ -464,6 +481,54 @@ namespace XSpect
                     yield return resultSelector(iter1.Current, iter2.Current, iter3.Current, iter4.Current, iter5.Current, iter6.Current, iter7.Current, iter8.Current);
                 }
             }
+        }
+
+        #endregion
+    }
+
+    [DebuggerStepThrough()]
+    internal static class Disposables
+    {
+        private sealed class AnonymousDisposable
+            : IDisposable
+        {
+            private readonly Action _body;
+
+            public AnonymousDisposable(Action body)
+            {
+                this._body = body;
+            }
+
+            public void Dispose()
+            {
+                this._body();
+            }
+        }
+
+        public static IDisposable From(Action body)
+        {
+            return new AnonymousDisposable(body);
+        }
+
+        #region Dispose
+
+        internal static TReturn Dispose<TReceiver, TReturn>(this TReceiver self, Func<TReceiver, TReturn> func)
+            where TReceiver : IDisposable
+        {
+            using (self)
+            {
+                return func(self);
+            }
+        }
+
+        internal static TReceiver Dispose<TReceiver>(this TReceiver self, Action<TReceiver> func)
+            where TReceiver : IDisposable
+        {
+            using (self)
+            {
+                func(self);
+            }
+            return self;
         }
 
         #endregion

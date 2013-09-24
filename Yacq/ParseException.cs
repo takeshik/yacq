@@ -32,6 +32,7 @@ using System.Runtime.Serialization;
 using XSpect.Yacq.Expressions;
 
 using Parseq;
+using XSpect.Yacq.LanguageServices;
 
 namespace XSpect.Yacq
 {
@@ -46,6 +47,16 @@ namespace XSpect.Yacq
         /// </summary>
         /// <value>The expression to explain the cause of the expression.</value>
         public Expression Expression
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the object that indicates last reader states before the exception was thrown.
+        /// </summary>
+        /// <value>The object that indicates last reader states before the exception was thrown.</value>
+        public Reader.State ReaderState
         {
             get;
             private set;
@@ -74,6 +85,13 @@ namespace XSpect.Yacq
         /// <summary>
         /// Initializes a new instance of the <see cref="ParseException"/> class.
         /// </summary>
+        public ParseException()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         public ParseException(String message)
             : base(message)
@@ -93,163 +111,220 @@ namespace XSpect.Yacq
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        public ParseException(
+            String message,
+            Expression expression
+        )
+            : this(message, null, expression, null, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Expression expression
+        )
+            : this(message, innerException, expression, null, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="readerState">The object that indicates last reader states before the exception was thrown.</param>
+        public ParseException(
+            String message,
+            Reader.State readerState
+        )
+            : this(message, null, null, readerState, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="readerState">The object that indicates last reader states before the exception was thrown.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Reader.State readerState
+        )
+            : this(message, innerException, null, readerState, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, null, null, null, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, innerException, null, null, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Expression expression,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, null, expression, null, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Expression expression,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, innerException, expression, null, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="readerState">The object that indicates last reader states before the exception was thrown.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Reader.State readerState,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, null, null, readerState, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="readerState">The object that indicates last reader states before the exception was thrown.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Reader.State readerState,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, innerException, null, readerState, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        /// <param name="readerState">The object that indicates last reader states before the exception was thrown.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Expression expression,
+            Reader.State readerState,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, null, expression, readerState, startPosition, endPosition)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseException"/> class.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
+        /// <param name="expression">The expression that explains the cause of the expression.</param>
+        /// <param name="readerState">The object that indicates last reader states before the exception was thrown.</param>
+        /// <param name="startPosition">The start position in the source for the exception.</param>
+        /// <param name="endPosition">The end position in the source for the exception.</param>
+        public ParseException(
+            String message,
+            Exception innerException,
+            Expression expression,
+            Reader.State readerState,
+            Position startPosition,
+            Position endPosition
+        )
+            : this(message, innerException, expression, readerState, (Nullable<Position>) startPosition, endPosition)
+        {
+        }
+
         private ParseException(
             String message,
             Exception innerException,
             Expression expression,
+            Reader.State readerState,
             Nullable<Position> startPosition,
             Nullable<Position> endPosition
         )
-            : base(message + " (at " + GetPositionString(expression, startPosition, endPosition) + ")", innerException)
+            : base(message, innerException)
         {
             this.Expression = expression;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        public ParseException()
-            : this("Syntax error", null, null, null, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
-        /// <param name="expression">The expression that explains the cause of the expression.</param>
-        public ParseException(
-            String message,
-            Exception innerException,
-            Expression expression
-        )
-            : this(message, innerException, expression, null, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="expression">The expression that explains the cause of the expression.</param>
-        public ParseException(
-            String message,
-            Expression expression
-        )
-            : this(message, null, expression)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
-        /// <param name="position">The position in the source for the exception.</param>
-        public ParseException(
-            String message,
-            Exception innerException,
-            Position position
-        )
-            : this(message, innerException, null, position, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="position">The position in the source for the exception.</param>
-        public ParseException(
-            String message,
-            Position position
-        )
-            : this(message, null, position)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
-        /// <param name="startPosition">The start position in the source for the exception.</param>
-        /// <param name="endPosition">The end position in the source for the exception.</param>
-        public ParseException(
-            String message,
-            Exception innerException,
-            Position startPosition,
-            Position endPosition
-        )
-            : this(message, innerException, null, startPosition, endPosition)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="startPosition">The start position in the source for the exception.</param>
-        /// <param name="endPosition">The end position in the source for the exception.</param>
-        public ParseException(
-            String message,
-            Position startPosition,
-            Position endPosition
-        )
-            : this(message, default(Exception), startPosition, endPosition)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not null, the current exception is raised in a catch block that handles the inner exception.</param>
-        /// <param name="expression">The expression that explains the cause of the expression.</param>
-        /// <param name="startPosition">The start position in the source for the exception.</param>
-        /// <param name="endPosition">The end position in the source for the exception.</param>
-        public ParseException(
-            String message,
-            Exception innerException,
-            Expression expression,
-            Position startPosition,
-            Position endPosition
-        )
-            : this(message, innerException, expression, (Nullable<Position>) startPosition, endPosition)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseException"/> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="expression">The expression that explains the cause of the expression.</param>
-        /// <param name="startPosition">The start position in the source for the exception.</param>
-        /// <param name="endPosition">The end position in the source for the exception.</param>
-        public ParseException(
-            String message,
-            Expression expression,
-            Position startPosition,
-            Position endPosition
-        )
-            : this(message, null, expression, startPosition, endPosition)
-        {
-        }
-
-        private static String GetPositionString(Expression expression, Nullable<Position> startPosition, Nullable<Position> endPosition)
-        {
-            return ((expression as YacqExpression)
-                .Null(e => Tuple.Create(
-                    (startPosition ?? e.StartPosition).ToString(),
-                    (endPosition ?? e.EndPosition).ToString()
-                )) ?? Tuple.Create(
-                    (startPosition != null ? startPosition.Value.ToString() : null),
-                    (endPosition != null ? endPosition.Value.ToString() : null)
-                )).Let((s, e) => e != null
-                    ? s + " - " + e
-                    : s
-                );
+            this.ReaderState = readerState;
+            this.StartPosition = startPosition;
+            this.EndPosition = endPosition;
         }
     }
 

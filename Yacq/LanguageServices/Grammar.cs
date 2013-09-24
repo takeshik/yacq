@@ -50,6 +50,10 @@ namespace XSpect.Yacq.LanguageServices
 
         private readonly IDictionary<RuleKey, Lazy<Parser<Char, YacqExpression>>> _rules;
 
+        private readonly RuleGetter _get;
+
+        private readonly RuleSetter _set;
+
         /// <summary>
         /// Gets or sets the reference to the parser with specified rule key.
         /// </summary>
@@ -63,6 +67,7 @@ namespace XSpect.Yacq.LanguageServices
             }
             set
             {
+                this.CheckIfReadOnly();
                 this._rules[key] = value;
             }
         }
@@ -257,8 +262,10 @@ namespace XSpect.Yacq.LanguageServices
         /// <value>The getter for this grammar.</value>
         public virtual RuleGetter Get
         {
-            get;
-            private set;
+            get
+            {
+                return this._get;
+            }
         }
 
         /// <summary>
@@ -267,8 +274,11 @@ namespace XSpect.Yacq.LanguageServices
         /// <value>The setter for this grammar.</value>
         public virtual RuleSetter Set
         {
-            get;
-            private set;
+            get
+            {
+                this.CheckIfReadOnly();
+                return this._set;
+            }
         }
 
         /// <summary>
@@ -292,8 +302,8 @@ namespace XSpect.Yacq.LanguageServices
                 new SortedDictionary<RuleKey, Lazy<Parser<Char, YacqExpression>>>
 #endif
                     (rules ?? new Dictionary<RuleKey, Lazy<Parser<Char, YacqExpression>>>());
-            this.Get = new RuleGetter(this);
-            this.Set = new RuleSetter(this);
+            this._get = new RuleGetter(this);
+            this._set = new RuleSetter(this);
         }
 
         /// <summary>
@@ -316,6 +326,7 @@ namespace XSpect.Yacq.LanguageServices
         /// </summary>
         public virtual void Clear()
         {
+            this.CheckIfReadOnly();
             this._rules.Clear();
         }
 
@@ -326,6 +337,7 @@ namespace XSpect.Yacq.LanguageServices
         /// <param name="value">The reference to the parser which defines the rule.</param>
         public virtual void Add(RuleKey key, Lazy<Parser<Char, YacqExpression>> value)
         {
+            this.CheckIfReadOnly();
             this._rules.Add(key, value);
         }
 
@@ -348,6 +360,7 @@ namespace XSpect.Yacq.LanguageServices
         /// </returns>
         public virtual Boolean Remove(RuleKey key)
         {
+            this.CheckIfReadOnly();
             return this._rules.Remove(key);
         }
 
@@ -585,6 +598,14 @@ namespace XSpect.Yacq.LanguageServices
         private Lazy<Parser<Char, YacqExpression>> MakeValue(Func<RuleGetter, Parser<Char, YacqExpression>> rule)
         {
             return new Lazy<Parser<Char, YacqExpression>>(() => rule(this.Get), LazyThreadSafetyMode.PublicationOnly);
+        }
+        
+        private void CheckIfReadOnly()
+        {
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("This grammar is read-only.");
+            }
         }
     }
 }

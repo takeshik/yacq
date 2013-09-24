@@ -38,7 +38,7 @@ namespace XSpect.Yacq.LanguageServices
     /// <summary>
     /// Generates pre-evaluating <see cref="YacqExpression"/> by supplied rules from code string sequence.
     /// </summary>
-    public class Reader
+    public partial class Reader
     {
         /// <summary>
         /// Gets the grammar definition to read.
@@ -88,18 +88,19 @@ namespace XSpect.Yacq.LanguageServices
         public YacqExpression[] Read(IEnumerable<Char> input)
         {
             using (var stream = (input ?? "").AsStream())
+            using (State.Create())
             {
-                IReply<Char, IEnumerable<YacqExpression>> reply;
+                var reply = this.GetDefinitiveParser()(stream);
                 IEnumerable<YacqExpression> result;
                 ErrorMessage message;
-                switch ((reply = this.GetDefinitiveParser()(stream)).TryGetValue(out result, out message))
+                switch (reply.TryGetValue(out result, out message))
                 {
                     case ReplyStatus.Success:
                         return result.ToArray();
                     case ReplyStatus.Failure:
-                        throw new ParseException("Syntax Error", reply.Stream.Position, reply.Stream.Position);
+                        throw new ParseException("Syntax Error", State.Current, reply.Stream.Position, reply.Stream.Position);
                     default:
-                        throw new ParseException(message.MessageDetails, message.Beginning, message.End);
+                        throw new ParseException(message.Message, State.Current, message.Beginning, message.End);
                 }
             }
         }

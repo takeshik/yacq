@@ -116,6 +116,28 @@ namespace XSpect.Yacq.Repl
                 this._parsedExpressions.OnCompleted();
                 this.Log(LogEntry.Info, "Parsing completed.");
             }
+            catch (ParseException ex)
+            {
+                // BUG: causes cross-AppDomain problem
+                // this._parsedExpressions.OnError(ex);
+                this.Log(LogEntry.Error, String.Format(
+                    "Failed to parse: {0}{1}\n{2}{3}",
+                    ex.Message,
+                    ex.StartPosition == null && ex.EndPosition == null
+                        ? ""
+                        : " (at "
+                              + ex.StartPosition.Nullable(p => p.ToString())
+                              + "-"
+                              + ex.EndPosition.Nullable(p => p.ToString())
+                              + ")",
+                    ex.StackTrace,
+                    ex.ReaderState.Null(s => String.Format(
+                        "\nLast Expression: {0}\nContext Stack:\n{1}",
+                        s.LastExpression,
+                        s.ContextStack.Stringify(c => "   " + c, "\n")
+                    ))
+                ));
+            }
             catch (Exception ex)
             {
                 // BUG: causes cross-AppDomain problem

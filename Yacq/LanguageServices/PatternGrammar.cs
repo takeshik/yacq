@@ -45,24 +45,6 @@ namespace XSpect.Yacq.LanguageServices
         private readonly Boolean _isReadOnly;
 
         /// <summary>
-        /// Gets the reference to the parser with specified rule key.
-        /// </summary>
-        /// <param name="key">The rule key to get the parser.</param>
-        /// <value>The reference to the parser with specified rule key.</value>
-        public override Lazy<Parser<Char, YacqExpression>> this[RuleKey key]
-        {
-            get
-            {
-                return base[key];
-            }
-            set
-            {
-                this.CheckIfReadOnly();
-                base[key] = value;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this grammar is read-only.
         /// </summary>
         /// <value><c>true</c> if this rule is read-only; otherwise, <c>false</c>.</value>
@@ -71,19 +53,6 @@ namespace XSpect.Yacq.LanguageServices
             get
             {
                 return this._isReadOnly;
-            }
-        }
-
-        /// <summary>
-        /// Gets the setter for this grammar. The standard grammar cannot modify.
-        /// </summary>
-        /// <value>This throws <see cref="InvalidOperationException"/>.</value>
-        public override RuleSetter Set
-        {
-            get
-            {
-                this.CheckIfReadOnly();
-                return base.Set;
             }
         }
 
@@ -108,7 +77,7 @@ namespace XSpect.Yacq.LanguageServices
 
             var punctuation = Chars.OneOf(
                 // From the Standard Grammar:
-                '"', '#', '\'', '(', ')', '.', ':', ';', '[', ']', '`', '{', '}',
+                '"', '#', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}',
                 // Additional punctuation characters:
                 '%', '*', '+', '<', '>', '?', '@', '|'
             );
@@ -169,43 +138,40 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("root", "primary", g => primary.Value);
 
             // Parentheses
-            this.Add("primary", "parenthesis", g => SetPosition(
-                g["root", "expression"]
-                    .Between('('.Satisfy(), ')'.Satisfy())
-                    .Or(g["root", "term"])
-            ));
+            this.Add("primary", "parenthesis", g => g["root", "expression"]
+                .Between('('.Satisfy(), ')'.Satisfy(), "parenthesis")
+                .Or(g["root", "term"])
+            );
 
             // Lists
-            this.Add("primary", "list", g => SetPosition(
-                g["root", "expression"]
-                    .Between(g["root", "ignore"], g["root", "ignore"])
-                    .Many()
-                    .Between(Chars.Sequence("%("), ')'.Satisfy())
-                    .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("List", es))
-            ));
+            this.Add("primary", "list", g => g["root", "expression"]
+                .Between(g["root", "ignore"], g["root", "ignore"])
+                .Many()
+                .Between(Chars.Sequence("%("), ')'.Satisfy(), "listPattern")
+                .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("List", es))
+            );
 
             // Vectors
-            this.Add("primary", "vector", g => SetPosition(
-                g["root", "expression"]
-                    .Between(g["root", "ignore"], g["root", "ignore"])
-                    .Many()
-                    .Between(Chars.Sequence("%["), ']'.Satisfy())
-                    .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("Vector", es))
-            ));
+            this.Add("primary", "vector", g => g["root", "expression"]
+                .Between(g["root", "ignore"], g["root", "ignore"])
+                .Many()
+                .Between(Chars.Sequence("%["), ']'.Satisfy(), "vectorPattern")
+                .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("Vector", es))
+            );
 
             // Lambda Lists
-            this.Add("primary", "lambdaList", g => SetPosition(
-                g["root", "expression"]
-                    .Between(g["root", "ignore"], g["root", "ignore"])
-                    .Many()
-                    .Between(Chars.Sequence("%{"), '}'.Satisfy())
-                    .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("LambdaList", es))
-            ));
+            this.Add("primary", "lambdaList", g => g["root", "expression"]
+                .Between(g["root", "ignore"], g["root", "ignore"])
+                .Many()
+                .Between(Chars.Sequence("%{"), '}'.Satisfy(), "lambdaListPattern")
+                .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("LambdaList", es))
+            );
 
             // Identifiers
-            this.Add("primary", "identifier", g => SetPosition(
-                '`'.Satisfy().Let(q =>
-                    q.Right(q
+            this.Add("primary", "identifier", g => '`'.Satisfy()
+                .Let(q => q
+                    .EnterContext("identifierPattern")
+                    .Right(q
                         .Not()
                         .Right('\\'.Satisfy()
                             .Right('`'.Satisfy())
@@ -214,13 +180,16 @@ namespace XSpect.Yacq.LanguageServices
                         .Many()
                         .Left(q)
                     )
-                ).Select(cs => YacqExpression.TypeCandidate(typeof(YacqCombinators))
+                )
+                .LeaveContext("identifierPattern")
+                .Select(cs => YacqExpression.TypeCandidate(typeof(YacqCombinators))
                     .Method("Identifier", YacqExpression.Text("\"" + cs.Stringify() + "\""))
                 )
-            ));
+            );
 
             primaryRef = this.Get["primary"]
                 .Choice()
+                .SetPosition()
                 .Between(this.Get["root", "ignore"], this.Get["root", "ignore"]);
 
             #endregion
@@ -229,7 +198,7 @@ namespace XSpect.Yacq.LanguageServices
 
             // Dots
             this.Add("operator", "dot", g => g["root", "primary"]
-                .Let(parent => SetPosition(Prims.Pipe(
+                .Let(parent => Prims.Pipe(
                     parent,
                     '.'.Satisfy()
                         .Right(parent)
@@ -241,12 +210,12 @@ namespace XSpect.Yacq.LanguageServices
                             t
                         )
                     )
-                )))
+                ))
             );
 
             // Colons
             this.Add("operator", "colon", g => g["operator", "dot"]
-                .Let(parent => SetPosition(Prims.Pipe(
+                .Let(parent => Prims.Pipe(
                     parent,
                     ':'.Satisfy()
                         .Right(parent)
@@ -258,12 +227,12 @@ namespace XSpect.Yacq.LanguageServices
                             t
                         )
                     )
-                )))
+                ))
             );
 
             // Unary Operators
             this.Add("operator", "unary", g => g["operator", "colon"]
-                .Let(parent => SetPosition(Prims.Pipe(
+                .Let(parent => Prims.Pipe(
                     parent,
                     Combinator.Choice(
                         Chars.Sequence("?")
@@ -286,11 +255,11 @@ namespace XSpect.Yacq.LanguageServices
                         ).Select(_ => Tuple.Create("Many", _))
                     ).Many(),
                     (l, cs) => cs.Aggregate(l, (l_, c) => YacqExpression.TypeCandidate(typeof(Combinator)).Method(c.Item1, c.Item2.StartWith(l_)))
-                )))
+                ))
             );
 
             this.Add("operator", "binary", g => g["operator", "unary"]
-                .Let(parent => SetPosition(Prims.Pipe(
+                .Let(parent => Prims.Pipe(
                     parent,
                     Prims.Pipe(
                         Combinator.Choice(
@@ -304,11 +273,11 @@ namespace XSpect.Yacq.LanguageServices
                     (l, rs) => rs.Aggregate(l, (h, t) =>
                         YacqExpression.TypeCandidate(t.Item1.Item1).Method(t.Item1.Item2, t.Item1.Item3.StartWith(h, t.Item2))
                     )
-                )))
+                ))
             );
 
             this.Add("operator", "as", g => g["operator", "binary"]
-                .Let(parent => SetPosition(Prims.Pipe(
+                .Let(parent => Prims.Pipe(
                     Chars.Digit()
                         .Not()
                         .Right(Chars.Space()
@@ -324,7 +293,7 @@ namespace XSpect.Yacq.LanguageServices
                     (ls, r) => ls.Reverse().Aggregate(r, (h, t) =>
                         YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("As", h, YacqExpression.Variable("$here"), t)
                     )
-                )))
+                ))
             );
 
             #endregion
@@ -334,64 +303,6 @@ namespace XSpect.Yacq.LanguageServices
             this.Set.Default = g => g["root", "expression"];
 
             this._isReadOnly = true;
-        }
-
-        /// <summary>
-        /// Adds the rule to this grammar. The standard grammar cannot modify.
-        /// </summary>
-        /// <param name="key">The rule key to add.</param>
-        /// <param name="value">The reference to the parser which defines the rule.</param>
-        public override void Add(RuleKey key, Lazy<Parser<Char, YacqExpression>> value)
-        {
-            this.CheckIfReadOnly();
-            base.Add(key, value);
-        }
-
-        /// <summary>
-        /// Removes all rules from this grammar. The standard grammar cannot modify.
-        /// </summary>
-        public override void Clear()
-        {
-            this.CheckIfReadOnly();
-            base.Clear();
-        }
-
-        /// <summary>
-        /// Removes the symbol with the specified symbol key from this symbol table. The standard grammar cannot modify.
-        /// </summary>
-        /// <param name="key">The rule key to remove.</param>
-        /// <returns>
-        /// <value>This throws <see cref="InvalidOperationException"/>.</value>
-        /// </returns>
-        public override Boolean Remove(RuleKey key)
-        {
-            this.CheckIfReadOnly();
-            return base.Remove(key);
-        }
-
-        private static Parser<Char, YacqExpression> SetPosition(Parser<Char, YacqExpression> parser)
-        {
-            if (parser == null)
-            {
-                throw new ArgumentNullException("parser");
-            }
-
-            Parser<Char, Position> pos = stream => Reply.Success(stream, stream.Position);
-            return pos.SelectMany(s =>
-                parser.SelectMany(p =>
-                    pos.Select(e =>
-                        p.Apply(_ => _.SetPosition(s, e))
-                    )
-                )
-            );
-        }
-
-        private void CheckIfReadOnly()
-        {
-            if (this._isReadOnly)
-            {
-                throw new InvalidOperationException("This grammar is read-only.");
-            }
         }
     }
 }
