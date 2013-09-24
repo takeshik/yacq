@@ -133,6 +133,7 @@ namespace XSpect.Yacq.LanguageServices
 
             // Texts
             this.Add("term", "text", g => Chars.OneOf('\'', '\"')
+                .EnterContext("text")
                 .SelectMany(q => q.Satisfy()
                     .Not()
                     .Right('\\'.Satisfy()
@@ -143,6 +144,7 @@ namespace XSpect.Yacq.LanguageServices
                     .Left(q.Satisfy())
                     .Select(cs => YacqExpression.Text(q, cs.Stringify()))
                 )
+                .LeaveContext("text")
             );
 
             // Numbers
@@ -240,7 +242,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("term", "list", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between('('.Satisfy(), ')'.Satisfy())
+                .Between('('.Satisfy(), ')'.Satisfy(), "list")
                 .Select(YacqExpression.List)
             );
 
@@ -248,15 +250,15 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("term", "vector", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between('['.Satisfy(), ']'.Satisfy())
+                .Between('['.Satisfy(), ']'.Satisfy(), "vector")
                 .Select(YacqExpression.Vector)
             );
 
             // Lambda Lists
-            this.Add("term", "lambdaList", g =>g["root", "expression"]
+            this.Add("term", "lambdaList", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between('{'.Satisfy(), '}'.Satisfy())
+                .Between('{'.Satisfy(), '}'.Satisfy(), "lambdaList")
                 .Select(YacqExpression.LambdaList)
             );
 
@@ -274,8 +276,9 @@ namespace XSpect.Yacq.LanguageServices
                             .Many(1)
                         )
                 ).Select(cs => YacqExpression.Identifier(default(Char), cs.Stringify())),
-                '`'.Satisfy().Let(q =>
-                    q.Right(q
+                '`'.Satisfy()
+                    .EnterContext("identifier")
+                    .Let(q => q.Right(q
                         .Not()
                         .Right('\\'.Satisfy()
                             .Right('`'.Satisfy())
@@ -283,8 +286,9 @@ namespace XSpect.Yacq.LanguageServices
                         )
                         .Many()
                         .Left(q)
-                    )
-                ).Select(cs => YacqExpression.Identifier('`', cs.Stringify()))
+                    ))
+                    .LeaveContext("identifier")
+                    .Select(cs => YacqExpression.Identifier('`', cs.Stringify()))
             ));
 
             // Extended Terms
@@ -304,39 +308,53 @@ namespace XSpect.Yacq.LanguageServices
 
             // Quotes
             this.Add("term.ext", "quote", g => '\''.Satisfy()
+                .EnterContext("quote")
                 .Right(g["root", "expression"])
+                .LeaveContext("quote")
                 .Select(e => YacqExpression.List(YacqExpression.Identifier("quote"), e))
             );
 
             // Quasiquotes
             this.Add("term.ext", "quasiquote", g => '`'.Satisfy()
+                .EnterContext("quasiquote")
                 .Right(g["root", "expression"])
+                .LeaveContext("quasiquote")
                 .Select(e => YacqExpression.List(YacqExpression.Identifier("quasiquote"), e))
             );
 
             // Unquote-Splicings
             this.Add("term.ext", "unquoteSplicing", g => Chars.Sequence(",@")
+                .EnterContext("unquoteSplicing")
                 .Right(g["root", "expression"])
+                .LeaveContext("unquoteSplicing")
                 .Select(e => YacqExpression.List(YacqExpression.Identifier("unquote-splicing"), e))
             );
 
             // Unquotes
             this.Add("term.ext", "unquote", g => ','.Satisfy()
+                .EnterContext("unquote")
                 .Right(g["root", "expression"])
+                .LeaveContext("unquote")
                 .Select(e => YacqExpression.List(YacqExpression.Identifier("unquote"), e))
             );
 
             // Transiting Expressions (Alternative Grammer)
             this.Add("term.ext", "altExpression", g => Alternative.Get.Default
                 .Between(g["root", "ignore"], g["root", "ignore"])
-                .Between(Chars.Sequence("("), ')'.Satisfy())
+                .Between('('.Satisfy(), ')'.Satisfy(), "altExpression")
+            );
+
+            // Transiting Expressions (Pattern Grammer)
+            this.Add("term.ext", "patternExpression", g => Pattern.Get.Default
+                .Between(g["root", "ignore"], g["root", "ignore"])
+                .Between(Chars.Sequence("%("), ')'.Satisfy(), "patternExpression")
             );
 
             // Tuples
             this.Add("term.ext", "tuple", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between(Chars.Sequence("["), ']'.Satisfy())
+                .Between('['.Satisfy(), ']'.Satisfy(), "tuple")
                 .Select(es => YacqExpression.List(es.StartWith(YacqExpression.Identifier("tuple"))))
             );
 
@@ -373,7 +391,8 @@ namespace XSpect.Yacq.LanguageServices
             #endregion
 
             expressionRef = this.Get["infix"]
-                .Last();
+                .Last()
+                .Do(e => Reader.State.Current.Null(s => s.SetLastExpression(e)));
 
             this.Set.Default = g => g["root", "expression"];
 

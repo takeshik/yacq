@@ -326,21 +326,6 @@ namespace XSpect.Yacq
             this.StartPosition = startPosition;
             this.EndPosition = endPosition;
         }
-
-        private static String GetPositionString(Expression expression, Nullable<Position> startPosition, Nullable<Position> endPosition)
-        {
-            return ((expression as YacqExpression)
-                .Null(e => Tuple.Create(
-                    (startPosition ?? e.StartPosition).ToString(),
-                    (endPosition ?? e.EndPosition).ToString()
-                )) ?? Tuple.Create(
-                    (startPosition != null ? startPosition.Value.ToString() : null),
-                    (endPosition != null ? endPosition.Value.ToString() : null)
-                )).Let((s, e) => e != null
-                    ? s + " - " + e
-                    : s
-                );
-        }
     }
 
 #if !SILVERLIGHT

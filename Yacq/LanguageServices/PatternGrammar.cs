@@ -139,7 +139,7 @@ namespace XSpect.Yacq.LanguageServices
 
             // Parentheses
             this.Add("primary", "parenthesis", g => g["root", "expression"]
-                .Between('('.Satisfy(), ')'.Satisfy())
+                .Between('('.Satisfy(), ')'.Satisfy(), "parenthesis")
                 .Or(g["root", "term"])
             );
 
@@ -147,7 +147,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("primary", "list", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between(Chars.Sequence("%("), ')'.Satisfy())
+                .Between(Chars.Sequence("%("), ')'.Satisfy(), "listPattern")
                 .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("List", es))
             );
 
@@ -155,7 +155,7 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("primary", "vector", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between(Chars.Sequence("%["), ']'.Satisfy())
+                .Between(Chars.Sequence("%["), ']'.Satisfy(), "vectorPattern")
                 .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("Vector", es))
             );
 
@@ -163,14 +163,15 @@ namespace XSpect.Yacq.LanguageServices
             this.Add("primary", "lambdaList", g => g["root", "expression"]
                 .Between(g["root", "ignore"], g["root", "ignore"])
                 .Many()
-                .Between(Chars.Sequence("%{"), '}'.Satisfy())
+                .Between(Chars.Sequence("%{"), '}'.Satisfy(), "lambdaListPattern")
                 .Select(es => YacqExpression.TypeCandidate(typeof(YacqCombinators)).Method("LambdaList", es))
             );
 
             // Identifiers
             this.Add("primary", "identifier", g => '`'.Satisfy()
-                .Let(q =>
-                    q.Right(q
+                .Let(q => q
+                    .EnterContext("identifierPattern")
+                    .Right(q
                         .Not()
                         .Right('\\'.Satisfy()
                             .Right('`'.Satisfy())
@@ -180,6 +181,7 @@ namespace XSpect.Yacq.LanguageServices
                         .Left(q)
                     )
                 )
+                .LeaveContext("identifierPattern")
                 .Select(cs => YacqExpression.TypeCandidate(typeof(YacqCombinators))
                     .Method("Identifier", YacqExpression.Text("\"" + cs.Stringify() + "\""))
                 )

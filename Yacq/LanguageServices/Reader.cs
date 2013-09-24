@@ -98,9 +98,9 @@ namespace XSpect.Yacq.LanguageServices
                     case ReplyStatus.Success:
                         return result.ToArray();
                     case ReplyStatus.Failure:
-                        throw new ParseException("Syntax Error", reply.Stream.Position, reply.Stream.Position);
+                        throw new ParseException("Syntax Error", State.Current, reply.Stream.Position, reply.Stream.Position);
                     default:
-                        throw new ParseException(message.MessageDetails, message.Beginning, message.End);
+                        throw new ParseException(message.Message, State.Current, message.Beginning, message.End);
                 }
             }
         }

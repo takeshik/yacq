@@ -38,6 +38,7 @@ namespace XSpect.Yacq.LanguageServices
         /// Represents reader context (correspondence of paired tokens).
         /// </summary>
         public class Context
+            : IEquatable<Context>
         {
             /// <summary>
             /// Gets the name of this context.
@@ -63,6 +64,16 @@ namespace XSpect.Yacq.LanguageServices
             {
                 this.Name = name;
                 this.Position = position;
+            }
+
+            public Boolean Equals(Context other)
+            {
+                return this.Name == other.Name && this.Position == other.Position;
+            }
+
+            public override String ToString()
+            {
+                return this.Name + " at " + this.Position;
             }
         }
     }

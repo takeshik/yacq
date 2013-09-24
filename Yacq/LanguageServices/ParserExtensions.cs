@@ -74,5 +74,15 @@ namespace XSpect.Yacq.LanguageServices
             return ((Parser<TToken, Position>) (stream => Reply.Success(stream, stream.Position)))
                 .SelectMany(p => parser.Do(_ => Reader.State.Current.Null(s => s.LeaveContext(name))));
         }
+
+        internal static Parser<TToken, TResult0> Between<TToken, TResult0, TResult1, TResult2>(
+            this Parser<TToken, TResult0> parser0,
+            Parser<TToken, TResult1> parser1,
+            Parser<TToken, TResult2> parser2,
+            String contextName
+        )
+        {
+            return parser0.Between(parser1.EnterContext(contextName), parser2.LeaveContext(contextName));
+        }
     }
 }

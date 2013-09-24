@@ -230,6 +230,46 @@ namespace XSpect
 
         #endregion
 
+        #region Nullable
+
+        internal static TReturn Nullable<TReceiver, TReturn>(this Nullable<TReceiver> self, Func<TReceiver, TReturn> func, TReturn valueIfNull = default(TReturn))
+            where TReceiver : struct
+        {
+            return self != null
+                ? func(self.Value)
+                : valueIfNull;
+        }
+
+        internal static TReceiver Nullable<TReceiver>(this Nullable<TReceiver> self, Action<TReceiver> action, params Func<Nullable<TReceiver>>[] funcsIfNull)
+            where TReceiver : struct
+        {
+            if (self != null)
+            {
+                action(self.Value);
+                return self.Value;
+            }
+            else
+            {
+                return funcsIfNull.Select(f => f()).FirstOrDefault(_ => _ != null) ?? default(TReceiver);
+            }
+        }
+
+        internal static TReceiver Nullable<TReceiver>(this Nullable<TReceiver> self, Action<TReceiver> action, TReceiver valueIfNull = default(TReceiver))
+            where TReceiver : struct
+        {
+            if (self != null)
+            {
+                action(self.Value);
+                return self.Value;
+            }
+            else
+            {
+                return valueIfNull;
+            }
+        }
+
+        #endregion
+
         #region If
 
         internal static TReturn If<TReceiver, TReturn>(
