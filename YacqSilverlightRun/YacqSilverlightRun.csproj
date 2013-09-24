@@ -72,18 +72,18 @@
   <ItemGroup>
     <Reference Include="GalaSoft.MvvmLight.Extras.SL5, Version=4.1.27.22814, Culture=neutral, PublicKeyToken=e7f91b7703710fe7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MvvmLightLibs.4.1.27.0\lib\SL5\GalaSoft.MvvmLight.Extras.SL5.dll</HintPath>
+      <HintPath>..\packages\MvvmLightLibs.4.1.27.1\lib\SL5\GalaSoft.MvvmLight.Extras.SL5.dll</HintPath>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight.SL5, Version=4.1.27.22814, Culture=neutral, PublicKeyToken=c114982fcf1a3a2e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MvvmLightLibs.4.1.27.0\lib\SL5\GalaSoft.MvvmLight.SL5.dll</HintPath>
+      <HintPath>..\packages\MvvmLightLibs.4.1.27.1\lib\SL5\GalaSoft.MvvmLight.SL5.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CommonServiceLocator.1.0\lib\SL30\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
-    <Reference Include="Parseq.Silverlight">
-      <HintPath>..\packages\Parseq.2.1.0.0\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
+    <Reference Include="Parseq.Silverlight, Version=2.1.0.1, Culture=neutral, PublicKeyToken=434716041f21e3ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Parseq.2.1.0.1\lib\sl40\Parseq.Silverlight\Parseq.Silverlight.dll</HintPath>
     </Reference>
     <Reference Include="System.Interactive, Version=1.1.10823.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Ix_Experimental-Main.1.1.10823\lib\SL4\System.Interactive.dll</HintPath>
@@ -122,7 +122,7 @@
       <HintPath>..\..\..\..\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Interactivity, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MvvmLightLibs.4.1.27.0\lib\SL5\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\MvvmLightLibs.4.1.27.1\lib\SL5\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Windows.Browser" />
