@@ -224,9 +224,9 @@ namespace XSpect.Yacq.Expressions
                               ? this.Parameters
                                     .SkipLast(1)
                                     .Select(p => p.ParameterType)
-                                    .Concat(EnumerableEx.Repeat(
+                                    .Concat(Arrays.From(
                                         this.Parameters.Last().ParameterType.GetElementType()
-                                    ))
+                                    ).Repeat())
                                     .Zip(this.Arguments, Tuple.Create)
                               : null
                         : this.Arguments.Count <= this.Parameters.Count

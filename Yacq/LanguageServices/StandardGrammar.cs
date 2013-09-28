@@ -71,7 +71,7 @@ namespace XSpect.Yacq.LanguageServices
             var newline = Combinator.Choice(
                 Chars.Sequence("\r\n"),
                 Chars.OneOf('\r', '\n', '\x85', '\u2028', '\u2029')
-                    .Select(EnumerableEx.Return)
+                    .Select(c => Arrays.From(c))
             ).Select(_ => Environment.NewLine);
 
             var punctuation = Chars.OneOf('"', '#', '\'', '(', ')', ',', '.', ':', ';', '[', ']', '`', '{', '}');
@@ -154,7 +154,7 @@ namespace XSpect.Yacq.LanguageServices
                     Chars.Sequence("ul"),
                     Chars.Sequence("UL"),
                     Chars.OneOf('D', 'F', 'L', 'M', 'U', 'd', 'f', 'l', 'm', 'u')
-                        .Select(EnumerableEx.Return)
+                        .Select(c => Arrays.From(c))
                 );
                 var digit = '_'.Satisfy().Many().Right(Chars.Digit());
                 var hexPrefix = Chars.Sequence("0x");
@@ -223,12 +223,12 @@ namespace XSpect.Yacq.LanguageServices
                             fraction.Maybe().SelectMany(f =>
                                 exponent.Maybe().SelectMany(e =>
                                     numberSuffix.Maybe().Select(s =>
-                                        YacqExpression.Number(EnumerableEx.Concat(
+                                        YacqExpression.Number(Arrays.From(
                                             i.If(_ => p.Exists(), _ => _.StartWith(p.Value)),
                                             f.Otherwise(Enumerable.Empty<Char>),
                                             e.Otherwise(Enumerable.Empty<Char>),
                                             s.Otherwise(Enumerable.Empty<Char>)
-                                        ).Stringify())
+                                        ).Concat().Stringify())
                                     )
                                 )
                             )

@@ -62,9 +62,9 @@ namespace XSpect.Yacq.Serialization
             }
             set
             {
-                this._Handlers = value == null || value.IsEmpty()
-                    ? null
-                    : value;
+                this._Handlers = value != null && value.Any()
+                    ? value
+                    : null;
             }
         }
 

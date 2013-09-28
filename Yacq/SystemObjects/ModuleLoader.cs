@@ -37,7 +37,6 @@ using XSpect.Yacq.Expressions;
 using XSpect.Yacq.Symbols;
 
 #if SILVERLIGHT
-using System.Reactive.Linq;
 using System.Xml.Linq;
 #endif
 
@@ -75,10 +74,6 @@ namespace XSpect.Yacq.SystemObjects
             typeof(Object),
             typeof(Uri),
             typeof(Enumerable),
-            typeof(EnumerableEx),
-            typeof(QueryableEx),
-            typeof(Observable),
-            typeof(Qbservable),
             typeof(XDocument),
             typeof(YacqServices),
         }

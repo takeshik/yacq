@@ -63,9 +63,9 @@ namespace XSpect.Yacq.Serialization
             }
             set
             {
-                this._ArgumentNames = value == null || value.IsEmpty()
-                    ? null
-                    : value;
+                this._ArgumentNames = value != null && value.Any()
+                    ? value
+                    : null;
             }
         }
 

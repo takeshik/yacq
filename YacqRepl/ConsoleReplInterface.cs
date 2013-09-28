@@ -61,7 +61,8 @@ namespace XSpect.Yacq.Repl
 
         public void Run()
         {
-            EnumerableEx.Repeat(this._sandbox)
+            Arrays.From(this._sandbox)
+                .Repeat()
                 .Do(s => Console.Write("yacq[{0}]> ", s.History.Count))
                 .Select(s => (Console.ForegroundColor = ConsoleColor.White)
                     .Let(_ => Console.ReadLine())
@@ -91,14 +92,15 @@ namespace XSpect.Yacq.Repl
                     )
                     .If(
                         l => l.StartsWith(":<<"),
-                        h => EnumerableEx.Repeat(Unit.Default)
+                        h => Arrays.From(Unit.Default)
+                            .Repeat()
                             .Do(_ => Console.Write("yacq[{0}]| ", _sandbox.History.Count))
                             .Select(_ => (Console.ForegroundColor = ConsoleColor.White)
                                 .Let(__ => Console.ReadLine())
                                 .Apply(l => Console.ResetColor())
                             )
                             .TakeWhile(l => l != h.Substring(3)),
-                        EnumerableEx.Return
+                        h => Arrays.From(h)
                     )
                 )
                 .Select(ls => String.Join(Environment.NewLine, ls))

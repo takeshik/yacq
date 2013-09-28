@@ -70,7 +70,7 @@ namespace XSpect.Yacq.Expressions
         protected override Expression ReduceImpl(SymbolTable symbols, Type expectedType)
         {
             Expression value = null;
-            if (this.Elements.IsEmpty())
+            if (!this.Elements.Any())
             {
                 return Empty();
             }

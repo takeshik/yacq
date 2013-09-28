@@ -40,8 +40,6 @@ using XSpect.Yacq.Expressions;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using XSpect.Yacq.SystemObjects;
-using System.Reactive;
-using System.Reactive.Linq;
 
 namespace XSpect.Yacq.Symbols
 {
@@ -1300,9 +1298,10 @@ namespace XSpect.Yacq.Symbols
                           ? (Expression) new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
                                 .SelectMany(_ => _.List(":").Let(l => l != null
                                     ? new [] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
-                                    : EnumerableEx.Return(_)
+                                    : Arrays.From(_)
                                 ))
-                                .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
+                                .Buffer(2)
+                                .Select(iv => iv[0].Let(i => iv[1].Let(v => i.Id().Let(n =>
                                     v.Reduce(s_).Apply(r => s_.Add(n, r is YacqExpression
                                         ? r
                                         : ((Expression) Expression.Variable(r.Type, n)).If(
@@ -1310,7 +1309,7 @@ namespace XSpect.Yacq.Symbols
                                               ve => YacqExpression.Contextful(s_, ve, ContextType.Dynamic)
                                           )
                                     ))
-                                )))
+                                ))))
                                 .ToArray()
                                 .Let(_ => Expression.Block(
                                     s_.Literals.Values
@@ -1321,7 +1320,7 @@ namespace XSpect.Yacq.Symbols
                                         ? e.Arguments
                                               .Skip(1)
                                               .ReduceAll(s_)
-                                        : EnumerableEx.Return(
+                                        : Arrays.From(
 #if SILVERLIGHT
                                               (Expression)
 #endif
@@ -1347,22 +1346,23 @@ namespace XSpect.Yacq.Symbols
                           ? (Expression) new SymbolTable(s).Let(s_ => ((VectorExpression) e.Arguments[0]).Elements
                                 .SelectMany(_ => _.List(":").Let(l => l != null
                                     ? new [] { l.First(), Expression.Default(((TypeCandidateExpression) l.Last().Reduce(s)).ElectedType), }
-                                    : EnumerableEx.Return(_)
+                                    : Arrays.From(_)
                                 ))
-                                .Share(_ => _.Zip(_, (i, v) => i.Id().Let(n =>
+                                .Buffer(2)
+                                .Select(iv => iv[0].Let(i => iv[1].Let(v => i.Id().Let(n =>
                                     v.Reduce(s_).Apply(r => s_.Add(n, r is YacqExpression ? r : Expression.Variable(r.Type, n)))
-                                )))
+                                ))))
                                 .ToArray()
                                 .Let(_ => Expression.Block(
                                     s_.Literals.Values
                                         .OfType<ParameterExpression>(),
-                                    EnumerableEx.Return(
+                                    Arrays.From(
                                         Expression.Block(
                                             e.Arguments.Count > 1
                                                 ? e.Arguments
                                                       .Skip(1)
                                                       .ReduceAll(s_)
-                                                : EnumerableEx.Return(
+                                                : Arrays.From(
 #if SILVERLIGHT
                                                       (Expression)
 #endif
@@ -1560,7 +1560,8 @@ namespace XSpect.Yacq.Symbols
             public static Expression CreateAnonymousInstance(DispatchExpression e, SymbolTable s, Type t)
             {
                 return e.Arguments
-                    .Share(_ => _.Zip(_, (i, v) => Tuple.Create(i.Id(), v.Reduce(s))))
+                    .Buffer(2)
+                    .Select(es => Tuple.Create(es[0].Id(), es[1].Reduce(s)))
                     .Let(ms => s.Resolve("*assembly*").Evaluate<YacqAssembly>()
                         .TryDefineType(ms.ToDictionary(_ => _.Item1, _ => _.Item2.Type))
                         .Create(s)
@@ -1584,7 +1585,7 @@ namespace XSpect.Yacq.Symbols
                         GetIdentifierFragments(es.First()).Stringify("."),
                         (es.Last() is VectorExpression
                             ? ((VectorExpression) es.Last()).Elements
-                            : EnumerableEx.Return(es.Last())
+                            : (IEnumerable<Expression>) Arrays.From(es.Last())
                         )
                             .ReduceAll(s)
                             .Cast<TypeCandidateExpression>()
@@ -1725,7 +1726,7 @@ namespace XSpect.Yacq.Symbols
             [YacqSymbol(DispatchTypes.Method, "module")]
             public static Expression Module(DispatchExpression e, SymbolTable s, Type t)
             {
-                return (e.Arguments[0].List().Null(_ => _.IsEmpty())
+                return (e.Arguments[0].List().Null(_ => !_.Any())
                     ? new SymbolTable().Apply(s_ => s_.MarkAsModule())
                     : ModuleLoader.CreatePathSymbols(
                           s.Resolve(DispatchTypes.Member, ModuleIdentifier)(e, s, t).Evaluate<SymbolTable>(),
@@ -1824,57 +1825,6 @@ namespace XSpect.Yacq.Symbols
                                 )
                             )
                         )
-                    )
-                );
-            }
-
-            [YacqSymbol(DispatchTypes.Method, typeof(Object), "..")]
-            public static Expression Range(DispatchExpression e, SymbolTable s, Type t)
-            {
-                return YacqExpression.TypeCandidate(typeof(EnumerableEx)).Method(s, "Generate",
-                    e.Left,
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "<=", YacqExpression.Identifier(s, "$_"), e.Arguments[0]), p)
-                    ),
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "++", YacqExpression.Identifier(s, "$_")), p)
-                    ),
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Identifier(s, "$_"), p)
-                    )
-                );
-            }
-
-            [YacqSymbol(DispatchTypes.Method, typeof(Object), "...")]
-            public static Expression RangeExclusive(DispatchExpression e, SymbolTable s, Type t)
-            {
-                return YacqExpression.TypeCandidate(typeof(EnumerableEx)).Method(s, "Generate",
-                    e.Left,
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "<", YacqExpression.Identifier(s, "$_"), e.Arguments[0]), p)
-                    ),
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "++", YacqExpression.Identifier(s, "$_")), p)
-                    ),
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Identifier(s, "$_"), p)
-                    )
-                );
-            }
-
-            [YacqSymbol(DispatchTypes.Method, typeof(Object), "step")]
-            public static Expression Step(DispatchExpression e, SymbolTable s, Type t)
-            {
-                return YacqExpression.TypeCandidate(typeof(EnumerableEx)).Method(s, "Generate",
-                    e.Left,
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, Expression.Constant(true), p)
-                    ),
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Function(s, "+", YacqExpression.Identifier(s, "$_"), e.Arguments[0]), p)
-                    ),
-                    YacqExpression.AmbiguousParameter(s, "$_").Let(p =>
-                        YacqExpression.AmbiguousLambda(s, YacqExpression.Identifier(s, "$_"), p)
                     )
                 );
             }
@@ -2005,7 +1955,7 @@ namespace XSpect.Yacq.Symbols
                             _[1].Reduce(s),
                             _[0] is VectorExpression
                                 ? ((VectorExpression) _[0]).Elements.ReduceAll(s)
-                                : EnumerableEx.Return(_[0].Reduce(s))
+                                : Arrays.From(_[0].Reduce(s))
                         ))
                 );
             }
@@ -2027,7 +1977,7 @@ namespace XSpect.Yacq.Symbols
                             _[1].Reduce(s),
                             _[0] is VectorExpression
                                 ? ((VectorExpression) _[0]).Elements.ReduceAll(s)
-                                : EnumerableEx.Return(_[0].Reduce(s))
+                                : Arrays.From(_[0].Reduce(s))
                         ))
                 );
             }
@@ -2133,15 +2083,14 @@ namespace XSpect.Yacq.Symbols
                     ? (Expression) Expression.MemberInit(
                           (NewExpression) l,
                           e.Arguments
-                              .Share(_ => _
-                                  .Zip(_, (k, v) => Expression.Bind(
-                                      l.Type.GetMember(
-                                          k.Id(),
-                                          BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
-                                      ).Single(),
-                                      v.Reduce(s)
-                                  ))
-                              )
+                              .Buffer(2)
+                              .Select(p => Expression.Bind(
+                                  l.Type.GetMember(
+                                      p[0].Id(),
+                                      BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+                                  ).Single(),
+                                  p[1].Reduce(s)
+                              ))
 #if SILVERLIGHT
                               .Cast<MemberBinding>()
 #endif
@@ -2158,8 +2107,9 @@ namespace XSpect.Yacq.Symbols
                           (NewExpression) l,
                           e.Arguments
                               .Select(a => ((MethodCallExpression) l.Method(s, "Add",
-                                  (a as VectorExpression).Null(v => v.Elements) ?? EnumerableEx.Return(a)).Reduce(s)
-                              )
+                                  (a as VectorExpression).Null(v => (IEnumerable<Expression>) v.Elements)
+                                      ?? Arrays.From(a)
+                              ).Reduce(s))
                                   .Let(c => Expression.ElementInit(c.Method, c.Arguments))
                               )
                       )
@@ -2578,28 +2528,10 @@ namespace XSpect.Yacq.Symbols
             // LINQ Types
             
             [YacqSymbol("Enumerable")]
-            public static Expression EnumerableType = YacqExpression.TypeCandidate(
-                typeof(Enumerable),
-                typeof(EnumerableEx)
-            );
+            public static Expression EnumerableType = YacqExpression.TypeCandidate(typeof(Enumerable));
             
             [YacqSymbol("Queryable")]
-            public static Expression QueryableType = YacqExpression.TypeCandidate(
-                typeof(Queryable),
-                typeof(QueryableEx)
-            );
-            
-            [YacqSymbol("Observable")]
-            public static Expression ObservableType = YacqExpression.TypeCandidate(typeof(Observable));
-            
-            [YacqSymbol("Observer")]
-            public static Expression ObserverType = YacqExpression.TypeCandidate(typeof(Observer));
-            
-            [YacqSymbol("ObservableExtensions")]
-            public static Expression ObservableExtensionsType = YacqExpression.TypeCandidate(typeof(ObservableExtensions));
-            
-            [YacqSymbol("Qbservable")]
-            public static Expression QbservableType = YacqExpression.TypeCandidate(typeof(Qbservable));
+            public static Expression QueryableType = YacqExpression.TypeCandidate(typeof(Queryable));
             
             // Generic Delegate Types
             

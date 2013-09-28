@@ -74,7 +74,7 @@ namespace XSpect.Yacq.Expressions
             {
                 return this.Candidates.Count == 1
                     ? this.Candidates.Single()
-                    : this.Candidates.Where(t => t.GetGenericArguments().IsEmpty())
+                    : this.Candidates.Where(t => !t.GetGenericArguments().Any())
                           .Let(_ => _.Count() == 1 ? _.Single() : null);
             }
         }

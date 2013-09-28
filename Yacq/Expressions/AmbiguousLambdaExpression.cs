@@ -121,7 +121,7 @@ namespace XSpect.Yacq.Expressions
             return this.UnfixedParameters.Any()
                 ? expectedType != null && expectedType.GetDelegateSignature() != null
                       ? this.ApplyTypeArguments(expectedType)
-                            .If(e => e.UnfixedParameters.IsEmpty(), e => e, e => null)
+                            .If(e => e.UnfixedParameters.Any(), e => null, e => e)
                       : null
                 : this.Parameters
                       .Select(p => p.Reduce(symbols))
@@ -300,7 +300,7 @@ namespace XSpect.Yacq.Expressions
             return AmbiguousLambda(
                 symbols,
                 returnType,
-                body != null ? EnumerableEx.Return(body) : null,
+                body != null ? Arrays.From(body) : null,
                 parameters
             );
         }
