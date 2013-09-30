@@ -46,6 +46,10 @@ namespace XSpect.Yacq.LanguageServices
 
             private readonly Stack<Context> _contextStack;
 
+            /// <summary>
+            /// Gets the object that indicates current reader states.
+            /// </summary>
+            /// <value>The object that indicates current reader states.</value>
             public static State Current
             {
                 get

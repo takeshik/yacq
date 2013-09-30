@@ -66,11 +66,20 @@ namespace XSpect.Yacq.LanguageServices
                 this.Position = position;
             }
 
+            /// <summary>
+            /// Indicates whether this reader context and a specified reader context are equal.
+            /// </summary>
+            /// <param name="other">Another reader context to compare to.</param>
+            /// <returns><c>true</c> if <paramref name="other"/> and this reader context are the same value; otherwise, <c>false</c>.</returns>
             public Boolean Equals(Context other)
             {
                 return this.Name == other.Name && this.Position == other.Position;
             }
 
+            /// <summary>
+            /// Returns a <see cref="String"/> that represents this instance.
+            /// </summary>
+            /// <returns>A <see cref="String"/> that represents this instance.</returns>
             public override String ToString()
             {
                 return this.Name + " at " + this.Position;

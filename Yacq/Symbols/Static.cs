@@ -39,9 +39,7 @@ namespace XSpect.Yacq.Symbols
         /// <summary>
         /// Returns a <see cref="String"/> that represents this instance.
         /// </summary>
-        /// <returns>
-        /// A <see cref="String"/> that represents this instance.
-        /// </returns>
+        /// <returns>A <see cref="String"/> that represents this instance.</returns>
         public override String ToString()
         {
             return "[" + typeof(T).FullName + "]";
