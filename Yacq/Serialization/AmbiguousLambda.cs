@@ -63,9 +63,9 @@ namespace XSpect.Yacq.Serialization
             }
             set
             {
-                this._Parameters = value == null || value.IsEmpty()
-                    ? null
-                    : value;
+                this._Parameters = value != null && value.Any()
+                    ? value
+                    : null;
             }
         }
 
@@ -84,9 +84,9 @@ namespace XSpect.Yacq.Serialization
             }
             set
             {
-                this._Bodies = value == null || value.IsEmpty()
-                    ? null
-                    : value;
+                this._Bodies = value != null && value.Any()
+                    ? value
+                    : null;
             }
         }
 

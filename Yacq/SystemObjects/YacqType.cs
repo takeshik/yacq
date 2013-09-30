@@ -500,7 +500,7 @@ namespace XSpect.Yacq.SystemObjects
                           )))
                     )
                     .Apply(
-                        f => getter.Null(e => p.SetGetMethod(!(e as ListExpression).Null(l => l.Elements.IsEmpty())
+                        f => getter.Null(e => p.SetGetMethod(!(e as ListExpression).Null(l => !l.Elements.Any())
                             ? this.DefineMethod(
                                   "get_" + name,
                                   methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
@@ -523,7 +523,7 @@ namespace XSpect.Yacq.SystemObjects
                                   this._members.Add
                               )
                         )),
-                        f => setter.Null(e => p.SetSetMethod(!(e as ListExpression).Null(l => l.Elements.IsEmpty())
+                        f => setter.Null(e => p.SetSetMethod(!(e as ListExpression).Null(l => !l.Elements.Any())
                             ? this.DefineMethod(
                                   "set_" + name,
                                   methodAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName | (isStatic ? 0 : MethodAttributes.Virtual),
@@ -665,7 +665,7 @@ namespace XSpect.Yacq.SystemObjects
             {
                 return this._type.CreateType();
             }
-            if (this.GetConstructors().IsEmpty())
+            if (!this.GetConstructors().Any())
             {
                 this.DefineConstructor(null);
             }

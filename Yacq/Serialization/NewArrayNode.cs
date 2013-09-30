@@ -57,9 +57,9 @@ namespace XSpect.Yacq.Serialization
             }
             set
             {
-                this._Expressions = value == null || value.IsEmpty()
-                    ? null
-                    : value;
+                this._Expressions = value != null && value.Any()
+                    ? value
+                    : null;
             }
         }
     }

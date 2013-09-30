@@ -119,7 +119,7 @@ namespace XSpect.Yacq.Symbols
             get
             {
                 // Modifying Root SymbolTable is permitted only in static constructor.
-                return this.Parents.IsEmpty() && Root != null;
+                return !(this.Parents.Any() || Root == null);
             }
         }
 
@@ -438,7 +438,7 @@ namespace XSpect.Yacq.Symbols
             this.Parents = new ReadOnlyCollection<SymbolTable>(Root != null
                 ? parents
                       .Where(p => p != null)
-                      .If(ps => ps.IsEmpty(), ps => ps.StartWith(Root))
+                      .If(ps => !ps.Any(), ps => ps.StartWith(Root))
                       .ToArray()
                 : Arrays.Empty<SymbolTable>()
             );
@@ -486,7 +486,7 @@ namespace XSpect.Yacq.Symbols
         /// <param name="parent">Parent of this symbol table.</param>
         /// <param name="entries">Initial entries of this symbol table.</param>
         public SymbolTable(SymbolTable parent, IDictionary<SymbolEntry, SymbolDefinition> entries)
-            : this(EnumerableEx.Return(parent), entries)
+            : this(Arrays.From(parent), entries)
         {
         }
 
@@ -496,7 +496,7 @@ namespace XSpect.Yacq.Symbols
         /// <param name="parent">Parent of this symbol table.</param>
         /// <param name="importingType">The type to add symbols from exported methods and fields.</param>
         public SymbolTable(SymbolTable parent, Type importingType)
-            : this(EnumerableEx.Return(parent), importingType)
+            : this(Arrays.From(parent), importingType)
         {
         }
 

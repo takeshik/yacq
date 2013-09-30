@@ -214,7 +214,7 @@ namespace XSpect.Yacq.LanguageServices
                         .Many()
                         .Between('('.Satisfy(), ')'.Satisfy(), "invoke")
                         .Select(ps => Tuple.Create(
-                            Enumerable.Empty<IdentifierExpression>(),
+                            Arrays.Empty<IdentifierExpression>(),
                             ps
                         )),
                     g["root", "expression"]
@@ -222,8 +222,8 @@ namespace XSpect.Yacq.LanguageServices
                         .Many()
                         .Between('['.Satisfy(), ']'.Satisfy(), "index")
                         .Select(ps => Tuple.Create(
-                            EnumerableEx.Return(YacqExpression.Identifier(".")),
-                            EnumerableEx.Return<YacqExpression>(YacqExpression.Vector(ps))
+                            Arrays.From(YacqExpression.Identifier(".")),
+                            (IEnumerable<YacqExpression>) Arrays.From(YacqExpression.Vector(ps))
                         ))
                     ).Many(),
                 (h, t) => t.Aggregate(h, (r, ps) =>

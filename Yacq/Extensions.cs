@@ -55,13 +55,18 @@ namespace XSpect.Yacq
         internal static IEnumerable<Type> GetConvertibleTypes(this Type type)
         {
             return type != null
-                ? EnumerableEx.Concat(
+                ? Arrays.From(
                       type.Generate(t => t.BaseType, t => t != null),
                       type.GetInterfaces(),
-                      type.IsInterface ? EnumerableEx.Return(typeof(Object)) : Enumerable.Empty<Type>()
-                  ).If(_ => type.IsGenericType && !type.IsGenericTypeDefinition, _ =>
-                      _.Concat(type.GetGenericTypeDefinition().GetConvertibleTypes())
-                  ).Distinct()
+                      type.IsInterface
+                          ? Arrays.From(typeof(Object))
+                          : null,
+                      type.IsGenericType && !type.IsGenericTypeDefinition
+                          ? type.GetGenericTypeDefinition().GetConvertibleTypes()
+                          : null
+                  )
+                      .Concat()
+                      .Distinct()
                 : Enumerable.Empty<Type>();
         }
 
@@ -174,7 +179,7 @@ namespace XSpect.Yacq
         internal static IEnumerable<Type> GetAppearingTypes(this Type type)
         {
             return type != null
-                ? EnumerableEx.Return(type).Expand(t => t.GetGenericArguments())
+                ? Arrays.From(type).Expand(t => t.GetGenericArguments())
                 : Enumerable.Empty<Type>();
         }
 
@@ -250,7 +255,7 @@ namespace XSpect.Yacq
             return types
                 .SelectMany(t => t.GetConvertibleTypes())
                 .Distinct()
-                .Except(EnumerableEx.Return(typeof(Object)))
+                .Except(Arrays.From(typeof(Object)))
                 .OrderByDescending(t => t.IsInterface
                     ? t.GetInterfaces().Length
                     : t.Generate(_ => _.BaseType, _ => _ != null)

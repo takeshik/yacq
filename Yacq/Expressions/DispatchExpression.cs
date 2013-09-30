@@ -32,7 +32,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reactive.Linq;
 using XSpect.Yacq.Dynamic;
 using XSpect.Yacq.Symbols;
 
@@ -47,6 +46,8 @@ namespace XSpect.Yacq.Expressions
         private const BindingFlags _instanceFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
         private const BindingFlags _staticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+
+        private Type _observableType = null;
 
         private Expression _left;
 
@@ -185,7 +186,7 @@ namespace XSpect.Yacq.Expressions
             return types
                 .SelectMany(t => t.IsInterface
                     ? t.GetInterfaces().StartWith(t)
-                    : EnumerableEx.Return(t)
+                    : Arrays.From(t)
                 )
                 .Distinct()
                 .SelectMany(t => Static.GetTargetType(t)
@@ -384,7 +385,7 @@ namespace XSpect.Yacq.Expressions
                       {
                           candidate.ParameterMap
                               .Where(_ => !(_.Item1.IsGenericParameter
-                                  ? EnumerableEx.Return(_.Item1)
+                                  ? Arrays.From(_.Item1)
                                   : _.Item1.GetGenericArguments()
                               ).All(map.ContainsKey))
                               .ForEach(_ =>
@@ -424,7 +425,7 @@ namespace XSpect.Yacq.Expressions
                                   else if (_.Item1.ContainsGenericParameters)
                                   {
                                       (_.Item1.IsGenericParameter
-                                          ? EnumerableEx.Return(Tuple.Create(_.Item1, _.Item2.Type))
+                                          ? Arrays.From(Tuple.Create(_.Item1, _.Item2.Type))
                                           : _.Item1.GetAppearingTypes()
                                                 .Zip(_.Item2.Type.GetCorrespondingType(_.Item1).GetAppearingTypes(), Tuple.Create)
                                                 .Where(t => t.Item1.IsGenericParameter)
@@ -454,9 +455,17 @@ namespace XSpect.Yacq.Expressions
                                 ? (Expression) Property(c.Instance, c.Property, c.Arguments)
                                 : Property(c.Instance, c.Property);
                         case MemberTypes.Event:
+                            if (_observableType == null &&
+                                (_observableType = Assembly.Load("System.Reactive.Linq")
+                                    .Null(a => a.GetType("System.Reactive.Linq.Observable"))
+                                ) == null
+                            )
+                            {
+                                throw new NotSupportedException("Events are supported only if you load the assembly 'System.Reactive.Linq'.");
+                            }
                             return
                                 typeof(Action<>).MakeGenericType(c.Event.EventHandlerType).Let(t => Call(
-                                    typeof(Observable),
+                                    _observableType,
                                     "FromEventPattern",
                                     new []
                                     {
@@ -499,7 +508,7 @@ namespace XSpect.Yacq.Expressions
             // Default constructor of value types
             if (this.DispatchType.HasFlag(DispatchTypes.Constructor)
                 && ((TypeCandidateExpression) this._left).ElectedType.IsValueType
-                && this.Arguments.IsEmpty()
+                && !this.Arguments.Any()
             )
             {
                 return Default(((TypeCandidateExpression) this._left).ElectedType);
@@ -526,7 +535,7 @@ namespace XSpect.Yacq.Expressions
         {
             return expression is TypeCandidateExpression
                 ? GetTypes((TypeCandidateExpression) expression)
-                : EnumerableEx.Return(expression.Type);
+                : Arrays.From(expression.Type);
         }
 
         private static IEnumerable<Type> GetTypes(TypeCandidateExpression expression)

@@ -543,6 +543,49 @@ namespace XSpect
             return source.Select(selector).Where(_ => _ != null);
         }
 
+        internal static IEnumerable<IList<TSource>> Buffer<TSource>(this IEnumerable<TSource> source, Int32 count)
+        {
+            List<TSource> buffer = null;
+            var i = 0;
+            foreach (var e in source)
+            {
+                if (i % count == 0)
+                {
+                    if (i > 0)
+                    {
+                        yield return buffer;
+                    }
+                    buffer = new List<TSource>(count);
+                }
+                buffer.Add(e);
+                ++i;
+            }
+            if (buffer.Any())
+            {
+                yield return buffer;
+            }
+        }
+
+        internal static IEnumerable<TSource> Concat<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
+        {
+            return sources
+                .Where(source => source != null)
+                .SelectMany(source => source);
+        }
+
+        internal static IEnumerable<TSource> Repeat<TSource>(this IEnumerable<TSource> source)
+        {
+            while (true)
+            {
+                foreach (var e in source)
+                {
+                    yield return e;
+                }
+            }
+// ReSharper disable FunctionNeverReturns
+        }
+// ReSharper restore FunctionNeverReturns
+
         internal static IEnumerable<TSource> In<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, params TKey[] keys)
         {
             return source.Where(e => keys.Contains(keySelector(e)));
@@ -640,6 +683,33 @@ namespace XSpect
             return current;
         }
 
+        internal static IEnumerable<TSource> TakeLast<TSource>(this IEnumerable<TSource> source, Int32 count)
+        {
+            var queue = new Queue<TSource>();
+            foreach (var e in source)
+            {
+                queue.Enqueue(e);
+                if (queue.Count > count)
+                {
+                    queue.Dequeue();
+                }
+            }
+            return queue;
+        }
+
+        internal static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, Int32 count)
+        {
+            var queue = new Queue<TSource>();
+            foreach (var e in source)
+            {
+                queue.Enqueue(e);
+                if (queue.Count > count)
+                {
+                    yield return queue.Dequeue();
+                }
+            }
+        }
+
         internal static IEnumerable<IList<TSource>> PartitionBy<TSource>(this IEnumerable<TSource> source, Func<TSource, Boolean> predicate)
         {
             var list = new List<TSource>();
@@ -661,6 +731,11 @@ namespace XSpect
             {
                 yield return list;
             }
+        }
+
+        internal static IEnumerable<TSource> StartWith<TSource>(this IEnumerable<TSource> source, params TSource[] values)
+        {
+            return values.Concat(source);
         }
 
         internal static IEnumerable<TSource> EndWith<TSource>(this IEnumerable<TSource> source, params TSource[] values)
@@ -730,11 +805,59 @@ namespace XSpect
         }
 
         #endregion
+
+        internal static IEnumerable<TSource> Expand<TSource>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TSource>> selector)
+        {
+            return source
+                .Generate(xs => xs.SelectMany(selector), xs => xs.Any())
+                .SelectMany(xs => xs);
+        }
+
+        internal static void ForEach<TSource>(this IEnumerable<TSource> source, Action<TSource> onNext)
+        {
+            foreach (var e in source)
+            {
+                onNext(e);
+            }
+        }
+
+        internal static void ForEach<TSource>(this IEnumerable<TSource> source, Action<TSource, Int32> onNext)
+        {
+            var i = 0;
+            foreach (var e in source)
+            {
+                onNext(e, i++);
+            }
+        }
+
+        internal static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, Action<TSource> onNext)
+        {
+            foreach (var e in source)
+            {
+                onNext(e);
+                yield return e;
+            }
+        }
+
+        internal static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, Action<TSource, Int32> onNext)
+        {
+            var i = 0;
+            foreach (var e in source)
+            {
+                onNext(e, i++);
+            }
+            return source;
+        }
     }
 
     [DebuggerStepThrough()]
     internal static class Arrays
     {
+        internal static T[] From<T>(params T[] array)
+        {
+            return array;
+        }
+
         internal static T[] Empty<T>()
         {
             // HACK: depends on internal implementation.

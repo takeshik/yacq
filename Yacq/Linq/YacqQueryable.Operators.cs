@@ -116,27 +116,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Generates a sequence of non-overlapping adjacent buffers over the source sequence.
-        /// </summary>
-        /// <param name="count">Number of elements for allocated buffers.</param>
-        /// <returns>Sequence of buffers containing source sequence elements.</returns>
-        public new YacqQueryable<IList<TSource>> Buffer(Int32 count)
-        {
-            return new YacqQueryable<IList<TSource>>(this.Symbols, this._source.Buffer(count));
-        }
-
-        /// <summary>
-        /// Generates a sequence of buffers over the source sequence, with specified length and possible overlap.
-        /// </summary>
-        /// <param name="count">Number of elements for allocated buffers.</param>
-        /// <param name="skip">Number of elements to skip between the start of consecutive buffers.</param>
-        /// <returns>Sequence of buffers containing source sequence elements.</returns>
-        public new YacqQueryable<IList<TSource>> Buffer(Int32 count, Int32 skip)
-        {
-            return new YacqQueryable<IList<TSource>>(this.Symbols, this._source.Buffer(count, skip));
-        }
-
-        /// <summary>
         /// Converts the elements of an <see cref="IQueryable"/> to the specified type.
         /// </summary>
         /// <typeparam name="TResult">The type to convert the elements of the source to.</typeparam>
@@ -144,40 +123,6 @@ namespace XSpect.Yacq.Linq
         public new YacqQueryable<TResult> Cast<TResult>()
         {
             return new YacqQueryable<TResult>(this.Symbols, this._source.Cast<TResult>());
-        }
-
-        /// <summary>
-        /// Creates a sequence that corresponds to the source sequence, concatenating it with the sequence resulting from calling an exception handler function in case of an error.
-        /// </summary>
-        /// <typeparam name="TException">Exception type to catch.</typeparam>
-        /// <param name="handler"><c>(ex) =></c> Handler to invoke when an exception of the specified type occurs.</param>
-        /// <returns>Source sequence, concatenated with an exception handler result sequence in case of an error.</returns>
-        public new YacqQueryable<TSource> Catch<TException>(String handler)
-            where TException : Exception
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Catch(
-                YacqServices.ParseLambda<Func<TException, IEnumerable<TSource>>>(this.Symbols, handler, "ex")
-            ));
-        }
-
-        /// <summary>
-        /// Creates a sequence that corresponds to the source sequence, concatenating it with the sequence resulting from calling an exception handler function in case of an error.
-        /// </summary>
-        /// <param name="handler"><c>(ex) =></c> Handler to invoke when an exception of the <see cref="Exception"/> occurs.</param>
-        /// <returns>Source sequence, concatenated with an exception handler result sequence in case of an error.</returns>
-        public new YacqQueryable<TSource> Catch(String handler)
-        {
-            return this.Catch<Exception>(handler);
-        }
-
-        /// <summary>
-        /// Creates a sequence that returns the elements of the first sequence, switching to the second in case of an error.
-        /// </summary>
-        /// <param name="second">Second sequence, concatenated to the result in case the first sequence completes exceptionally.</param>
-        /// <returns>The first sequence, followed by the second sequence in case an error is produced.</returns>
-        public YacqQueryable<TSource> Catch(IEnumerable<TSource> second)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Catch(second));
         }
 
         /// <summary>
@@ -222,34 +167,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Returns elements with a distinct key value by using the default equality comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <returns>Sequence that contains the elements from the source sequence with distinct key values.</returns>
-        public YacqQueryable<TSource> Distinct<TKey>(String keySelector)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Distinct(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
-            ));
-        }
-
-        /// <summary>
-        /// Returns elements with a distinct key value by using the specified equality comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <param name="comparer">Comparer used to compare key values.</param>
-        /// <returns>Sequence that contains the elements from the source sequence with distinct key values.</returns>
-        public YacqQueryable<TSource> Distinct<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Distinct(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
-                comparer
-            ));
-        }
-
-        /// <summary>
         /// Returns distinct elements from a sequence by using the default equality comparer to compare values.
         /// </summary>
         /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains distinct elements from the source.</returns>
@@ -266,153 +183,6 @@ namespace XSpect.Yacq.Linq
         public YacqQueryable<TSource> Distinct(IEqualityComparer<TSource> comparer)
         {
             return new YacqQueryable<TSource>(this.Symbols, this._source.Distinct(comparer));
-        }
-
-        /// <summary>
-        /// Returns elements with a distinct key value by using the default equality comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <returns>Sequence that contains the elements from the source sequence with distinct key values.</returns>
-        public new YacqQueryable<TSource> Distinct(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return new YacqQueryable<TSource>(this.Symbols, this.Provider.CreateQuery<TSource>(Expression.Call(
-                typeof(QueryableEx),
-                "Distinct",
-                new [] { typeof(TSource), keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            )));
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements based on a key value by using the specified equality comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public YacqQueryable<TSource> DistinctUntilChanged<TKey>(String keySelector)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.DistinctUntilChanged(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
-            ));
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements based on a key value by using the specified equality comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <param name="comparer">Comparer used to compare key values.</param>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public YacqQueryable<TSource> DistinctUntilChanged<TKey>(String keySelector, IEqualityComparer<TKey> comparer)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.DistinctUntilChanged(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
-                comparer
-            ));
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements by using the default equality comparer to compare values.
-        /// </summary>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public new YacqQueryable<TSource> DistinctUntilChanged()
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.DistinctUntilChanged());
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements by using the specified equality comparer to compare values.
-        /// </summary>
-        /// <param name="comparer">Comparer used to compare values.</param>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public YacqQueryable<TSource> DistinctUntilChanged(IEqualityComparer<TSource> comparer)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.DistinctUntilChanged(comparer));
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements based on a key value by using the specified equality comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public new YacqQueryable<TSource> DistinctUntilChanged(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return new YacqQueryable<TSource>(this.Symbols, this.Provider.CreateQuery<TSource>(Expression.Call(
-                typeof(QueryableEx),
-                "DistinctUntilChanged",
-                new [] { typeof(TSource), keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            )));
-        }
-
-#if !SILVERLIGHT
-        /// <summary>
-        /// Lazily invokes observer methods for each value in the sequence, and upon successful or exceptional termination.
-        /// </summary>
-        /// <param name="observer">Observer to invoke notification calls on.</param>
-        /// <returns>Sequence exhibiting the side-effects of observer method invocation upon enumeration.</returns>
-        public YacqQueryable<TSource> Do(IObserver<TSource> observer)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Do(observer));
-        }
-#endif
-
-        /// <summary>
-        /// Lazily invokes an action for each value in the sequence.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public new YacqQueryable<TSource> Do(String onNext)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Do(
-                YacqServices.ParseAction<TSource>(this.Symbols, onNext)
-            ));
-        }
-
-        /// <summary>
-        /// Lazily invokes an action for each value in the sequence, and executes an action upon exceptional termination.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <param name="onError"><c>(ex) =></c> Action to invoke on exceptional termination of the sequence.</param>
-        /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public new YacqQueryable<TSource> Do(String onNext, String onError)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Do(
-                YacqServices.ParseAction<TSource>(this.Symbols, onNext),
-                YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onError, "ex")
-            ));
-        }
-
-        /// <summary>
-        /// Lazily invokes an action for each value in the sequence, and executes an action upon successful or exceptional termination.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <param name="onError"><c>(ex) =></c> Action to invoke on exceptional termination of the sequence.</param>
-        /// <param name="onCompleted"><c>() =></c> Action to invoke on successful termination of the sequence.</param>
-        /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public new YacqQueryable<TSource> Do(String onNext, String onError, String onCompleted)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Do(
-                YacqServices.ParseAction<TSource>(this.Symbols, onNext),
-                YacqServices.ParseLambda<Action<Exception>>(this.Symbols, onError, "ex"),
-                YacqServices.ParseAction(this.Symbols, onCompleted)
-            ));
-        }
-
-        /// <summary>
-        /// Generates an enumerable sequence by repeating a source sequence as long as the given loop postcondition holds.
-        /// </summary>
-        /// <param name="condition"><c>(it) =></c> Loop condition.</param>
-        /// <returns>Sequence generated by repeating the given sequence until the condition evaluates to <c>false</c>.</returns>
-        public new YacqQueryable<TSource> DoWhile(String condition)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.DoWhile(
-                YacqServices.ParseFunc<Boolean>(this.Symbols, condition)
-            ));
         }
 
         /// <summary>
@@ -434,30 +204,6 @@ namespace XSpect.Yacq.Linq
         public YacqQueryable<TSource> Except(IEnumerable<TSource> source2, IEqualityComparer<TSource> comparer)
         {
             return new YacqQueryable<TSource>(this.Symbols, this._source.Except(source2, comparer));
-        }
-
-        /// <summary>
-        /// Expands the sequence by recursively applying a selector function.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function to retrieve the next sequence to expand.</param>
-        /// <returns>Sequence with results from the recursive expansion of the source sequence.</returns>
-        public new YacqQueryable<TSource> Expand(String selector)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Expand(
-                YacqServices.ParseFunc<TSource, IEnumerable<TSource>>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
-        /// Creates a sequence whose termination or disposal of an enumerator causes a finally action to be executed.
-        /// </summary>
-        /// <param name="finallyAction"><c>() =></c> Action to run upon termination of the sequence, or when an enumerator is disposed.</param>
-        /// <returns>Source sequence with guarantees on the invocation of the finally action.</returns>
-        public new YacqQueryable<TSource> Finally(String finallyAction)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Finally(
-                YacqServices.ParseAction(this.Symbols, finallyAction)
-            ));
         }
 
         /// <summary>
@@ -658,25 +404,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Hides the enumerable sequence object identity.
-        /// </summary>
-        /// <returns>Enumerable sequence with the same behavior as the original, but hiding the source object identity.</returns>
-        /// <remarks>AsQueryable doesn't hide the object identity, and simply acts as a cast to the IQueryable&lt;TSource&gt; interface.</remarks>
-        public new YacqQueryable<TSource> Hide()
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Hide());
-        }
-
-        /// <summary>
-        /// Ignores all elements in the source sequence.
-        /// </summary>
-        /// <returns>Source sequence without its elements.</returns>
-        public new YacqQueryable<TSource> IgnoreElements()
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.IgnoreElements());
-        }
-
-        /// <summary>
         /// Produces the set intersection of two sequences by using the default equality comparer to compare values.
         /// </summary>
         /// <param name="source2">A sequence whose distinct elements that also appear in the first sequence are returned.</param>
@@ -778,124 +505,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Returns the elements with the maximum key value by using the default comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <returns>List with the elements that share the same maximum key value.</returns>
-        public IList<TSource> MaxBy<TKey>(String keySelector)
-        {
-            return this._source.MaxBy(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
-            );
-        }
-
-        /// <summary>
-        /// Returns the elements with the minimum key value by using the specified comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <param name="comparer">Comparer used to determine the maximum key value.</param>
-        /// <returns>List with the elements that share the same maximum key value.</returns>
-        public IList<TSource> MaxBy<TKey>(String keySelector, IComparer<TKey> comparer)
-        {
-            return this._source.MaxBy(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
-                comparer
-            );
-        }
-
-        /// <summary>
-        /// Returns the elements with the maximum key value by using the default comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <returns>List with the elements that share the same maximum key value.</returns>
-        public new IList<TSource> MaxBy(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return this.Provider.Execute<IList<TSource>>(Expression.Call(
-                typeof(QueryableEx),
-                "MaxBy",
-                new [] { typeof(TSource), keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            ));
-        }
-
-        /// <summary>
-        /// Memoizes the source sequence within a selector function where a specified number of enumerators can get access to all of the sequence's elements without causing multiple enumerations over the source.
-        /// </summary>
-        /// <typeparam name="TResult">Result sequence element type.</typeparam>
-        /// <param name="readerCount">Number of enumerators that can access the underlying buffer. Once every enumerator has obtained an element from the buffer, the element is removed from the buffer.</param>
-        /// <param name="selector"><c>(it) =></c> Selector function with memoized access to the source sequence for a specified number of enumerators.</param>
-        /// <returns>Sequence resulting from applying the selector function to the memoized view over the source sequence.</returns>
-        public YacqQueryable<TResult> Memoize<TResult>(Int32 readerCount, String selector)
-        {
-            return new YacqQueryable<TResult>(this.Symbols, this._source.Memoize(
-                readerCount,
-                YacqServices.ParseFunc<IEnumerable<TSource>, IEnumerable<TResult>>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
-        /// Memoizes the source sequence within a selector function where each enumerator can get access to all of the sequence's elements without causing multiple enumerations over the source.
-        /// </summary>
-        /// <typeparam name="TResult">Result sequence element type.</typeparam>
-        /// <param name="selector"><c>(it) =></c> Selector function with memoized access to the source sequence for each enumerator.</param>
-        /// <returns>Sequence resulting from applying the selector function to the memoized view over the source sequence.</returns>
-        public YacqQueryable<TResult> Memoize<TResult>(String selector)
-        {
-            return new YacqQueryable<TResult>(this.Symbols, this._source.Memoize(
-                YacqServices.ParseFunc<IEnumerable<TSource>, IEnumerable<TResult>>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
-        /// Returns the elements with the minimum key value by using the default comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <returns>List with the elements that share the same minimum key value.</returns>
-        public IList<TSource> MinBy<TKey>(String keySelector)
-        {
-            return this._source.MinBy(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector)
-            );
-        }
-
-        /// <summary>
-        /// Returns the elements with the minimum key value by using the specified comparer to compare key values.
-        /// </summary>
-        /// <typeparam name="TKey">Key type.</typeparam>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <param name="comparer">Comparer used to determine the minimum key value.</param>
-        /// <returns>List with the elements that share the same minimum key value.</returns>
-        public IList<TSource> MinBy<TKey>(String keySelector, IComparer<TKey> comparer)
-        {
-            return this._source.MinBy(
-                YacqServices.ParseFunc<TSource, TKey>(this.Symbols, keySelector),
-                comparer
-            );
-        }
-
-        /// <summary>
-        /// Returns the elements with the minimum key value by using the default comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <returns>List with the elements that share the same minimum key value.</returns>
-        public new IList<TSource> MinBy(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return this.Provider.Execute<IList<TSource>>(Expression.Call(
-                typeof(QueryableEx),
-                "MinBy",
-                new [] { typeof(TSource), keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            ));
-        }
-
-        /// <summary>
         /// Filters the elements of an <see cref="IQueryable"/> based on a specified type.
         /// </summary>
         /// <typeparam name="TResult">The type to filter the elements of the sequence on.</typeparam>
@@ -903,16 +512,6 @@ namespace XSpect.Yacq.Linq
         public new YacqQueryable<TResult> OfType<TResult>()
         {
             return new YacqQueryable<TResult>(this.Symbols, this._source.OfType<TResult>());
-        }
-
-        /// <summary>
-        /// Creates a sequence that concatenates both given sequences, regardless of whether an error occurs.
-        /// </summary>
-        /// <param name="second">Second sequence.</param>
-        /// <returns>Sequence concatenating the elements of both sequences, ignoring errors.</returns>
-        public YacqQueryable<TSource> OnErrorResumeNext(IEnumerable<TSource> second)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.OnErrorResumeNext(second));
         }
 
         /// <summary>
@@ -1006,90 +605,12 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Publishes the source sequence within a selector function where each enumerator can obtain a view over a tail of the source sequence.
-        /// </summary>
-        /// <typeparam name="TResult">Result sequence element type.</typeparam>
-        /// <param name="selector"><c>(it) =></c> Selector function with published access to the source sequence for each enumerator.</param>
-        /// <returns>Sequence resulting from applying the selector function to the published view over the source sequence.</returns>
-        public YacqQueryable<TResult> Publish<TResult>(String selector)
-        {
-            return new YacqQueryable<TResult>(this.Symbols, this._source.Publish(
-                YacqServices.ParseFunc<IEnumerable<TSource>, IEnumerable<TResult>>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
-        /// Repeats and concatenates the source sequence infinitely.
-        /// </summary>
-        /// <returns>Sequence obtained by concatenating the source sequence to itself infinitely.</returns>
-        public new YacqQueryable<TSource> Repeat()
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Repeat());
-        }
-
-        /// <summary>
-        /// Repeats and concatenates the source sequence the given number of times.
-        /// </summary>
-        /// <param name="count">Number of times to repeat the source sequence.</param>
-        /// <returns>Sequence obtained by concatenating the source sequence to itself the specified number of times.</returns>
-        public new YacqQueryable<TSource> Repeat(Int32 count)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Repeat(count));
-        }
-
-        /// <summary>
-        /// Creates a sequence that retries enumerating the source sequence as long as an error occurs.
-        /// </summary>
-        /// <returns>Sequence concatenating the results of the source sequence as long as an error occurs.</returns>
-        public new YacqQueryable<TSource> Retry()
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Retry());
-        }
-
-        /// <summary>
-        /// Creates a sequence that retries enumerating the source sequence as long as an error occurs, with the specified maximum number of retries.
-        /// </summary>
-        /// <param name="retryCount">Maximum number of retries.</param>
-        /// <returns>Sequence concatenating the results of the source sequence as long as an error occurs.</returns>
-        public new YacqQueryable<TSource> Retry(Int32 retryCount)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Retry(retryCount));
-        }
-
-        /// <summary>
         /// Inverts the order of the elements in a sequence.
         /// </summary>
         /// <returns>An <see cref="YacqQueryable{TSource}"/> whose elements correspond to those of the input sequence in reverse order.</returns>
         public new YacqQueryable<TSource> Reverse()
         {
             return new YacqQueryable<TSource>(this.Symbols, this._source.Reverse());
-        }
-
-        /// <summary>
-        /// Generates a sequence of accumulated values by scanning the source sequence and applying an accumulator function.
-        /// </summary>
-        /// <typeparam name="TAccumulate">Accumulation type.</typeparam>
-        /// <param name="seed">Accumulator seed value.</param>
-        /// <param name="accumulator"><c>(a, it) =></c> Accumulation function to apply to the current accumulation value and each element of the sequence.</param>
-        /// <returns>Sequence with all intermediate accumulation values resulting from scanning the sequence.</returns>
-        public YacqQueryable<TAccumulate> Scan<TAccumulate>(TAccumulate seed, String accumulator)
-        {
-            return new YacqQueryable<TAccumulate>(this.Symbols, this._source.Scan(
-                seed,
-                YacqServices.ParseLambda<Func<TAccumulate, TSource, TAccumulate>>(this.Symbols, accumulator, "a", "it")
-            ));
-        }
-
-        /// <summary>
-        /// Generates a sequence of accumulated values by scanning the source sequence and applying an accumulator function.
-        /// </summary>
-        /// <param name="accumulator"><c>(a, it) =></c> Accumulation function to apply to the current accumulation value and each element of the sequence.</param>
-        /// <returns>Sequence with all intermediate accumulation values resulting from scanning the sequence.</returns>
-        public new YacqQueryable<TSource> Scan(String accumulator)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.Scan(
-                YacqServices.ParseLambda<Func<TSource, TSource, TSource>>(this.Symbols, accumulator, "a", "it")
-            ));
         }
 
         /// <summary>
@@ -1119,17 +640,6 @@ namespace XSpect.Yacq.Linq
                 YacqServices.ParseFunc<TSource, IEnumerable<TCollection>>(this.Symbols, collectionSelector),
                 YacqServices.ParseLambda<Func<TSource, TCollection, TResult>>(this.Symbols, resultSelector, "it", "c")
             ));
-        }
-
-        /// <summary>
-        /// Projects each element of a sequence to an given sequence and flattens the resulting sequences into one sequence.
-        /// </summary>
-        /// <typeparam name="TOther">Second source sequence element type.</typeparam>
-        /// <param name="other">Inner sequence each source sequenec element is projected onto.</param>
-        /// <returns>Sequence flattening the sequences that result from projecting elements in the source sequence.</returns>
-        public YacqQueryable<TOther> SelectMany<TOther>(IEnumerable<TOther> other)
-        {
-            return new YacqQueryable<TOther>(this.Symbols, this._source.SelectMany(other));
         }
 
         /// <summary>
@@ -1171,19 +681,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Shares the source sequence within a selector function where each enumerator can fetch the next element from the source sequence.
-        /// </summary>
-        /// <typeparam name="TResult">Result sequence element type.</typeparam>
-        /// <param name="selector"><c>(it) =></c> Selector function with shared access to the source sequence for each enumerator.</param>
-        /// <returns>Sequence resulting from applying the selector function to the shared view over the source sequence.</returns>
-        public YacqQueryable<TResult> Share<TResult>(String selector)
-        {
-            return new YacqQueryable<TResult>(this.Symbols, this._source.Share(
-                YacqServices.ParseFunc<IEnumerable<TSource>, IEnumerable<TResult>>(this.Symbols, selector)
-            ));
-        }
-
-        /// <summary>
         /// Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
         /// </summary>
         /// <param name="predicate"><c>(it) =></c> A function to test an element for a condition.</param>
@@ -1218,16 +715,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Bypasses a specified number of contiguous elements from the end of the sequence and returns the remaining elements.
-        /// </summary>
-        /// <param name="count">The number of elements to skip from the end of the sequence before returning the remaining elements.</param>
-        /// <returns>Sequence bypassing the specified number of elements counting from the end of the source sequence.</returns>
-        public new YacqQueryable<TSource> SkipLast(Int32 count)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.SkipLast(count));
-        }
-
-        /// <summary>
         /// Bypasses elements in a sequence as long as a specified condition is <c>true</c> and then returns the remaining elements.
         /// </summary>
         /// <param name="predicate"><c>(it) =></c> A function to test each element for a condition.</param>
@@ -1240,16 +727,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Returns the source sequence prefixed with the specified value.
-        /// </summary>
-        /// <param name="values">Values to prefix the sequence with.</param>
-        /// <returns>Sequence starting with the specified prefix value, followed by the source sequence.</returns>
-        public YacqQueryable<TSource> StartWith(TSource[] values)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.StartWith(values));
-        }
-
-        /// <summary>
         /// Returns a specified number of contiguous elements from the start of a sequence.
         /// </summary>
         /// <param name="count">The number of elements to return.</param>
@@ -1257,16 +734,6 @@ namespace XSpect.Yacq.Linq
         public new YacqQueryable<TSource> Take(Int32 count)
         {
             return new YacqQueryable<TSource>(this.Symbols, this._source.Take(count));
-        }
-
-        /// <summary>
-        /// Returns a specified number of contiguous elements from the end of the sequence.
-        /// </summary>
-        /// <param name="count">The number of elements to take from the end of the sequence.</param>
-        /// <returns>Sequence with the specified number of elements counting from the end of the source sequence.</returns>
-        public new YacqQueryable<TSource> TakeLast(Int32 count)
-        {
-            return new YacqQueryable<TSource>(this.Symbols, this._source.TakeLast(count));
         }
 
         /// <summary>
@@ -1353,21 +820,6 @@ namespace XSpect.Yacq.Linq
                 YacqServices.ParseLambda<Func<TSource, TSecond, TResult>>(this.Symbols, resultSelector, "it", "it2")
             ));
         }
-
-        #region Non-Expression-based methods
-
-        /// <summary>
-        /// Enumerates the sequence and invokes the given action for each value in the sequence.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        public new void ForEach(String onNext)
-        {
-            this._source.ForEach(
-                YacqServices.ParseAction<TSource>(this.Symbols, onNext).Compile()
-            );
-        }
-
-        #endregion
     }
 
     partial class YacqOrderedQueryable<TSource>
@@ -1594,40 +1046,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Generates a sequence of non-overlapping adjacent buffers over the source sequence.
-        /// </summary>
-        /// <param name="count">Number of elements for allocated buffers.</param>
-        /// <returns>Sequence of buffers containing source sequence elements.</returns>
-        public YacqQueryable Buffer(Int32 count)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Buffer",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(count)
-            )));
-        }
-
-        /// <summary>
-        /// Generates a sequence of buffers over the source sequence, with specified length and possible overlap.
-        /// </summary>
-        /// <param name="count">Number of elements for allocated buffers.</param>
-        /// <param name="skip">Number of elements to skip between the start of consecutive buffers.</param>
-        /// <returns>Sequence of buffers containing source sequence elements.</returns>
-        public YacqQueryable Buffer(Int32 count, Int32 skip)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Buffer",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(count),
-                Expression.Constant(skip)
-            )));
-        }
-
-        /// <summary>
         /// Converts the elements of an <see cref="IQueryable"/> to the specified type.
         /// </summary>
         /// <typeparam name="TResult">The type to convert the elements of the source to.</typeparam>
@@ -1639,53 +1057,6 @@ namespace XSpect.Yacq.Linq
                 "Cast",
                 new [] { typeof(TResult), },
                 this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Creates a sequence that corresponds to the source sequence, concatenating it with the sequence resulting from calling an exception handler function in case of an error.
-        /// </summary>
-        /// <typeparam name="TException">Exception type to catch.</typeparam>
-        /// <param name="handler"><c>(ex) =></c> Handler to invoke when an exception of the specified type occurs.</param>
-        /// <returns>Source sequence, concatenated with an exception handler result sequence in case of an error.</returns>
-        public YacqQueryable Catch<TException>(String handler)
-            where TException : Exception
-        {
-            var handlerLambda = YacqServices.ParseLambda(this.Symbols, handler,
-                YacqExpression.AmbiguousParameter(this.Symbols, typeof(TException), "ex")
-            );
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Catch",
-                new [] { this.ElementType, typeof(TException), },
-                this.Expression,
-                handlerLambda
-            )));
-        }
-
-        /// <summary>
-        /// Creates a sequence that corresponds to the source sequence, concatenating it with the sequence resulting from calling an exception handler function in case of an error.
-        /// </summary>
-        /// <param name="handler"><c>(ex) =></c> Handler to invoke when an exception of the specified type occurs.</param>
-        /// <returns>Source sequence, concatenated with an exception handler result sequence in case of an error.</returns>
-        public YacqQueryable Catch(String handler)
-        {
-            return this.Catch<Exception>(handler);
-        }
-
-        /// <summary>
-        /// Creates a sequence that returns the elements of the first sequence, switching to the second in case of an error.
-        /// </summary>
-        /// <param name="second">Second sequence, concatenated to the result in case the first sequence completes exceptionally.</param>
-        /// <returns>The first sequence, followed by the second sequence in case an error is produced.</returns>
-        public YacqQueryable Catch(IEnumerable second)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Catch",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(second)
             )));
         }
 
@@ -1782,23 +1153,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Returns elements with a distinct key value by using the default equality comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <returns>Sequence that contains the elements from the source sequence with distinct key values.</returns>
-        public YacqQueryable Distinct(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Distinct",
-                new [] { this.ElementType, keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            )));
-        }
-
-        /// <summary>
         /// Returns distinct elements from a sequence by using the default equality comparer to compare values.
         /// </summary>
         /// <returns>An <see cref="YacqQueryable{TSource}"/> that contains distinct elements from the source.</returns>
@@ -1809,111 +1163,6 @@ namespace XSpect.Yacq.Linq
                 "Distinct",
                 new [] { this.ElementType, },
                 this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements based on a key value by using the specified equality comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector.</param>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public YacqQueryable DistinctUntilChanged(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "DistinctUntilChanged",
-                new [] { this.ElementType, keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            )));
-        }
-
-        /// <summary>
-        /// Returns consecutive distinct elements by using the default equality comparer to compare values.
-        /// </summary>
-        /// <returns>Sequence without adjacent non-distinct elements.</returns>
-        public YacqQueryable DistinctUntilChanged()
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "DistinctUntilChanged",
-                new [] { this.ElementType, },
-                this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Lazily invokes an action for each value in the sequence.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public YacqQueryable Do(String onNext)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Do",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext)
-            )));
-        }
-
-        /// <summary>
-        /// Lazily invokes an action for each value in the sequence, and executes an action upon exceptional termination.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <param name="onError"><c>(ex) =></c> Action to invoke on exceptional termination of the sequence.</param>
-        /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public YacqQueryable Do(String onNext, String onError)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Do",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext),
-                YacqServices.ParseLambda(this.Symbols, typeof(void), onError,
-                    YacqExpression.AmbiguousParameter(this.Symbols, typeof(Exception), "ex")
-                )
-            )));
-        }
-
-        /// <summary>
-        /// Lazily invokes an action for each value in the sequence, and executes an action upon successful or exceptional termination.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        /// <param name="onError"><c>(ex) =></c> Action to invoke on exceptional termination of the sequence.</param>
-        /// <param name="onCompleted"><c>() =></c> Action to invoke on successful termination of the sequence.</param>
-        /// <returns>Sequence exhibiting the specified side-effects upon enumeration.</returns>
-        public YacqQueryable Do(String onNext, String onError, String onCompleted)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Do",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext),
-                YacqServices.ParseLambda(this.Symbols, typeof(void), onError,
-                    YacqExpression.AmbiguousParameter(this.Symbols, typeof(Exception), "ex")
-                ),
-                YacqServices.ParseLambda(this.Symbols, typeof(void), onCompleted)
-            )));
-        }
-
-        /// <summary>
-        /// Generates an enumerable sequence by repeating a source sequence as long as the given loop postcondition holds.
-        /// </summary>
-        /// <param name="condition"><c>(it) =></c> Loop condition.</param>
-        /// <returns>Sequence generated by repeating the given sequence until the condition evaluates to <c>false</c>.</returns>
-        public YacqQueryable DoWhile(String condition)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "DoWhile",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, condition)
             )));
         }
 
@@ -1962,38 +1211,6 @@ namespace XSpect.Yacq.Linq
                 new [] { this.ElementType, },
                 this.Expression,
                 Expression.Constant(source2)
-            )));
-        }
-
-        /// <summary>
-        /// Expands the sequence by recursively applying a selector function.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function to retrieve the next sequence to expand.</param>
-        /// <returns>Sequence with results from the recursive expansion of the source sequence.</returns>
-        public YacqQueryable Expand(String selector)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Expand",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, this.ElementType, selector)
-            )));
-        }
-
-        /// <summary>
-        /// Creates a sequence whose termination or disposal of an enumerator causes a finally action to be executed.
-        /// </summary>
-        /// <param name="finallyAction"><c>() =></c> Action to run upon termination of the sequence, or when an enumerator is disposed.</param>
-        /// <returns>Source sequence with guarantees on the invocation of the finally action.</returns>
-        public YacqQueryable Finally(String finallyAction)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Finally",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, typeof(void), finallyAction)
             )));
         }
 
@@ -2150,35 +1367,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Hides the enumerable sequence object identity.
-        /// </summary>
-        /// <returns>Enumerable sequence with the same behavior as the original, but hiding the source object identity.</returns>
-        /// <remarks>AsQueryable doesn't hide the object identity, and simply acts as a cast to the IQueryable&lt;TSource&gt; interface.</remarks>
-        public YacqQueryable Hide()
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Hide",
-                new [] { this.ElementType, },
-                this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Ignores all elements in the source sequence.
-        /// </summary>
-        /// <returns>Source sequence without its elements.</returns>
-        public YacqQueryable IgnoreElements()
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "IgnoreElements",
-                new [] { this.ElementType, },
-                this.Expression
-            )));
-        }
-
-        /// <summary>
         /// Produces the set intersection of two sequences by using the default equality comparer to compare values.
         /// </summary>
         /// <param name="source2">A sequence whose distinct elements that also appear in the first sequence are returned.</param>
@@ -2314,76 +1502,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Returns the elements with the maximum key value by using the default comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <returns>List with the elements that share the same maximum key value.</returns>
-        public IList<dynamic> MaxBy(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return this.Provider.Execute<IList<dynamic>>(Expression.Call(
-                typeof(QueryableEx),
-                "MaxBy",
-                new [] { this.ElementType, keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            ));
-        }
-
-        /// <summary>
-        /// Memoizes the source sequence within a selector function where a specified number of enumerators can get access to all of the sequence's elements without causing multiple enumerations over the source.
-        /// </summary>
-        /// <param name="readerCount">Number of enumerators that can access the underlying buffer. Once every enumerator has obtained an element from the buffer, the element is removed from the buffer.</param>
-        /// <param name="selector"><c>(it) =></c> Selector function with memoized access to the source sequence for a specified number of enumerators.</param>
-        /// <returns>Sequence resulting from applying the selector function to the memoized view over the source sequence.</returns>
-        public YacqQueryable Memoize(Int32 readerCount, String selector)
-        {
-            var selectorLambda = YacqServices.ParseLambda(this.Symbols, typeof(IEnumerable<>).MakeGenericType(this.ElementType), selector);
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Memoize",
-                new [] { this.ElementType, selectorLambda.ReturnType, },
-                this.Expression,
-                Expression.Constant(readerCount),
-                selectorLambda
-            )));
-        }
-
-        /// <summary>
-        /// Memoizes the source sequence within a selector function where each enumerator can get access to all of the sequence's elements without causing multiple enumerations over the source.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function with memoized access to the source sequence for each enumerator.</param>
-        /// <returns>Sequence resulting from applying the selector function to the memoized view over the source sequence.</returns>
-        public YacqQueryable Memoize(String selector)
-        {
-            var selectorLambda = YacqServices.ParseLambda(this.Symbols, typeof(IEnumerable<>).MakeGenericType(this.ElementType), selector);
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Memoize",
-                new [] { this.ElementType, selectorLambda.ReturnType, },
-                this.Expression,
-                selectorLambda
-            )));
-        }
-
-        /// <summary>
-        /// Returns the elements with the minimum key value by using the default comparer to compare key values.
-        /// </summary>
-        /// <param name="keySelector"><c>(it) =></c> Key selector used to extract the key for each element in the sequence.</param>
-        /// <returns>List with the elements that share the same minimum key value.</returns>
-        public IList<dynamic> MinBy(String keySelector)
-        {
-            var keyLambda = YacqServices.ParseLambda(this.Symbols, this.ElementType, keySelector);
-            return this.Provider.Execute<IList<dynamic>>(Expression.Call(
-                typeof(QueryableEx),
-                "MinBy",
-                new [] { this.ElementType, keyLambda.ReturnType, },
-                this.Expression,
-                keyLambda
-            ));
-        }
-
-        /// <summary>
         /// Filters the elements of an <see cref="IQueryable"/> based on a specified type.
         /// </summary>
         /// <typeparam name="TResult">The type to filter the elements of the sequence on.</typeparam>
@@ -2395,22 +1513,6 @@ namespace XSpect.Yacq.Linq
                 "OfType",
                 new [] { typeof(TResult), },
                 this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Creates a sequence that concatenates both given sequences, regardless of whether an error occurs.
-        /// </summary>
-        /// <param name="second">Second sequence.</param>
-        /// <returns>Sequence concatenating the elements of both sequences, ignoring errors.</returns>
-        public YacqQueryable OnErrorResumeNext(IEnumerable second)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Memoize",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(second)
             )));
         }
 
@@ -2449,83 +1551,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Publishes the source sequence within a selector function where each enumerator can obtain a view over a tail of the source sequence.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function with published access to the source sequence for each enumerator.</param>
-        /// <returns>Sequence resulting from applying the selector function to the published view over the source sequence.</returns>
-        public YacqQueryable Publish(String selector)
-        {
-            var selectorLambda = YacqServices.ParseLambda(this.Symbols, typeof(IEnumerable<>).MakeGenericType(this.ElementType), selector);
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Publish",
-                new [] { this.ElementType, selectorLambda.ReturnType, },
-                this.Expression,
-                selectorLambda
-            )));
-        }
-
-        /// <summary>
-        /// Repeats and concatenates the source sequence infinitely.
-        /// </summary>
-        /// <returns>Sequence obtained by concatenating the source sequence to itself infinitely.</returns>
-        public YacqQueryable Repeat()
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Repeat",
-                new [] { this.ElementType, },
-                this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Repeats and concatenates the source sequence the given number of times.
-        /// </summary>
-        /// <param name="count">Number of times to repeat the source sequence.</param>
-        /// <returns>Sequence obtained by concatenating the source sequence to itself the specified number of times.</returns>
-        public YacqQueryable Repeat(Int32 count)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Repeat",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(count)
-            )));
-        }
-
-        /// <summary>
-        /// Creates a sequence that retries enumerating the source sequence as long as an error occurs.
-        /// </summary>
-        /// <returns>Sequence concatenating the results of the source sequence as long as an error occurs.</returns>
-        public YacqQueryable Retry()
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Retry",
-                new [] { this.ElementType, },
-                this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Creates a sequence that retries enumerating the source sequence as long as an error occurs, with the specified maximum number of retries.
-        /// </summary>
-        /// <param name="retryCount">Maximum number of retries.</param>
-        /// <returns>Sequence concatenating the results of the source sequence as long as an error occurs.</returns>
-        public YacqQueryable Retry(Int32 retryCount)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Retry",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(retryCount)
-            )));
-        }
-
-        /// <summary>
         /// Inverts the order of the elements in a sequence.
         /// </summary>
         /// <returns>An <see cref="YacqQueryable{TSource}"/> whose elements correspond to those of the input sequence in reverse order.</returns>
@@ -2536,48 +1561,6 @@ namespace XSpect.Yacq.Linq
                 "Join",
                 new [] { this.ElementType, },
                 this.Expression
-            )));
-        }
-
-        /// <summary>
-        /// Generates a sequence of accumulated values by scanning the source sequence and applying an accumulator function.
-        /// </summary>
-        /// <param name="seed">Accumulator seed value.</param>
-        /// <param name="accumulator"><c>(a, it) =></c> Accumulation function to apply to the current accumulation value and each element of the sequence.</param>
-        /// <returns>Sequence with all intermediate accumulation values resulting from scanning the sequence.</returns>
-        public YacqQueryable Scan(Object seed, String accumulator)
-        {
-            var seedType = seed.GetType();
-            var funcLambda = YacqServices.ParseLambda(this.Symbols, accumulator,
-                YacqExpression.AmbiguousParameter(this.Symbols, seedType, "a"),
-                YacqExpression.AmbiguousParameter(this.Symbols, this.ElementType, "it")
-            );
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Scan",
-                new [] { this.ElementType, seedType, },
-                this.Expression,
-                Expression.Constant(seed),
-                funcLambda
-            )));
-        }
-
-        /// <summary>
-        /// Generates a sequence of accumulated values by scanning the source sequence and applying an accumulator function.
-        /// </summary>
-        /// <param name="accumulator"><c>(a, it) =></c> Accumulation function to apply to the current accumulation value and each element of the sequence.</param>
-        /// <returns>Sequence with all intermediate accumulation values resulting from scanning the sequence.</returns>
-        public YacqQueryable Scan(String accumulator)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Scan",
-                new [] { this.ElementType, },
-                this.Expression,
-                YacqServices.ParseLambda(this.Symbols, accumulator,
-                    YacqExpression.AmbiguousParameter(this.Symbols, this.ElementType, "a"),
-                    YacqExpression.AmbiguousParameter(this.Symbols, this.ElementType, "it")
-                )
             )));
         }
 
@@ -2623,22 +1606,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Projects each element of a sequence to an given sequence and flattens the resulting sequences into one sequence.
-        /// </summary>
-        /// <param name="other">Inner sequence each source sequenec element is projected onto.</param>
-        /// <returns>Sequence flattening the sequences that result from projecting elements in the source sequence.</returns>
-        public YacqQueryable SelectMany(IEnumerable other)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Scan",
-                new [] { this.ElementType, other.GetType().GetEnumerableElementType(), },
-                this.Expression,
-                Expression.Constant(other)
-            )));
-        }
-
-        /// <summary>
         /// Projects each element of a sequence to an <see cref="IEnumerable{TSource}"/> and combines the resulting sequences into one sequence.
         /// </summary>
         /// <param name="selector"><c>(it) =></c> A projection function to apply to each element.</param>
@@ -2669,23 +1636,6 @@ namespace XSpect.Yacq.Linq
                 this.Expression,
                 Expression.Constant(source2)
             ));
-        }
-
-        /// <summary>
-        /// Shares the source sequence within a selector function where each enumerator can fetch the next element from the source sequence.
-        /// </summary>
-        /// <param name="selector"><c>(it) =></c> Selector function with shared access to the source sequence for each enumerator.</param>
-        /// <returns>Sequence resulting from applying the selector function to the shared view over the source sequence.</returns>
-        public YacqQueryable Share(String selector)
-        {
-            var selectorLambda = YacqServices.ParseLambda(this.Symbols, typeof(IEnumerable<>).MakeGenericType(this.ElementType), selector);
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "Share",
-                new [] { this.ElementType, selectorLambda.ReturnType, },
-                this.Expression,
-                selectorLambda
-            )));
         }
 
         /// <summary>
@@ -2765,22 +1715,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Bypasses a specified number of contiguous elements from the end of the sequence and returns the remaining elements.
-        /// </summary>
-        /// <param name="count">The number of elements to skip from the end of the sequence before returning the remaining elements.</param>
-        /// <returns>Sequence bypassing the specified number of elements counting from the end of the source sequence.</returns>
-        public YacqQueryable SkipLast(Int32 count)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "SkipLast",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(count)
-            )));
-        }
-
-        /// <summary>
         /// Bypasses elements in a sequence as long as a specified condition is <c>true</c> and then returns the remaining elements.
         /// </summary>
         /// <param name="predicate"><c>(it) =></c> A function to test each element for a condition.</param>
@@ -2797,22 +1731,6 @@ namespace XSpect.Yacq.Linq
         }
 
         /// <summary>
-        /// Returns the source sequence prefixed with the specified value.
-        /// </summary>
-        /// <param name="values">Values to prefix the sequence with.</param>
-        /// <returns>Sequence starting with the specified prefix value, followed by the source sequence.</returns>
-        public YacqQueryable StartWith(Object[] values)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "StartWith",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(values)
-            )));
-        }
-
-        /// <summary>
         /// Returns a specified number of contiguous elements from the start of a sequence.
         /// </summary>
         /// <param name="count">The number of elements to return.</param>
@@ -2822,22 +1740,6 @@ namespace XSpect.Yacq.Linq
             return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
                 typeof(Queryable),
                 "Take",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(count)
-            )));
-        }
-
-        /// <summary>
-        /// Returns a specified number of contiguous elements from the end of the sequence.
-        /// </summary>
-        /// <param name="count">The number of elements to take from the end of the sequence.</param>
-        /// <returns>Sequence with the specified number of elements counting from the end of the source sequence.</returns>
-        public YacqQueryable TakeLast(Int32 count)
-        {
-            return new YacqQueryable(this.Symbols, this.Provider.CreateQuery(Expression.Call(
-                typeof(QueryableEx),
-                "TakeLast",
                 new [] { this.ElementType, },
                 this.Expression,
                 Expression.Constant(count)
@@ -2914,28 +1816,6 @@ namespace XSpect.Yacq.Linq
                 resultLambda
             )));
         }
-
-        #region Non-Expression-based methods
-
-        /// <summary>
-        /// Enumerates the sequence and invokes the given action for each value in the sequence.
-        /// </summary>
-        /// <param name="onNext"><c>(it) =></c> Action to invoke for each element.</param>
-        public void ForEach(String onNext)
-        {
-            Expression.Lambda<Action>(Expression.Call(
-                typeof(EnumerableEx),
-                "ForEach",
-                new [] { this.ElementType, },
-                this.Expression,
-                Expression.Constant(
-                    YacqServices.ParseLambda(this.Symbols, this.ElementType, typeof(void), onNext)
-                        .Compile()
-                )
-            )).Compile()();
-        }
-
-        #endregion
     }
 
     partial class YacqOrderedQueryable
