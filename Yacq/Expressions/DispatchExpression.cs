@@ -47,12 +47,7 @@ namespace XSpect.Yacq.Expressions
 
         private const BindingFlags _staticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-        private readonly Type _observableType =
-#if SILVERLIGHT
-            null;
-#else
-            Assembly.LoadWithPartialName("System.Reactive.Linq").Null(a => a.GetType("Observable"));
-#endif
+        private Type _observableType = null;
 
         private Expression _left;
 
@@ -460,7 +455,11 @@ namespace XSpect.Yacq.Expressions
                                 ? (Expression) Property(c.Instance, c.Property, c.Arguments)
                                 : Property(c.Instance, c.Property);
                         case MemberTypes.Event:
-                            if (_observableType == null)
+                            if (_observableType == null &&
+                                (_observableType = Assembly.Load("System.Reactive.Linq")
+                                    .Null(a => a.GetType("System.Reactive.Linq.Observable"))
+                                ) == null
+                            )
                             {
                                 throw new NotSupportedException("Events are supported only if you load the assembly 'System.Reactive.Linq'.");
                             }
