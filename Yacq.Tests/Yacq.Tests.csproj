@@ -51,6 +51,7 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlternativeGrammerTest.cs" />
     <Compile Include="ChainingAssertion.NUnit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

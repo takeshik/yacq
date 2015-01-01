@@ -241,9 +241,9 @@ namespace XSpect.Yacq.LanguageServices
                         Prims.Pipe(
                             g["term", "identifier"],
                             g["root", "expression"]
-                                .Between(g["root", "ignore"], g["root", "ignore"], "dotInvoke")
+                                .Between(g["root", "ignore"], g["root", "ignore"])
                                 .Many()
-                                .Between('('.Satisfy(), ')'.Satisfy()),
+                                .Between('('.Satisfy(), ')'.Satisfy(), "dotInvoke"),
                             (n, es) => (YacqExpression) YacqExpression.List(es.StartWith(n))
                         ),
                         g["root", "expression"]
